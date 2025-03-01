@@ -12,6 +12,34 @@ Agentopia is an executive functioning framework designed to help users manage pr
 - **Reflection and Accountability**: Facilitate regular reviews and progress tracking.
 - **Flexibility and Understanding**: Adapt to user preferences and provide empathetic support.
 
+## Build Instructions
+
+To build the Agentopia project, ensure you have Python installed and follow these steps:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/agentopia.git
+   cd agentopia
+   ```
+
+2. Set up a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   ```
+
+3. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Running the Agent
+
+To run the Agentopia agent, execute the following command:
+    ```bash
+    python main.py
+    ```
+
 ## Architecture
 
 The agent is built using **Python** and the **smolagents** library, containerized with **Docker** for consistent deployment across environments.
