@@ -1,5 +1,12 @@
+import os
 import random
+import sys
+
 from smolagents import CodeAgent, DuckDuckGoSearchTool, HfApiModel
+
+if "HF_TOKEN" not in os.environ:
+    print("Error: Set the HF_TOKEN environment variable to use the Hugging Face API.")
+    sys.exit(1)
 
 agent = CodeAgent(tools=[DuckDuckGoSearchTool()], model=HfApiModel())
 
