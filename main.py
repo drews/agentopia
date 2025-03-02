@@ -20,7 +20,7 @@ yellow_agent = CodeAgent(
     name="Operations Officer",
     description="Handles the practical side of the project"
 )
-red_agent = MultiStepAgent(
+red_agent = CodeAgent(
     tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
     name="Commander",
     description="Articulates objectives, assigns side quests, and queries their subordinates",
