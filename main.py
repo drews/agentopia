@@ -1,29 +1,33 @@
 import os
-import random
+import logging
 import sys
 
 import inquirer
-from smolagents import CodeAgent, DuckDuckGoSearchTool, HfApiModel, MultiStepAgent
+from smolagents import DuckDuckGoSearchTool, HfApiModel
+from missions import MissionDrivenAgent
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 if "HF_TOKEN" not in os.environ:
     print("Error: Set the HF_TOKEN environment variable to use the Hugging Face API.")
     sys.exit(1)
 
-blue_agent = CodeAgent(
+blue_agent = MissionDrivenAgent(
     tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
-    name="Science Officer",
-    description="Handles the theoretical side of the project"
+    name="Science_Officer",
+    description="Handles the theoretical side of the mission"
 )
 
-yellow_agent = CodeAgent(
+yellow_agent = MissionDrivenAgent(
     tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
-    name="Operations Officer",
-    description="Handles the practical side of the project"
+    name="Operations_Officer",
+    description="Handles the practical side of the mission"
 )
-red_agent = CodeAgent(
+red_agent = MissionDrivenAgent(
     tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
-    name="Commander",
-    description="Articulates objectives, assigns side quests, and queries their subordinates",
+    name="Executive_Officer",
+    description="Manages the missions. Maintains focus, articulates objectives, assigns side quests, and queries their subordinates",
     managed_agents=[blue_agent, yellow_agent]
 )
 
