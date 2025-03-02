@@ -2,13 +2,30 @@ import os
 import random
 import sys
 
-from smolagents import CodeAgent, DuckDuckGoSearchTool, HfApiModel
+import inquirer
+from smolagents import CodeAgent, DuckDuckGoSearchTool, HfApiModel, MultiStepAgent
 
 if "HF_TOKEN" not in os.environ:
     print("Error: Set the HF_TOKEN environment variable to use the Hugging Face API.")
     sys.exit(1)
 
-agent = CodeAgent(tools=[DuckDuckGoSearchTool()], model=HfApiModel())
+blue_agent = CodeAgent(
+    tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
+    name="Science Officer",
+    description="Handles the theoretical side of the project"
+)
+
+yellow_agent = CodeAgent(
+    tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
+    name="Operations Officer",
+    description="Handles the practical side of the project"
+)
+red_agent = MultiStepAgent(
+    tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
+    name="Commander",
+    description="Articulates objectives, assigns side quests, and queries their subordinates",
+    managed_agents=[blue_agent, yellow_agent]
+)
 
 prompts = [
     "How can I prioritize my activities for the week in a balanced way?",
@@ -29,4 +46,26 @@ prompts = [
     "What steps can I take to nurture a healthy balance in my life?"
 ]
 
-agent.run(random.choice(prompts))
+def get_user_input():
+    questions = [
+        inquirer.List(
+            'prompt',
+            message="Choose a prompt to explore:",
+            choices=prompts,
+        ),
+    ]
+    answers = inquirer.prompt(questions)
+    return answers['prompt']
+
+def main():
+    while True:
+        user_prompt = get_user_input()
+        response = red_agent.run(user_prompt)
+        print("\nAgent's Response:")
+        print(response)
+        continue_prompt = input("\nWould you like to explore another prompt? (yes/no): ").strip().lower()
+        if continue_prompt != 'yes':
+            print("Goodbye!")
+            break
+
+main()
