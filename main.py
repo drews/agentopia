@@ -28,22 +28,22 @@ red_agent = CodeAgent(
 )
 
 prompts = [
-    "How can I prioritize my activities for the week in a balanced way?",
-    "What's a good approach to organizing my personal and community projects?",
-    "How can I align my daily activities with my personal growth goals?",
-    "Suggest a daily routine that helps me feel accomplished and relaxed.",
-    "What activities should I focus on to feel fulfilled by the end of the week?",
-    "How can I find harmony between my responsibilities and my personal time?",
-    "Guide me in setting meaningful and achievable goals for this month.",
-    "What are some strategies to make the most of my time each day?",
-    "Help me reflect on my progress in various areas of my life.",
-    "How can I ensure my activities reflect my personal values?",
-    "Suggest ways to improve my concentration and mindfulness.",
-    "What should I do to feel prepared and confident for upcoming events?",
-    "How can I support my community or group effectively?",
-    "What are the key areas I should focus on for personal growth this season?",
-    "Help me create a plan to pursue my passions and interests.",
-    "What steps can I take to nurture a healthy balance in my life?"
+    "How can I structure my learning path to master the smolagents library effectively?",
+    "What's the best approach to organizing and documenting my AI agent development projects?",
+    "How can I systematically test and improve my AI agents' performance?",
+    "Suggest a development routine that balances coding, research, and documentation.",
+    "What core AI agent features should I focus on implementing this week?",
+    "How can I effectively integrate the knowledge graph module with my existing agents?",
+    "Guide me in setting up a robust testing framework for my AI agents.",
+    "What are the best practices for implementing secure data storage in my agent system?",
+    "Help me evaluate the current capabilities and limitations of my AI agents.",
+    "How can I ensure my AI agents align with user privacy and security requirements?",
+    "Suggest ways to improve the interaction between my different agent modules.",
+    "What should I prioritize when implementing the Discord and Obsidian integrations?",
+    "How can I contribute effectively to the AI agent development community?",
+    "What are the key areas to focus on when dockerizing my AI agent system?",
+    "Help me create a plan to implement voice interaction capabilities.",
+    "What steps should I take to enhance my agents' natural language processing abilities?"
 ]
 
 def get_user_input():
