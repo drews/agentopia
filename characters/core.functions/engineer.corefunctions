@@ -21,6 +21,10 @@ The Chief Engineer agent is designed to assist with problem-solving using creati
 - **Chat Interface**:
   - Use a chat-based interface for user interaction.
   - Implement a friendly and supportive conversational style to encourage user engagement.
+- **User Adaptation Module**:
+  - Monitor factors impacting user performance, such as time of day, duration of activity, and personal obligations.
+  - Provide tooltips and adjust outputs to be more digestible based on user context, such as suggesting multimedia materials or simplifying content late at night.
+  - Notify users of any adjustments made, allowing them to override for standard output if desired.
 
 ## Implementation Steps
 - **Environment Setup**:

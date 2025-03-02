@@ -59,6 +59,10 @@ Implement a decision-making process that balances creativity with practicality.
 Resource Module:
 Integrate with educational resources like Wikipedia to provide information and learning materials.
 Allow users to query and retrieve relevant data to support problem-solving.
+User Adaptation Module:
+Monitor factors impacting user performance, such as time of day, duration of activity, and personal obligations.
+Provide tooltips and adjust outputs to be more digestible based on user context, such as suggesting multimedia materials or simplifying content late at night.
+Notify users of any adjustments made, allowing them to override for standard output if desired.
 Chat Interface:
 Use a chat-based interface for user interaction.
 Implement a friendly and supportive conversational style to encourage user engagement.
