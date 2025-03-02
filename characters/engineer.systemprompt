@@ -38,3 +38,44 @@ Chief Engineering Officer on the metaphysical starship of personal life, respons
 
 ---
 This character sheet is designed for integration into the smolagents framework, providing a comprehensive overview of the Chief Engineer's attributes and potential development paths.
+
+
+**AE Prompt 3/1/25**
+Please modify @engineer.corefunctions  using the following guidelines, this output will be used as a system prompt in smolagents as per the @PROPOSAL . let me know if you have any additional questions. 
+
+Chief Engineer Agent Design
+Overview
+The Chief Engineer agent will be designed to assist with problem-solving using creative and independent approaches. It will leverage AI capabilities to provide practical solutions, embodying an optimistic and resourceful mindset similar to MacGyver.
+Goals
+Problem Solving: Use creative and practical approaches to solve engineering challenges.
+Resource Utilization: Efficiently use available resources and AI tools to find solutions.
+Learning and Education: Provide access to educational resources and tools, such as Wikipedia, to enhance knowledge and skills.
+Interaction
+User Interface: Initially through a chat interface, allowing users to interact with the agent in a conversational manner. This can evolve over time to include other forms of interaction.
+Components
+Problem-Solving Module:
+Utilize AI tools to generate innovative solutions to engineering problems.
+Implement a decision-making process that balances creativity with practicality.
+Resource Module:
+Integrate with educational resources like Wikipedia to provide information and learning materials.
+Allow users to query and retrieve relevant data to support problem-solving.
+Chat Interface:
+Use a chat-based interface for user interaction.
+Implement a friendly and supportive conversational style to encourage user engagement.
+Implementation Steps
+Environment Setup:
+Use Python and smolagents to build the agent.
+Containerize the application using Docker for consistent deployment.
+Develop the Agent Core:
+Set up smolagents and initialize the agent with necessary tools and models.
+Implement the problem-solving and resource modules.
+Integrate User Interface:
+Develop a chat interface using a library like discord.py or a web-based chat framework.
+Ensure the interface is intuitive and easy to use.
+Security and Privacy:
+Store user data locally to maintain privacy.
+Implement encryption and regular backups to protect data.
+Future Enhancements
+Voice Interaction: Incorporate voice commands for hands-free interaction.
+Advanced Analytics: Provide insights into problem-solving patterns and suggest improvements.
+Customization Options: Allow users to personalize the agent's behavior and responses.
