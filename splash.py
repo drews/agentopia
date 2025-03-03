@@ -48,7 +48,6 @@ class BouncingPath:
     def is_finished(self):
         # This path never finishes
         return False
-
 def animated_splash(screen):
     """
     Show a splash screen with animated effects until a keypress or resize.
@@ -56,28 +55,25 @@ def animated_splash(screen):
     Args:
         screen: Screen object for rendering.
     """
-    effects = [
-        Stars(screen, (screen.width + screen.height) // 2),
-        Sprite(
-            screen,
-            renderer_dict={"default": FigletText("AGENTOPIA", font='big')},
-            path=BouncingPath(screen, screen.width // 2, screen.height // 2, 2, 2),
-            colour=7,
-            clear=True,
-            speed=2
-        ),
-        Print(
-            screen,
-            FigletText("WELCOME TO", font='small'),
-            screen.height // 2 - 12,
-            speed=1
-        ),
-        Print(
-            screen,
-            FigletText("THE FUTURE", font='small'),
-            screen.height // 2 + 4,
-            speed=1
-        )
-    ]
-    screen.play([Scene(effects, -1)], stop_on_resize=True)
-    screen.get_event()  # Wait for any keypress to dismiss the splash screen
+    from asciimatics.screen import Screen
+    from asciimatics.exceptions import ResizeScreenError
+
+    last_scene = None
+    while True:
+        def demo(screen, scene):
+            top_text = FigletText("WELCOME TO", font='small')
+            middle_text = FigletText("AGENTOPIA", font='big')
+
+            effects = [
+                Stars(screen, (screen.width + screen.height) // 2),
+                Print(screen, top_text, (screen.height - middle_text.max_height) // 2 - top_text.max_height, speed=1),
+                Print(screen, middle_text, (screen.height - middle_text.max_height) // 2, speed=1)
+            ]
+
+            screen.play([Scene(effects, -1)], stop_on_resize=True, start_scene=scene)
+
+        try:
+            Screen.wrapper(demo, arguments=[last_scene])
+            break
+        except ResizeScreenError as e:
+            last_scene = e.scene
