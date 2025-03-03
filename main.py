@@ -41,11 +41,16 @@ def get_user_task():
     return task
 
 def main():
-    Screen.wrapper(animated_splash)
+    try:
+           
+        Screen.wrapper(animated_splash)
 
-    user_task = get_user_task()
-    response = red_agent.run(user_task)
-    print("\nAgent's Response:")
-    print(response)
+        user_task = get_user_task()
+        response = red_agent.run(user_task)
+        print("\nAgent's Response:")
+        print(response)
+    except KeyboardInterrupt:
+        print("\nProgram interrupted by user. Exiting gracefully.")
+        sys.exit(0)
 
 main()
