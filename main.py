@@ -32,6 +32,7 @@ red_agent = MissionDrivenAgent(
 )
 
 prompts = [
+    "[Custom Query]",  # Special case that will be handled in get_user_input() function
     "How can I structure my learning path to master the smolagents library effectively?",
     "What's the best approach to organizing and documenting my AI agent development projects?",
     "How can I systematically test and improve my AI agents' performance?",
@@ -59,6 +60,13 @@ def get_user_input():
         ),
     ]
     answers = inquirer.prompt(questions)
+    
+    # Check if the user selected the "[Custom Query]" option
+    if answers['prompt'] == "[Custom Query]":
+        # Prompt the user to enter their custom query
+        custom_query = input("Enter your custom query: ").strip()
+        return custom_query
+    
     return answers['prompt']
 
 def main():
