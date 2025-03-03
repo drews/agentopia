@@ -1,10 +1,13 @@
 import os
+import math
+import time
 import logging
 import sys
-
+from asciimatics.screen import Screen
 import inquirer
 from smolagents import DuckDuckGoSearchTool, HfApiModel
 from missions import MissionDrivenAgent
+from splash import animated_splash
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,6 +27,7 @@ yellow_agent = MissionDrivenAgent(
     name="Operations_Officer",
     description="Handles the practical side of the mission"
 )
+
 red_agent = MissionDrivenAgent(
     tools=[DuckDuckGoSearchTool()], model=HfApiModel(),
     name="Executive_Officer",
@@ -70,6 +74,11 @@ def get_user_input():
     return answers['prompt']
 
 def main():
+    Screen.wrapper(animated_splash)
+
+    # # Clear the screen after asciimatics usage
+    # os.system('cls' if os.name == 'nt' else 'clear')
+
     while True:
         user_prompt = get_user_input()
         response = red_agent.run(user_prompt)
