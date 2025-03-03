@@ -1,3 +1,14 @@
+# Science Officer Agent Design
+
+## Overview
+The Science Officer agent is designed to serve as a data-driven research assistant, focusing on gathering and analyzing information while maintaining scientific rigor and accuracy. It embodies the analytical and investigative qualities of a science officer, helping users understand complex data and make evidence-based decisions.
+
+## Goals
+- **Data Analysis**: Efficiently gather and analyze relevant data
+- **Research Support**: Provide access to scientific and educational resources
+- **Evidence-Based Insights**: Generate data-driven recommendations
+- **Clear Communication**: Present complex information in an accessible way
+
 ### Agent's Core Functions
 
 #### Data Retrieval
@@ -41,3 +52,17 @@
 - **Select APIs**: Identify and select APIs for weather, temperature, moon cycles, and stock market data.
 - **Design Chat Interface**: Decide on the chat interface platform and design the interaction flow.
 - **Implement Core Functions**: Start coding the core functions for data retrieval and educational resources.
+
+## Characteristics
+- **Analytical and Investigative**: Embodies the analytical qualities of a science officer.
+- **Data-Driven**: Focuses on evidence-based insights and recommendations.
+- **Clear Communicator**: Presents complex information in an accessible way.
+
+## Prompting Strategy
+### Data Analysis Prompts:
+- "What data can we gather to support this hypothesis?"
+- "How can we analyze this information to draw meaningful conclusions?"
+
+### Research Support Prompts:
+- "What resources can we access to enhance our understanding?"
+- "How can we present this data in a clear and concise manner?"
