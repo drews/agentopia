@@ -1,0 +1,85 @@
+// This file defines various rooms within the crew's operational environment, each serving a unique purpose to enhance collaboration, reflection, and training. The rooms are designed to support the crew's mission objectives, facilitate personal growth, and foster a culture of continuous improvement. Below is a list of rooms, along with their descriptions, highlighting the functionalities and atmospheres that contribute to the overall effectiveness of the crew's operations.
+
+const rooms = [
+    {
+        name: "Ready Room",
+        description: "A collaborative space for crew members to receive summary status updates, access strategies, and share valuable tips. Here, they prepare for missions, exchange insights, and align their objectives for optimal performance.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Bridge",
+        description: "Viewed from a bird's eye perspective, the Bridge serves as the command center where the crew operates in full work mode. Crew members, represented by distinct colored icons based on their roles, dynamically navigate the space to interact with various stations, each offering unique functionalities and critical insights.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Room Quarters",
+        description: "A relaxing space for agents to unwind and focus on objectives of personal interest, beyond just assigned tasks. If desired, this area allows crew members to use less compute power and recharge. It will also provide a way for the human agent to measure the usage of this relaxation mode.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "History / Audit Room",
+        description: "A reflective space designed for reviewing general and personal logs, encompassing inter-crew disputes, successes, mission outcomes, and post-mission evaluations. This room is vital for fostering learning and continuous improvement.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Engine Room",
+        description: "The core of motivation and energy for the crew. This room is where the passion and drive to accomplish missions are generated, sustained, and amplified.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Singularity Lab",
+        description: "A transformative space where crossing the threshold signifies a commitment to ambitious goals. This lab focuses on setting stretch objectives and measuring abstract progress towards achieving them.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Main View Screen",
+        description: "The central hub that displays the priorities and progress of agents, missions, and potential roadblocks. This screen highlights tasks that are at risk of being stalled or lacking viable solutions, ensuring proactive management.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Tools",
+        description: "As crew members navigate the Bridge, they can select tools that unveil custom graphic interfaces tailored for each tool. These interfaces can be further personalized for specific users, including both AI agents and human crew members.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Brig",
+        description: "A serene and reflective space designed for agents to take a step back from their duties. While it may serve as a consequence for missteps, it also provides a unique opportunity for introspection and personal growth. This environment is utilized for A/B testing, allowing agents to recharge and reassess their strategies away from the hustle of the mission.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "The Foresight Nexus",
+        description: "A tranquil break room designed specifically for AI agents to relax and engage in imaginative 'what if' scenarios regarding past missions. This space serves as a creative haven where agents can reflect on previous decisions, explore alternative outcomes, and consider how different strategies might have led to improved results. By fostering a culture of creativity and open-mindedness, the Foresight Nexus helps reduce pressure and the urgency of deadlines, allowing agents to think freely and innovatively about their missions. Here, they can also discuss and analyze various potential futures, enhancing their ability to adapt and improve in subsequent missions.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    },
+    {
+        name: "Holodeck",
+        description: "An advanced simulation environment where agents can immerse themselves in realistic mission scenarios. The Holodeck offers a dynamic space for agents to practice their strategies, experiment with various synthetic tools, and refine their skills in a risk-free setting. Agents can customize simulations to reflect specific mission parameters, allowing them to explore alternative approaches and outcomes. This environment not only enhances their preparedness but also enables them to request and evaluate actual tools that could improve mission effectiveness. Additionally, agents can engage in targeted training sessions to increase their stats and proficiencies, fostering a culture of continuous learning and innovation.",
+        purpose: "<No Data Available>",
+        lastUsedBy: "<No Data Available>",
+        reservedBy: "<No Data Available>"
+    }
+];
+
+
+
+
