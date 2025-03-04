@@ -9,9 +9,7 @@ from splash import animated_splash
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-if "HF_TOKEN" not in os.environ:
-    print("Error: Set the HF_TOKEN environment variable to use the Hugging Face API.")
-    sys.exit(1)
+
 
 
 # Define the local model to avoid paywalls and "becoming the product".
