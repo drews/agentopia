@@ -2,18 +2,19 @@ import os
 import logging
 import sys
 from asciimatics.screen import Screen
-from smolagents import DuckDuckGoSearchTool, TransformersModel
+from smolagents import DuckDuckGoSearchTool, LiteLLMModel
 from missions import MissionDrivenAgent
 from splash import animated_splash
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 
 
 # Define the local model to avoid paywalls and "becoming the product".
-local_model = TransformersModel(model_id="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
+local_model = LiteLLMModel(model_id="ollama/deepseek-r1:latest",
+            api_base="http://localhost:11434",)
 
 blue_agent = MissionDrivenAgent(
     tools=[DuckDuckGoSearchTool()], model=local_model,
@@ -40,13 +41,16 @@ def get_user_task():
 
 def main():
     try:
-           
         Screen.wrapper(animated_splash)
 
         user_task = get_user_task()
         response = red_agent.run(user_task)
+        
+        # Format the response to show steps, thought process, and final answer
         print("\nAgent's Response:")
-        print(response)
+        print("Steps: ...")  # Placeholder for steps
+        print("Thought Process: ...")  # Placeholder for thought process
+        print("Final Answer:", response)  # Assuming response is the final answer
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting gracefully.")
         sys.exit(0)
