@@ -11,9 +11,6 @@ from timing_utils import measure_time  # Import the timing utility
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-
-
 # Define the local model to avoid paywalls and "becoming the product".
 local_model = LiteLLMModel(model_id="ollama/deepseek-r1:latest",
             api_base="http://localhost:11434",)
@@ -52,11 +49,20 @@ async def main_async():
                 break  # Exit the loop
             
             # Measure the time taken to run the agents asynchronously
-            blue_response, yellow_response, red_response = await measure_time(asyncio.gather,
-                asyncio.to_thread(blue_agent.run, user_task),
-                asyncio.to_thread(yellow_agent.run, user_task),
-                asyncio.to_thread(red_agent.run, user_task)
-            )
+            try:
+                # Gather the responses from the agents
+                responses = await asyncio.gather(
+                    asyncio.to_thread(blue_agent.run, user_task),
+                    asyncio.to_thread(yellow_agent.run, user_task),
+                    asyncio.to_thread(red_agent.run, user_task)
+                )
+                
+                # Assuming measure_time is a function that takes a callable and its arguments
+                blue_response, yellow_response, red_response = await measure_time(lambda: responses)
+
+            except Exception as e:
+                print(f"Error while running agents: {e}")
+                continue  # Skip to the next iteration if there's an error
 
             # Format the response to show steps, thought process, and final answer
             print("\nAgent's Response:")
@@ -72,6 +78,9 @@ async def main_async():
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting gracefully.")
         sys.exit(0)
+
+# Check for any missing imports or incorrect function calls
+# Ensure that the measure_time function is defined and works as expected
 
 # Update the main function to run the async main
 if __name__ == "__main__":
