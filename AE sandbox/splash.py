@@ -2,6 +2,8 @@ from asciimatics.effects import Stars, Print, Sprite
 from asciimatics.renderers import FigletText
 from asciimatics.scene import Scene
 from asciimatics.paths import Path
+import time
+from timing_utils import measure_time
 
 class BouncingPath:
     def __init__(self, screen, start_x=0, start_y=0, dx=1, dy=1):
@@ -48,6 +50,7 @@ class BouncingPath:
     def is_finished(self):
         # This path never finishes
         return False
+
 def animated_splash(screen):
     """
     Show a splash screen with animated effects until a keypress or resize.
@@ -77,3 +80,39 @@ def animated_splash(screen):
             break
         except ResizeScreenError as e:
             last_scene = e.scene
+
+async def main_async():
+    try:
+        Screen.wrapper(animated_splash)
+
+        while True:
+            user_task = await get_user_task_async()
+            if user_task.lower() == 'exit':
+                print("Exiting the program. Goodbye!")
+                break
+            
+            blue_response = await asyncio.to_thread(measure_time, blue_agent.run, user_task)
+            yellow_response = await asyncio.to_thread(measure_time, yellow_agent.run, user_task)
+            red_response = await asyncio.to_thread(measure_time, red_agent.run, user_task)
+
+            print("\nAgent's Response:")
+            print("Blue Agent Response:", blue_response)
+            print("Yellow Agent Response:", yellow_response)
+            print("Red Agent Response:", red_response)
+
+            another_query = input("Would you like to ask another query Y/N: ").strip().lower()
+            if another_query == 'n':
+                print("Exiting the program. Goodbye!")
+                break
+    except KeyboardInterrupt:
+        print("\nProgram interrupted by user. Exiting gracefully.")
+        sys.exit(0)
+# timing_utils.py
+import time
+
+def measure_time(func, *args, **kwargs):
+    start_time = time.time()
+    result = func(*args, **kwargs)
+    end_time = time.time()
+    print(f"Total time taken: {end_time - start_time:.2f} seconds")  # Print time taken
+    return result
