@@ -5,6 +5,7 @@ from asciimatics.screen import Screen
 from smolagents import DuckDuckGoSearchTool, LiteLLMModel
 from missions import MissionDrivenAgent
 from splash import animated_splash
+from timing_utils import measure_time  # Import the timing utility
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -49,7 +50,8 @@ def main():
                 print("Exiting the program. Goodbye!")
                 break  # Exit the loop
             
-            response = red_agent.run(user_task)
+            # Measure the time taken to run the red agent
+            response = measure_time(red_agent.run, user_task)
             
             # Format the response to show steps, thought process, and final answer
             print("\nAgent's Response:")

@@ -6,6 +6,7 @@ from asciimatics.screen import Screen
 from smolagents import DuckDuckGoSearchTool, LiteLLMModel
 from missions import MissionDrivenAgent
 from splash import animated_splash
+from timing_utils import measure_time  # Import the timing utility
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -50,10 +51,12 @@ async def main_async():
                 print("Exiting the program. Goodbye!")
                 break  # Exit the loop
             
-            # Run the agents asynchronously
-            blue_response = await asyncio.to_thread(blue_agent.run, user_task)
-            yellow_response = await asyncio.to_thread(yellow_agent.run, user_task)
-            red_response = await asyncio.to_thread(red_agent.run, user_task)
+            # Measure the time taken to run the agents asynchronously
+            blue_response, yellow_response, red_response = await measure_time(asyncio.gather,
+                asyncio.to_thread(blue_agent.run, user_task),
+                asyncio.to_thread(yellow_agent.run, user_task),
+                asyncio.to_thread(red_agent.run, user_task)
+            )
 
             # Format the response to show steps, thought process, and final answer
             print("\nAgent's Response:")
