@@ -1,3 +1,0 @@
-smolagents[transformers]
-inquirer
-asciimatics
