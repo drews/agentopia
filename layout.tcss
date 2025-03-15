@@ -1,0 +1,8 @@
+#top-pane {
+    height: 1fr;
+    border: round white;
+}
+
+#bottom-pane {
+    height: 1fr;
+}

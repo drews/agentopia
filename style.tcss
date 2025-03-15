@@ -1,0 +1,91 @@
+
+ContextPane {
+    height: 1fr;
+}
+
+DetailPane {
+    height: 3fr;
+}
+
+
+#bottom-panel {
+    height: 3fr;
+}
+
+Placeholder {
+    height: 1fr;
+    width: 1fr;
+    margin-bottom: 1;
+}
+
+Grid {
+    grid-size: 12;
+}
+
+.box {
+    height: 100%;
+    border: solid green;
+}
+
+
+
+.span1 {
+    column-span: 1;
+}
+
+.span2 {
+    column-span: 2;
+}
+
+.span3 {
+    column-span: 3;
+}
+
+.span4 {
+    column-span: 4;
+}
+
+.span5 {
+    column-span: 5;
+}
+
+.span6 {
+    column-span: 6;
+}
+
+.span7 {
+    column-span: 7;
+}
+
+.span8 {
+    column-span: 8;
+}
+
+.span9 {
+    column-span: 9;
+}
+
+.span10 {
+    column-span: 10;
+}
+
+.span11 {
+    column-span: 11;
+}
+
+.span12 {
+    column-span: 12;
+}
+
+Grid #sidebar {
+    column-span: 2;
+}
+
+Grid #main {
+    column-span: 10;
+}
+
+
+LoadingIndicator {
+    width: 100%
+}
