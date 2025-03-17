@@ -1,0 +1,109 @@
+Project Title
+Starship EF (Executive Function) Toolkit
+
+Project Summary
+A Star Trek–inspired, pixel-art framework that serves as an executive functioning personal toolkit. The experience uses layered metaphors—Space, Ship, Chambers, and Stations—to help users manage real-world tasks, commitments, and reflections with a sense of playful immersion.
+
+Key Objectives
+Executive Function Mapping
+
+Represent real-life commitments, goals, and tasks as interactive elements and “agents.”
+Provide structured ways to plan, prioritize, and reflect across multiple “zoom” levels.
+Modular Architecture
+
+Each zoom level (Space, Ship, Chambers, Stations) is a self-contained module.
+User data (agents, resources, missions) persists and updates across these modules.
+Engaging Visual & Interactive Elements
+
+Retro pixel-art aesthetic.
+Basic animations or transitions to keep the user engaged.
+Whimsical references to sci-fi and role-playing game tropes.
+Usability & Iterability
+
+Onboarding flow that helps first-time users understand how to map personal executive-function tasks into the starship metaphor.
+Scalable design to add or modify Chambers, Stations, or agent types.
+Detailed Components
+Start Screen
+
+Purpose: Serve as a playful welcome and orientation.
+Features:
+Pixel-art starfield animation or a simple ship-flyby to draw users in.
+On click or key press, transitions into the main UI.
+Optional quick tutorial or “log entry” explaining the starship metaphor.
+Environmental Views (Four Levels of Zoom)
+
+Space (Macro-Level)
+
+Analogy: Represents larger life commitments and influences (values, interests, missions).
+Behavior:
+Clickable celestial objects (planets, asteroids) symbolizing major areas of focus or big goals.
+Hover for short tooltips (e.g., “Core Value: Lifelong Learning”).
+Gateway to deeper zoom levels.
+Your Ship (Meso-Level)
+
+Analogy: The user’s main command center for navigating life.
+Behavior:
+Top-down or side-view pixel-art spaceship.
+Animated “agent” sprites (representing sub-tasks, personal personas, or events) traveling between rooms.
+Agents have priority levels or “missions,” possibly indicated by an icon or color tag.
+Ship Chambers (Functional Lenses)
+
+Analogy: Different perspectives or roles (e.g., Bridge for strategic thinking, Medbay for self-care, etc.).
+Behavior:
+Agents enter a Chamber to pick up resources or instructions.
+Chambers can be customized or “unlocked” as user explores different executive-function strategies.
+Example Chambers:
+Bridge: High-level planning (calendar, timeline).
+Ready Room: Personal reflection or journaling.
+Medbay: Well-being check-ins or stress-level monitoring.
+Conference Room: Collaborative or social goals (meeting logs, group tasks).
+Ship Stations (Micro-Level)
+
+Analogy: Direct tools or low-level tasks that support day-to-day functioning (e.g., to-do lists, timers, daily logs).
+Behavior:
+Interactive consoles for detail editing of tasks, deadlines, resources.
+Progress bars or status indicators for each station.
+Agents can “dock” here to perform micro-tasks (e.g., marking tasks complete).
+Detail Views
+
+Agent’s Character Sheet
+
+Layout:
+Left Pane: Pixel-art avatar + scrollable D&D-style attribute table (e.g., “Willpower,” “Focus,” “Time Budget”).
+Right Pane:
+Top: Agent journal (logs of what tasks or “quests” they’ve accomplished).
+Bottom: Tabbed interface for inventory (resources or notes) and skill sets.
+Navigation Planning
+
+Analogy: Plotting a starship course to reflect real-life scheduling or milestone planning.
+Behavior:
+Interactive map showing the user’s primary goals, with potential routes indicating order or priority.
+Agents or tasks can be dragged/dropped onto a route or timeline for scheduling.
+Artifact Inspection
+
+Purpose: Deep dives into specific commitments, mental models, or intangible “artifacts.”
+Behavior:
+Optional “mini-games” or puzzles that help externalize or break down large commitments.
+Provide reflective prompts or sub-tasks upon inspection (e.g., “Research needed,” “Awaiting feedback from mentor”).
+Technical & Development Notes
+Structure & Modularity
+
+Develop each zoom level as a separate module/class/component to facilitate future expansion.
+Use a central data store (e.g., Redux, Vuex, or React Context) for tracking agents, tasks, and resources across the entire starship metaphor.
+User Data & Persistence
+
+Plan a persistent storage layer (could be local storage, a small backend, or a cloud database) for saving user progress.
+Handle user authentication or guest mode if desired for a more minimal MVP.
+Iteration & Feedback
+
+Include basic analytics or logs so users can see how frequently they engage, which Chambers or Stations are used the most, etc.
+Build in a reflection prompt or daily summary to reinforce the executive functioning aspect.
+Look & Feel
+
+Emphasize minimal friction in UI: large clickable areas, clear tooltips, consistent color palette.
+Keep pixel-art assets optimized and modular to swap them easily in future updates.
+Next Steps
+
+Create wireframes or placeholder pixel-art assets for each major view.
+Implement a minimal clickable prototype to validate user flow.
+Gather feedback, refine the user onboarding experience, and expand detail views as needed.
