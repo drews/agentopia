@@ -35,9 +35,9 @@ To build the Agentopia project, ensure you have Python installed and follow thes
 
 ## Running the Agent
 
-To run the Agentopia agent, execute the following command:
+To run the Agentopia command-line tool, execute the following command:
     ```bash
-    python main.py
+    python cli/main.py
     ```
 
 ## Architecture

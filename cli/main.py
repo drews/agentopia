@@ -8,37 +8,42 @@ from splash import animated_splash
 from timing_utils import measure_time  # Import the timing utility
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define the local model to avoid paywalls and "becoming the product".
-local_model = LiteLLMModel(model_id="ollama/deepseek-r1:latest",
-            api_base="http://localhost:11434",)
+local_model = LiteLLMModel(
+    model_id="ollama/deepseek-r1:latest",
+    api_base="https://2f1f-174-109-66-163.ngrok-free.app",
+)
 
 blue_agent = MissionDrivenAgent(
-    tools=[DuckDuckGoSearchTool()], model=local_model,
+    tools=[DuckDuckGoSearchTool()],
+    model=local_model,
     name="Science_Officer",
-    description="Handles the theoretical side of the mission"
-)
+    description="Handles the theoretical side of the mission")
 
 yellow_agent = MissionDrivenAgent(
-    tools=[DuckDuckGoSearchTool()], model=local_model,
+    tools=[DuckDuckGoSearchTool()],
+    model=local_model,
     name="Operations_Officer",
-    description="Handles the practical side of the mission"
-)
+    description="Handles the practical side of the mission")
 
 red_agent = MissionDrivenAgent(
-    tools=[DuckDuckGoSearchTool()], model=local_model,
+    tools=[DuckDuckGoSearchTool()],
+    model=local_model,
     name="Executive_Officer",
-    description="Manages the missions. Maintains focus, articulates objectives, assigns side quests, and queries their subordinates",
-    managed_agents=[blue_agent, yellow_agent]
-)
+    description=
+    "Manages the missions. Maintains focus, articulates objectives, assigns side quests, and queries their subordinates",
+    managed_agents=[blue_agent, yellow_agent])
+
 
 def get_user_task():
-    task = input("Please enter the task you want the agents to handle (or type 'exit' to quit): ").strip()
+    task = input(
+        "Please enter the task you want the agents to handle (or type 'exit' to quit): "
+    ).strip()
     return task
+
 
 def main():
     try:
@@ -49,23 +54,26 @@ def main():
             if user_task.lower() == 'exit':  # Check if the user wants to exit
                 print("Exiting the program. Goodbye!")
                 break  # Exit the loop
-            
+
             # Measure the time taken to run the red agent
             response = measure_time(red_agent.run, user_task)
-            
+
             # Format the response to show steps, thought process, and final answer
             print("\nAgent's Response:")
             print("Steps: ...")  # Placeholder for steps
             print("Thought Process: ...")  # Placeholder for thought process
-            print("Final Answer:", response)  # Assuming response is the final answer
+            print("Final Answer:",
+                  response)  # Assuming response is the final answer
 
             # New prompt for asking another query
-            another_query = input("Would you like to ask another query Y/N: ").strip().lower()
+            another_query = input(
+                "Would you like to ask another query Y/N: ").strip().lower()
             if another_query == 'n':
                 print("Exiting the program. Goodbye!")
                 break  # Exit the loop
     except KeyboardInterrupt:
         print("\nProgram interrupted by user. Exiting gracefully.")
         sys.exit(0)
+
 
 main()
