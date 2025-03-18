@@ -2,3 +2,15 @@ modules = ["python-3.12", "docker"]
 
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Run Command Line Interface (CLI)"
+
+[[workflows.workflow]]
+name = "Run Command Line Interface (CLI)"
+mode = "sequential"
+author = 35379741
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python cli/main.py"

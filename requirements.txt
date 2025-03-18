@@ -1,3 +1,4 @@
 smolagents[litellm]
 inquirer
 asciimatics
+timing_utils

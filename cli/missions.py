@@ -1,4 +1,3 @@
-
 from smolagents import CodeAgent, AgentLogger, LogLevel
 
 class Mission:
