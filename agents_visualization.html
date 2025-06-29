@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentopia - Agent Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #canvas {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .agent {
+            position: absolute;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            transition: transform 0.1s ease-out;
+        }
+
+        .executive-officer {
+            background-color: #ff4444;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+        }
+
+        .science-officer {
+            background-color: #4444ff;
+            box-shadow: 0 0 20px rgba(68, 68, 255, 0.6);
+        }
+
+        .operations-officer {
+            background-color: #ffff44;
+            box-shadow: 0 0 20px rgba(255, 255, 68, 0.6);
+        }
+
+        .agent-label {
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas">
+        <div class="agent executive-officer" id="executive">
+            <div class="agent-label">Executive Officer</div>
+        </div>
+        <div class="agent science-officer" id="science">
+            <div class="agent-label">Science Officer</div>
+        </div>
+        <div class="agent operations-officer" id="operations">
+            <div class="agent-label">Operations Officer</div>
+        </div>
+    </div>
+
+    <script>
+        class Agent {
+            constructor(element) {
+                this.element = element;
+                this.x = Math.random() * (window.innerWidth - 30);
+                this.y = Math.random() * (window.innerHeight - 30);
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.speed = 0.5 + Math.random() * 1;
+                this.changeDirectionTimer = 0;
+                this.changeDirectionInterval = 2000 + Math.random() * 3000;
+            }
+
+            update() {
+                this.changeDirectionTimer += 16;
+                
+                if (this.changeDirectionTimer >= this.changeDirectionInterval) {
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.changeDirectionTimer = 0;
+                    this.changeDirectionInterval = 2000 + Math.random() * 3000;
+                }
+
+                this.x += this.vx * this.speed;
+                this.y += this.vy * this.speed;
+
+                if (this.x <= 0 || this.x >= window.innerWidth - 30) {
+                    this.vx *= -1;
+                    this.x = Math.max(0, Math.min(window.innerWidth - 30, this.x));
+                }
+                if (this.y <= 0 || this.y >= window.innerHeight - 30) {
+                    this.vy *= -1;
+                    this.y = Math.max(0, Math.min(window.innerHeight - 30, this.y));
+                }
+
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+        }
+
+        const agents = [
+            new Agent(document.getElementById('executive')),
+            new Agent(document.getElementById('science')),
+            new Agent(document.getElementById('operations'))
+        ];
+
+        function animate() {
+            agents.forEach(agent => agent.update());
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            agents.forEach(agent => {
+                agent.x = Math.min(agent.x, window.innerWidth - 30);
+                agent.y = Math.min(agent.y, window.innerHeight - 30);
+            });
+        });
+
+        animate();
+    </script>
+</body>
+</html>
