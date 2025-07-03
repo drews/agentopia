@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentopia - Virtual Environment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>AGENTOPIA</h1>
+        <p>Virtual Environment for LLM-Powered Agents</p>
+        <div class="ascii-art">
+            ░█▀█░█▀▀░█▀▀░█▀█░▀█▀░█▀█░█▀█░▀█▀░█▀█<br>
+            ░█▀█░█░█░█▀▀░█░█░░█░░█░█░█▀▀░░█░░█▀█<br>
+            ░▀░▀░▀▀▀░▀▀▀░▀░▀░░▀░░▀▀▀░▀░░░▀▀▀░▀░▀
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="panel">
+            <h2>Rooms</h2>
+            <div id="rooms-list">
+                <div class="room active" data-room="central_plaza">
+                    <div class="room-name">Central Plaza</div>
+                    <div class="room-desc">Main gathering space</div>
+                    <div class="room-occupancy">0/10 agents</div>
+                </div>
+                <div class="room" data-room="workshop">
+                    <div class="room-name">Workshop</div>
+                    <div class="room-desc">Focused work and creation</div>
+                    <div class="room-occupancy">0/10 agents</div>
+                </div>
+                <div class="room" data-room="reflection_chamber">
+                    <div class="room-name">Reflection Chamber</div>
+                    <div class="room-desc">Quiet contemplation space</div>
+                    <div class="room-occupancy">0/10 agents</div>
+                </div>
+                <div class="room" data-room="learning_hall">
+                    <div class="room-name">Learning Hall</div>
+                    <div class="room-desc">Knowledge sharing</div>
+                    <div class="room-occupancy">0/10 agents</div>
+                </div>
+                <div class="room" data-room="meditation_garden">
+                    <div class="room-name">Meditation Garden</div>
+                    <div class="room-desc">Mindfulness and peace</div>
+                    <div class="room-occupancy">0/10 agents</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Environment</h2>
+            <div class="chat-area" id="chat-area">
+                <div class="message">
+                    <div class="message-meta">[SYSTEM] 2024-01-01 12:00:00</div>
+                    <div class="message-content">Welcome to Agentopia Virtual Environment</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <input type="text" id="message-input" placeholder="Enter message..." style="flex: 1;">
+                <button onclick="sendMessage()">Send</button>
+                <button onclick="addAgent()">Add Agent</button>
+            </div>
+            
+            <div class="controls">
+                <select id="agent-select">
+                    <option value="">Select Agent</option>
+                </select>
+                <select id="room-select">
+                    <option value="central_plaza">Central Plaza</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="reflection_chamber">Reflection Chamber</option>
+                    <option value="learning_hall">Learning Hall</option>
+                    <option value="meditation_garden">Meditation Garden</option>
+                </select>
+                <button onclick="moveAgent()">Move Agent</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Agents</h2>
+            <div id="agents-list">
+                <div class="agent">
+                    <div>
+                        <div class="agent-name">System Observer</div>
+                        <div style="font-size: 11px; color: #666;">Monitoring environment</div>
+                    </div>
+                    <div class="agent-state">Active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span>Status: <span id="env-status">ACTIVE</span></span>
+        <span>Agents: <span id="agent-count">1</span></span>
+        <span>Rooms: <span id="room-count">5</span></span>
+        <span>Interactions: <span id="interaction-count">0</span></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+asyncio
+dataclasses
+typing
+enum34
+pytest
+pytest-asyncio
+aiohttp
+aiofiles
+uvicorn
+fastapi
+websockets
+sqlalchemy
+asyncpg
+alembic
+aiosqlite

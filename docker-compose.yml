@@ -1,0 +1,63 @@
+services:
+  agentopia:
+    build: .
+    container_name: agentopia-app
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://agentopia:agentopia_dev@postgres:5432/agentopia
+    volumes:
+      # Mount source code for development
+      - .:/app
+      # Preserve Python cache
+      - agentopia_cache:/app/__pycache__
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Future: Redis for session management
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: agentopia-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+
+  # PostgreSQL for persistent data
+  postgres:
+    image: postgres:15-alpine
+    container_name: agentopia-db
+    environment:
+      POSTGRES_DB: agentopia
+      POSTGRES_USER: agentopia
+      POSTGRES_PASSWORD: agentopia_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentopia -d agentopia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  agentopia_cache:
+  # redis_data:
+  postgres_data:
+
+networks:
+  default:
+    name: agentopia-network
