@@ -73,7 +73,7 @@ class Interaction(Base):
     room_id = Column(String, ForeignKey("rooms.id"), nullable=False)
     content = Column(Text, nullable=False)
     interaction_type = Column(String, default="general")
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     timestamp = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -84,7 +84,7 @@ class DatabaseManager:
     def __init__(self, database_url: str = None):
         self.database_url = database_url or os.getenv(
             "DATABASE_URL", 
-            "postgresql+asyncpg://agentopia:agentopia_dev@localhost:5432/agentopia"
+            "sqlite+aiosqlite:///agentopia.db"
         )
         self.engine = None
         self.async_session = None
