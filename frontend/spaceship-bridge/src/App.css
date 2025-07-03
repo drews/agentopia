@@ -1,0 +1,341 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #0a0a0a;
+  color: #00ff00;
+  overflow: hidden;
+}
+
+.App {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+/* Bridge Header */
+.bridge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 255, 0, 0.1);
+  border-bottom: 2px solid #00ff00;
+  box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3);
+}
+
+.bridge-header h1 {
+  font-size: 1.5rem;
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00;
+  letter-spacing: 2px;
+}
+
+.status-indicators {
+  display: flex;
+  gap: 1rem;
+}
+
+.status, .connection {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status.operational {
+  color: #00ff00;
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.connection.connected {
+  color: #00ff00;
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.connection.disconnected {
+  color: #ff4444;
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Main Bridge Layout */
+.bridge-main {
+  flex: 1;
+  display: flex;
+  padding: 1rem;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+/* Bridge Grid */
+.bridge-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-width), 1fr);
+  grid-template-rows: repeat(var(--grid-height), 1fr);
+  gap: 1px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 2px solid rgba(0, 255, 0, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem;
+  position: relative;
+  min-height: 0;
+}
+
+/* Stations */
+.station {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.station:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.station-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.station-name {
+  font-size: 0.6rem;
+  font-weight: bold;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Agents */
+.agent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: agent-pulse 2s infinite;
+}
+
+.agent:hover {
+  transform: scale(1.2);
+}
+
+.agent-avatar {
+  font-size: 1.8rem;
+  margin-bottom: 0.125rem;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+
+.agent-name {
+  font-size: 0.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+}
+
+/* Agent Status Styles */
+.agent.active {
+  animation: agent-pulse 1.5s infinite;
+}
+
+.agent.thinking {
+  animation: agent-thinking 2s infinite;
+}
+
+.agent.working {
+  animation: agent-working 1s infinite;
+}
+
+.agent.moving {
+  animation: agent-moving 0.5s infinite;
+}
+
+/* Sidebar */
+.bridge-sidebar {
+  width: 300px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 2px solid rgba(0, 255, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.panel {
+  margin-bottom: 1.5rem;
+}
+
+.panel h3 {
+  color: #00ff00;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  padding-bottom: 0.25rem;
+}
+
+.crew-item, .system-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.crew-item:hover, .system-item:hover {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: rgba(0, 255, 0, 0.4);
+}
+
+/* Status indicators in sidebar */
+.crew-item .status, .system-item .status {
+  font-size: 0.6rem;
+  padding: 0.125rem 0.375rem;
+}
+
+.status.active {
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.2);
+}
+
+.status.thinking {
+  color: #ffaa00;
+  background: rgba(255, 170, 0, 0.2);
+}
+
+.status.working {
+  color: #0088ff;
+  background: rgba(0, 136, 255, 0.2);
+}
+
+.status.operational {
+  color: #00ff00;
+  background: rgba(0, 255, 0, 0.2);
+}
+
+/* Loading state */
+.App-header {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #00ff00;
+}
+
+.App-header h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 20px #00ff00;
+  animation: loading-pulse 2s infinite;
+}
+
+/* Animations */
+@keyframes agent-pulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes agent-thinking {
+  0%, 100% { 
+    opacity: 1;
+  }
+  50% { 
+    opacity: 0.6;
+  }
+}
+
+@keyframes agent-working {
+  0%, 100% { 
+    transform: rotate(0deg);
+  }
+  25% { 
+    transform: rotate(-2deg);
+  }
+  75% { 
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes agent-moving {
+  0%, 100% { 
+    transform: translateX(0);
+  }
+  50% { 
+    transform: translateX(2px);
+  }
+}
+
+@keyframes loading-pulse {
+  0%, 100% { 
+    opacity: 1;
+    text-shadow: 0 0 20px #00ff00;
+  }
+  50% { 
+    opacity: 0.7;
+    text-shadow: 0 0 30px #00ff00;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .bridge-sidebar {
+    width: 250px;
+  }
+  
+  .station-name, .agent-name {
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .bridge-main {
+    flex-direction: column;
+  }
+  
+  .bridge-sidebar {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .bridge-grid {
+    min-height: 400px;
+  }
+}
