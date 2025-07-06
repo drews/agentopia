@@ -3,3 +3,13 @@
 **/.venv/
 *.db
 node_modules/
+
+# Test reports and artifacts
+playwright-report/
+test-results/
+
+# MCP context database
+.context.db
+
+# Claude configuration (contains sensitive keys)
+.claude/
