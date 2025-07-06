@@ -28,6 +28,8 @@ body {
   background: rgba(0, 255, 0, 0.1);
   border-bottom: 2px solid #00ff00;
   box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .bridge-header h1 {
@@ -40,6 +42,73 @@ body {
 .status-indicators {
   display: flex;
   gap: 1rem;
+  align-items: center;
+}
+
+.debug-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.debug-toggle {
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 0, 0.2);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.debug-toggle:hover {
+  background: rgba(0, 255, 0, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.debug-toggle.active {
+  background: rgba(255, 255, 0, 0.3);
+  border-color: #ffff00;
+  color: #ffff00;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00ff00;
+  font-size: 0.8rem;
+}
+
+.speed-control input[type="range"] {
+  width: 100px;
+  height: 4px;
+  background: rgba(0, 255, 0, 0.3);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.speed-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #00ff00;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.agent-count {
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 255, 0, 0.2);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #00ff00;
 }
 
 .status, .connection {
@@ -311,6 +380,70 @@ body {
   50% { 
     opacity: 0.7;
     text-shadow: 0 0 30px #00ff00;
+  }
+}
+
+/* Debug Mode Styles */
+.agent.debug {
+  position: relative;
+  border: 1px solid #ffff00;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+}
+
+.debug-info {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.debug-tooltip {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #ffff00;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-size: 0.6rem;
+  color: #ffff00;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+  text-align: left;
+}
+
+.debug-tooltip div {
+  margin: 0.1rem 0;
+}
+
+.agent-trail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.trail-dot {
+  width: 4px;
+  height: 4px;
+  background: rgba(0, 255, 255, 0.8);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: trail-fade 3s ease-out forwards;
+}
+
+@keyframes trail-fade {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
   }
 }
 

@@ -43,6 +43,9 @@ function App() {
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  const [debugMode, setDebugMode] = useState(false);
+  const [simulationSpeed, setSimulationSpeed] = useState(1);
+  const [agentTrails, setAgentTrails] = useState<{[key: string]: Position[]}>({});
 
   useEffect(() => {
     // Fetch initial bridge state
@@ -65,6 +68,31 @@ function App() {
       
       if (message.type === 'initial_state') {
         setBridgeState(message.data);
+      } else if (message.type === 'bridge_update') {
+        setBridgeState(prev => {
+          if (!prev) return prev;
+          
+          // Update agent trails when positions change
+          const updatedAgents = message.data.agents || prev.agents;
+          const newTrails = { ...agentTrails };
+          
+          updatedAgents.forEach((agent: Agent) => {
+            const prevAgent = prev.agents.find(a => a.id === agent.id);
+            if (prevAgent && (prevAgent.position.x !== agent.position.x || prevAgent.position.y !== agent.position.y)) {
+              // Add previous position to trail
+              if (!newTrails[agent.id]) newTrails[agent.id] = [];
+              newTrails[agent.id].push(prevAgent.position);
+              
+              // Limit trail length
+              if (newTrails[agent.id].length > 10) {
+                newTrails[agent.id].shift();
+              }
+            }
+          });
+          
+          setAgentTrails(newTrails);
+          return { ...prev, ...message.data };
+        });
       }
     };
     
@@ -105,6 +133,28 @@ function App() {
           <span className={`connection ${connectionStatus.toLowerCase()}`}>
             WS: {connectionStatus}
           </span>
+          <span className="agent-count">
+            Agents: {bridgeState.agents.length}
+          </span>
+        </div>
+        <div className="debug-controls">
+          <button 
+            className={`debug-toggle ${debugMode ? 'active' : ''}`}
+            onClick={() => setDebugMode(!debugMode)}
+          >
+            🔍 Debug {debugMode ? 'ON' : 'OFF'}
+          </button>
+          <div className="speed-control">
+            <label>Speed: {simulationSpeed}x</label>
+            <input 
+              type="range" 
+              min="0.1" 
+              max="3" 
+              step="0.1"
+              value={simulationSpeed}
+              onChange={(e) => setSimulationSpeed(parseFloat(e.target.value))}
+            />
+          </div>
         </div>
       </header>
       
@@ -135,19 +185,46 @@ function App() {
             </div>
           ))}
           
+          {/* Render agent trails */}
+          {debugMode && Object.entries(agentTrails).map(([agentId, trail]) => (
+            <div key={`trail-${agentId}`} className="agent-trail">
+              {trail.map((pos, index) => (
+                <div
+                  key={index}
+                  className="trail-dot"
+                  style={{
+                    gridColumn: pos.x + 1,
+                    gridRow: pos.y + 1,
+                    opacity: (index + 1) / trail.length * 0.3,
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+          
           {/* Render agents */}
           {bridgeState.agents.map(agent => (
             <div
               key={agent.id}
-              className={`agent ${agent.status}`}
+              className={`agent ${agent.status} ${debugMode ? 'debug' : ''}`}
               style={{
                 gridColumn: agent.position.x + 1,
                 gridRow: agent.position.y + 1,
+                animationDuration: `${2 / simulationSpeed}s`,
               }}
               title={`${agent.name} - ${agent.status}`}
             >
               <span className="agent-avatar">{agent.avatar}</span>
               <span className="agent-name">{agent.name}</span>
+              {debugMode && (
+                <div className="debug-info">
+                  <div className="debug-tooltip">
+                    <div>ID: {agent.id}</div>
+                    <div>Pos: ({agent.position.x}, {agent.position.y})</div>
+                    <div>Status: {agent.status}</div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
