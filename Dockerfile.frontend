@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY frontend/spaceship-bridge/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY frontend/spaceship-bridge/ ./
+
+# Expose port
+EXPOSE 3000
+
+# Start development server with hot reload
+CMD ["npm", "start"]

@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from database import db
 from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
+from services.llm_client import AgentLLMService
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +27,14 @@ class AgentManager:
         self.agent_instances = {}  # Will store references to actual agent instances
         self.running = False
         self.update_interval = 2.0  # Update every 2 seconds
+        self.llm_service = AgentLLMService()  # Add LLM service
         
     async def initialize(self):
         """Initialize the agent manager"""
         try:
+            # Initialize LLM service
+            await self.llm_service.initialize()
+            
             # Try to import and connect to existing agent system
             await self._connect_to_existing_agents()
             logger.info("AgentManager initialized")
@@ -179,23 +184,41 @@ class AgentManager:
         """Send a mission/task to a specific agent"""
         try:
             # Update agent status to show they received a mission
-            await self.spaceship_service.update_agent_status(agent_id, "working", mission)
+            await self.spaceship_service.update_agent_status(agent_id, "thinking", mission)
             
-            # In a real integration, this would send the mission to the actual agent
             logger.info(f"Mission sent to agent {agent_id}: {mission}")
             
-            # Broadcast the update
-            agent = await db.get_agent(agent_id)
-            if agent:
-                await self.websocket_manager.broadcast_agent_update(agent)
+            # Broadcast that agent is thinking
+            await self.llm_service.broadcast_agent_thinking(agent_id, self.websocket_manager)
+            
+            # Get LLM response
+            response_data = await self.llm_service.get_agent_response(agent_id, mission)
+            
+            if response_data["status"] == "success":
+                # Update agent status to active
+                await self.spaceship_service.update_agent_status(agent_id, "active", response_data["response"])
+                
+                # Broadcast the agent's response
+                await self.llm_service.broadcast_agent_response(agent_id, response_data["response"], self.websocket_manager)
                 
                 # Also send a chat message
                 await self.websocket_manager.broadcast_chat_message({
-                    "from": "bridge",
-                    "to": agent_id,
-                    "message": f"New mission assigned: {mission}",
+                    "from": agent_id,
+                    "to": "bridge",
+                    "message": response_data["response"],
                     "timestamp": datetime.now().isoformat()
                 })
+                
+                logger.info(f"Agent {agent_id} responded: {response_data['response'][:50]}...")
+            else:
+                # Handle error
+                await self.spaceship_service.update_agent_status(agent_id, "idle", "Error processing mission")
+                logger.error(f"Agent {agent_id} failed to process mission: {response_data.get('message', 'Unknown error')}")
+            
+            # Broadcast agent update
+            agent = await db.get_agent(agent_id)
+            if agent:
+                await self.websocket_manager.broadcast_agent_update(agent)
             
             return True
             

@@ -93,6 +93,20 @@ async def assign_mission(agent_id: str, mission_data: dict):
     
     return {"status": "success", "message": f"Mission assigned to {agent_id}"}
 
+@app.post("/api/agents/{agent_id}/chat")
+async def chat_with_agent(agent_id: str, chat_data: dict):
+    """Chat with a specific agent"""
+    message = chat_data.get("message", "")
+    if not message:
+        raise HTTPException(status_code=400, detail="Message text required")
+    
+    # This is essentially the same as sending a mission, but with different semantics
+    success = await agent_manager.send_mission_to_agent(agent_id, message)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send message to agent")
+    
+    return {"status": "success", "message": f"Message sent to {agent_id}"}
+
 @app.post("/api/agents/{agent_id}/move")
 async def move_agent(agent_id: str, position_data: dict):
     """Move an agent to a new position"""
@@ -121,6 +135,28 @@ async def emergency_stop():
     """Emergency stop all agents"""
     await agent_manager.emergency_all_stop()
     return {"status": "success", "message": "Emergency stop activated"}
+
+@app.post("/api/config/reload")
+async def reload_config():
+    """Reload agent configuration from files"""
+    try:
+        # Reload agent manager's LLM service config
+        await agent_manager.llm_service.initialize()
+        return {"status": "success", "message": "Configuration reloaded successfully"}
+    except Exception as e:
+        logger.error(f"Error reloading config: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to reload config: {str(e)}")
+
+@app.get("/api/config/agents")
+async def get_agent_configs():
+    """Get current agent configurations"""
+    try:
+        from services.config_service import config_service
+        configs = config_service.get_all_agent_configs()
+        return {"agents": configs}
+    except Exception as e:
+        logger.error(f"Error getting agent configs: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get configs: {str(e)}")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

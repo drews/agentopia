@@ -1,3 +1,14 @@
+# Legacy agent dependencies
 smolagents[transformers]
 inquirer
 asciimatics
+
+# Backend API dependencies  
+fastapi==0.115.12
+uvicorn[standard]==0.32.1
+websockets==14.1
+python-multipart==0.0.19
+aiosqlite==0.20.0
+
+# LLM integration
+openai

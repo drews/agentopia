@@ -46,6 +46,9 @@ function App() {
   const [debugMode, setDebugMode] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
   const [agentTrails, setAgentTrails] = useState<{[key: string]: Position[]}>({});
+  const [chatMessages, setChatMessages] = useState<Array<{from: string, message: string, timestamp: string}>>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState<string>('');
 
   useEffect(() => {
     // Fetch initial bridge state
@@ -68,6 +71,16 @@ function App() {
       
       if (message.type === 'initial_state') {
         setBridgeState(message.data);
+      } else if (message.type === 'chat_message') {
+        // Handle chat messages
+        setChatMessages(prev => [...prev, message.data]);
+      } else if (message.type === 'agent_response') {
+        // Handle agent responses
+        setChatMessages(prev => [...prev, {
+          from: message.data.agent_id,
+          message: message.data.response,
+          timestamp: message.data.timestamp
+        }]);
       } else if (message.type === 'bridge_update') {
         setBridgeState(prev => {
           if (!prev) return prev;
@@ -110,6 +123,40 @@ function App() {
       ws.close();
     };
   }, []);
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || !selectedAgent) return;
+    
+    try {
+      const response = await fetch(`http://localhost:8000/api/agents/${selectedAgent}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: chatInput
+        })
+      });
+      
+      if (response.ok) {
+        // Add user message to chat
+        setChatMessages(prev => [...prev, {
+          from: 'Captain',
+          message: chatInput,
+          timestamp: new Date().toISOString()
+        }]);
+        setChatInput('');
+      }
+    } catch (error) {
+      console.error('Error sending chat message:', error);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  };
 
   if (!bridgeState) {
     return (
