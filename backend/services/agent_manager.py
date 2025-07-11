@@ -11,7 +11,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from database import db
 from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
-from services.llm_client import AgentLLMService
+from services.llm_service import LLMService
+from backend.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +28,12 @@ class AgentManager:
         self.agent_instances = {}  # Will store references to actual agent instances
         self.running = False
         self.update_interval = 2.0  # Update every 2 seconds
-        self.llm_service = AgentLLMService()  # Add LLM service
+        self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
         
     async def initialize(self):
         """Initialize the agent manager"""
         try:
-            # Initialize LLM service
-            await self.llm_service.initialize()
+            # LLM service is ready to use (no async initialization needed with LangChain)
             
             # Try to import and connect to existing agent system
             await self._connect_to_existing_agents()
@@ -188,32 +188,36 @@ class AgentManager:
             
             logger.info(f"Mission sent to agent {agent_id}: {mission}")
             
-            # Broadcast that agent is thinking
-            await self.llm_service.broadcast_agent_thinking(agent_id, self.websocket_manager)
+            # Get agent info for personality
+            agent = await db.get_agent(agent_id)
+            agent_name = agent.get("name", agent_id) if agent else agent_id
             
-            # Get LLM response
-            response_data = await self.llm_service.get_agent_response(agent_id, mission)
+            # Create system prompt based on agent role
+            system_prompt = f"You are {agent_name}, an AI agent on a starship bridge. Respond professionally and helpfully to missions and requests."
             
-            if response_data["status"] == "success":
+            # Get LLM response using LangChain
+            response = await self.llm_service.generate_response(
+                prompt=mission,
+                system_prompt=system_prompt
+            )
+            
+            if response and not response.startswith("I apologize"):
                 # Update agent status to active
-                await self.spaceship_service.update_agent_status(agent_id, "active", response_data["response"])
-                
-                # Broadcast the agent's response
-                await self.llm_service.broadcast_agent_response(agent_id, response_data["response"], self.websocket_manager)
+                await self.spaceship_service.update_agent_status(agent_id, "active", response)
                 
                 # Also send a chat message
                 await self.websocket_manager.broadcast_chat_message({
                     "from": agent_id,
                     "to": "bridge",
-                    "message": response_data["response"],
+                    "message": response,
                     "timestamp": datetime.now().isoformat()
                 })
                 
-                logger.info(f"Agent {agent_id} responded: {response_data['response'][:50]}...")
+                logger.info(f"Agent {agent_id} responded: {response[:50]}...")
             else:
                 # Handle error
                 await self.spaceship_service.update_agent_status(agent_id, "idle", "Error processing mission")
-                logger.error(f"Agent {agent_id} failed to process mission: {response_data.get('message', 'Unknown error')}")
+                logger.error(f"Agent {agent_id} failed to process mission: {response}")
             
             # Broadcast agent update
             agent = await db.get_agent(agent_id)

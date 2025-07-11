@@ -12,5 +12,13 @@ aiosqlite==0.20.0
 pydantic
 pydantic-settings
 
-# LLM integration
-openai
+# LLM integration via LangChain
+langchain
+langchain-openai
+langchain-anthropic
+langchain-ollama
+langchain-community
+
+# Testing dependencies
+pytest
+pytest-asyncio

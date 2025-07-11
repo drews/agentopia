@@ -35,6 +35,20 @@ class Settings(BaseSettings):
     
     # LLM Configuration
     openai_api_key: Optional[str] = Field(None, env="OPENAI_API_KEY")
+    anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
+    
+    # Default LLM Provider Settings
+    default_llm_provider: str = Field("mock", env="DEFAULT_LLM_PROVIDER")
+    default_llm_model: str = Field("gpt-3.5-turbo", env="DEFAULT_LLM_MODEL")
+    default_llm_temperature: float = Field(0.7, env="DEFAULT_LLM_TEMPERATURE")
+    default_llm_max_tokens: int = Field(150, env="DEFAULT_LLM_MAX_TOKENS")
+    
+    # Ollama Configuration
+    ollama_base_url: str = Field("http://localhost:11434", env="OLLAMA_BASE_URL")
+    ollama_model: str = Field("llama2", env="OLLAMA_MODEL")
+    ollama_timeout: float = Field(30.0, env="OLLAMA_TIMEOUT")
+    
+    # Legacy compatibility (will be deprecated)
     llm_model: str = Field("gpt-3.5-turbo", env="LLM_MODEL")
     llm_max_tokens: int = Field(150, env="LLM_MAX_TOKENS")
     llm_temperature: float = Field(0.7, env="LLM_TEMPERATURE")
@@ -82,6 +96,46 @@ class Settings(BaseSettings):
         if not path.exists():
             logger.warning(f"Agent config file not found: {path}")
         return path
+    
+    @field_validator("default_llm_provider")
+    @classmethod
+    def validate_llm_provider(cls, v):
+        """Validate LLM provider name"""
+        valid_providers = ["mock", "openai", "anthropic", "ollama"]
+        if v.lower() not in valid_providers:
+            raise ValueError(f"LLM provider must be one of: {valid_providers}")
+        return v.lower()
+    
+    @field_validator("default_llm_temperature")
+    @classmethod
+    def validate_temperature(cls, v):
+        """Validate temperature is between 0 and 2"""
+        if not 0 <= v <= 2:
+            raise ValueError("Temperature must be between 0 and 2")
+        return v
+    
+    def get_llm_config(self) -> dict:
+        """Get LLM configuration dictionary for provider factory."""
+        config = {
+            "provider": self.default_llm_provider,
+            "model": self.default_llm_model,
+            "temperature": self.default_llm_temperature,
+            "max_tokens": self.default_llm_max_tokens,
+        }
+        
+        # Add provider-specific configurations
+        if self.default_llm_provider == "openai" and self.openai_api_key:
+            config["api_key"] = self.openai_api_key
+        elif self.default_llm_provider == "anthropic" and self.anthropic_api_key:
+            config["api_key"] = self.anthropic_api_key
+        elif self.default_llm_provider == "ollama":
+            config.update({
+                "base_url": self.ollama_base_url,
+                "model": self.ollama_model,
+                "timeout": self.ollama_timeout
+            })
+        
+        return config
     
     class Config:
         env_file = ".env"
