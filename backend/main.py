@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
@@ -7,54 +8,105 @@ import asyncio
 from typing import Dict, List, Optional
 import logging
 
+from core.config import get_settings, configure_logging
+from core.exceptions import (
+    AgentopiaException, AgentNotFoundException, ConfigurationError,
+    agentopia_exception_handler, general_exception_handler, http_exception_handler
+)
+from core.schemas import (
+    HealthResponse, BridgeState, ChatRequest, ChatResponse, 
+    MissionRequest, MoveRequest, SuccessResponse, ConfigurationResponse
+)
 from services import WebSocketManager, SpaceshipService, AgentManager
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get settings and configure logging
+settings = get_settings()
+configure_logging(settings)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AI Spaceship Bridge", version="1.0.0")
+# Global service instances - will be initialized in lifespan
+websocket_manager: WebSocketManager
+spaceship_service: SpaceshipService  
+agent_manager: AgentManager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan - handles startup and shutdown"""
+    # Startup
+    global websocket_manager, spaceship_service, agent_manager
+    
+    logger.info("Initializing AI Spaceship Bridge services...")
+    
+    try:
+        # Initialize services
+        websocket_manager = WebSocketManager()
+        spaceship_service = SpaceshipService()
+        agent_manager = AgentManager(spaceship_service, websocket_manager)
+        
+        await spaceship_service.initialize()
+        await agent_manager.initialize()
+        await agent_manager.start_monitoring()
+        
+        logger.info("AI Spaceship Bridge started successfully")
+        
+        yield  # Application runs here
+        
+    except Exception as e:
+        logger.error(f"Failed to initialize services: {e}")
+        raise
+    finally:
+        # Shutdown
+        logger.info("Shutting down AI Spaceship Bridge...")
+        try:
+            await agent_manager.stop_monitoring()
+            logger.info("AI Spaceship Bridge shut down successfully")
+        except Exception as e:
+            logger.error(f"Error during shutdown: {e}")
+
+
+app = FastAPI(
+    title=settings.app_name, 
+    version=settings.app_version,
+    description="AI-powered executive functioning tool with spaceship bridge interface",
+    debug=settings.debug,
+    lifespan=lifespan
+)
+
+# Add exception handlers
+app.add_exception_handler(AgentopiaException, agentopia_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 # Add CORS middleware for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React dev servers
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize services
-websocket_manager = WebSocketManager()
-spaceship_service = SpaceshipService()
-agent_manager = AgentManager(spaceship_service, websocket_manager)
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup"""
-    await spaceship_service.initialize()
-    await agent_manager.initialize()
-    await agent_manager.start_monitoring()
-    logger.info("AI Spaceship Bridge started successfully")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    await agent_manager.stop_monitoring()
-    logger.info("AI Spaceship Bridge shut down")
-
 @app.get("/")
 async def get():
     return {"message": "AI Spaceship Bridge API", "status": "operational"}
 
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "connections": websocket_manager.get_connection_count(),
-        "bridge_status": "operational"
-    }
+@app.get("/health", response_model=HealthResponse)
+async def health_check() -> HealthResponse:
+    """Health check endpoint with proper response validation"""
+    try:
+        connection_count = websocket_manager.get_connection_count()
+        return HealthResponse(
+            status="healthy",
+            connections=connection_count,
+            bridge_status="operational"
+        )
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Service temporarily unavailable"
+        )
 
 @app.get("/api/bridge/state")
 async def get_bridge_state():
@@ -80,49 +132,94 @@ async def get_agent(agent_id: str):
         raise HTTPException(status_code=404, detail="Agent not found")
     return report
 
-@app.post("/api/agents/{agent_id}/mission")
-async def assign_mission(agent_id: str, mission_data: dict):
-    """Assign a mission to an agent"""
-    mission = mission_data.get("mission", "")
-    if not mission:
-        raise HTTPException(status_code=400, detail="Mission text required")
-    
-    success = await agent_manager.send_mission_to_agent(agent_id, mission)
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to assign mission")
-    
-    return {"status": "success", "message": f"Mission assigned to {agent_id}"}
-
-@app.post("/api/agents/{agent_id}/chat")
-async def chat_with_agent(agent_id: str, chat_data: dict):
-    """Chat with a specific agent"""
-    message = chat_data.get("message", "")
-    if not message:
-        raise HTTPException(status_code=400, detail="Message text required")
-    
-    # This is essentially the same as sending a mission, but with different semantics
-    success = await agent_manager.send_mission_to_agent(agent_id, message)
-    if not success:
-        raise HTTPException(status_code=500, detail="Failed to send message to agent")
-    
-    return {"status": "success", "message": f"Message sent to {agent_id}"}
-
-@app.post("/api/agents/{agent_id}/move")
-async def move_agent(agent_id: str, position_data: dict):
-    """Move an agent to a new position"""
+@app.post("/api/agents/{agent_id}/mission", response_model=SuccessResponse)
+async def assign_mission(agent_id: str, mission_data: MissionRequest) -> SuccessResponse:
+    """Assign a mission to an agent with proper validation"""
     try:
-        x = position_data["x"]
-        y = position_data["y"]
-        from models.spaceship import Position
-        position = Position(x=x, y=y)
+        # Validate agent exists
+        agent = await spaceship_service.get_agent(agent_id)
+        if not agent:
+            raise AgentNotFoundException(agent_id)
         
+        # Send mission to agent
+        success = await agent_manager.send_mission_to_agent(agent_id, mission_data.mission)
+        if not success:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to assign mission to agent {agent_id}"
+            )
+        
+        priority_text = f" (priority: {mission_data.priority})" if mission_data.priority else ""
+        return SuccessResponse(message=f"Mission assigned to {agent_id}{priority_text}")
+        
+    except AgentNotFoundException:
+        raise
+    except Exception as e:
+        logger.error(f"Error assigning mission to agent {agent_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to assign mission"
+        )
+
+@app.post("/api/agents/{agent_id}/chat", response_model=SuccessResponse)
+async def chat_with_agent(agent_id: str, chat_data: ChatRequest) -> SuccessResponse:
+    """Chat with a specific agent with proper validation"""
+    try:
+        # Validate agent exists
+        agent = await spaceship_service.get_agent(agent_id)
+        if not agent:
+            raise AgentNotFoundException(agent_id)
+        
+        # Send message to agent
+        success = await agent_manager.send_mission_to_agent(agent_id, chat_data.message)
+        if not success:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to send message to agent {agent_id}"
+            )
+        
+        return SuccessResponse(message=f"Message sent to {agent_id}")
+        
+    except AgentNotFoundException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in chat with agent {agent_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to process chat request"
+        )
+
+@app.post("/api/agents/{agent_id}/move", response_model=SuccessResponse)
+async def move_agent(agent_id: str, move_data: MoveRequest) -> SuccessResponse:
+    """Move an agent to a new position with proper validation"""
+    try:
+        # Validate agent exists
+        agent = await spaceship_service.get_agent(agent_id)
+        if not agent:
+            raise AgentNotFoundException(agent_id)
+        
+        # Create position object using our schema
+        from models.spaceship import Position
+        position = Position(x=move_data.x, y=move_data.y)
+        
+        # Attempt to move agent
         success = await spaceship_service.move_agent(agent_id, position)
         if not success:
-            raise HTTPException(status_code=400, detail="Invalid move")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid move for agent {agent_id} to position ({move_data.x}, {move_data.y})"
+            )
         
-        return {"status": "success", "message": f"Agent {agent_id} moved to ({x}, {y})"}
-    except KeyError:
-        raise HTTPException(status_code=400, detail="x and y coordinates required")
+        return SuccessResponse(message=f"Agent {agent_id} moved to ({move_data.x}, {move_data.y})")
+        
+    except AgentNotFoundException:
+        raise
+    except Exception as e:
+        logger.error(f"Error moving agent {agent_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to move agent"
+        )
 
 @app.get("/api/stations")
 async def get_all_stations():
@@ -214,4 +311,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app, 
+        host=settings.host, 
+        port=settings.port,
+        log_level=settings.log_level.lower(),
+        reload=settings.debug
+    )

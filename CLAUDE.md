@@ -26,9 +26,11 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 ## Commands
 
 ### Testing
-- `npm test` - Run test suite
-- `npm run test:e2e` - Run Playwright E2E tests
-- `npm run test:watch` - Run tests in watch mode
+- `npm test` - Run basic health tests
+- `npm run docker:smoke` - Run Docker-orchestrated smoke tests (recommended)
+- `npm run docker:test` - Run full Docker test suite with rebuild
+- `npm run test:e2e` - Run Playwright E2E tests (requires services running)
+- `npm run docker:test:clean` - Clean up Docker test containers
 
 ### Development
 - `npm run dev` - Start development server
@@ -46,11 +48,19 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 
 ## Project Structure
 - `/frontend` - React/TypeScript frontend
-- `/backend` - Python FastAPI backend
-- `/tests` - Test suites
+- `/backend` - Python FastAPI backend with core modules (config, exceptions, schemas)
+- `/e2e` - Playwright test suites and BDD features
 - `/docs` - Project documentation
+- `docker-compose.test.yml` - Docker orchestration for testing
+- `playwright-*.config.ts` - Playwright configurations for different test types
 - `.features-gen/` - Generated feature documentation
 - `playwright-report/` - E2E test reports
+
+## Testing Infrastructure
+- **Docker Compose**: Orchestrates backend + test containers with health checks
+- **Smoke Tests**: Simple curl-based health verification (fast, reliable)
+- **BDD Tests**: Playwright + Gherkin for behavior-driven testing
+- **Health Checks**: Automated service dependency management
 
 ## Context Window Optimization
 - Working memory: ~30-40% current code context

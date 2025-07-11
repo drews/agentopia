@@ -5,28 +5,33 @@ const { Given, When, Then } = createBdd();
 
 // Background - Health check steps
 Given('the spaceship bridge backend is running on port {int}', async ({ request }, port: number) => {
-  const response = await request.get(`http://localhost:${port}/health`);
+  const backendUrl = process.env.BACKEND_URL || `http://localhost:${port}`;
+  const response = await request.get(`${backendUrl}/health`);
   expect(response.status()).toBe(200);
 });
 
 Given('the React frontend is running on port {int}', async ({ request }, port: number) => {
-  const response = await request.get(`http://localhost:${port}/`);
+  const frontendUrl = process.env.FRONTEND_URL || `http://localhost:${port}`;
+  const response = await request.get(`${frontendUrl}/`);
   expect(response.status()).toBe(200);
 });
 
 // Backend health check steps
 When('I check the backend health endpoint', async ({ request }) => {
-  const response = await request.get('http://localhost:8000/health');
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+  const response = await request.get(`${backendUrl}/health`);
   expect(response.status()).toBe(200);
 });
 
 Then('the backend should respond with status {int}', async ({ request }, expectedStatus: number) => {
-  const response = await request.get('http://localhost:8000/health');
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+  const response = await request.get(`${backendUrl}/health`);
   expect(response.status()).toBe(expectedStatus);
 });
 
 Then('the response should indicate the service is healthy', async ({ request }) => {
-  const response = await request.get('http://localhost:8000/health');
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+  const response = await request.get(`${backendUrl}/health`);
   const responseBody = await response.json();
   expect(responseBody.status).toBe('healthy');
 });
