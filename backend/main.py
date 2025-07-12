@@ -108,6 +108,53 @@ async def health_check() -> HealthResponse:
             detail="Service temporarily unavailable"
         )
 
+@app.get("/api/llm/status")
+async def get_llm_status():
+    """Get LLM provider status and availability"""
+    try:
+        llm_service = agent_manager.llm_service
+        providers = llm_service.list_available_providers()
+        
+        status = {
+            "default_provider": settings.default_llm_provider,
+            "providers": {}
+        }
+        
+        for provider in providers:
+            provider_info = llm_service.get_provider_info(provider)
+            is_available = await llm_service.is_provider_available(provider)
+            
+            status["providers"][provider] = {
+                **provider_info,
+                "available": is_available,
+                "is_default": provider == settings.default_llm_provider
+            }
+        
+        return status
+    except Exception as e:
+        logger.error(f"LLM status check failed: {e}")
+        raise HTTPException(status_code=500, detail=f"LLM status check failed: {str(e)}")
+
+@app.post("/api/llm/test")
+async def test_llm_response(chat_data: ChatRequest):
+    """Test LLM response generation"""
+    try:
+        llm_service = agent_manager.llm_service
+        
+        response = await llm_service.generate_response(
+            prompt=chat_data.message,
+            system_prompt="You are a helpful AI assistant on a starship bridge."
+        )
+        
+        return {
+            "response": response,
+            "provider": settings.default_llm_provider,
+            "success": True
+        }
+    except Exception as e:
+        logger.error(f"LLM test failed: {e}")
+        raise HTTPException(status_code=500, detail=f"LLM test failed: {str(e)}")
+
 @app.get("/api/bridge/state")
 async def get_bridge_state():
     """Get the current state of the bridge"""

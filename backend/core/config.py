@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     
     # Ollama Configuration
     ollama_base_url: str = Field("http://localhost:11434", env="OLLAMA_BASE_URL")
-    ollama_model: str = Field("llama2", env="OLLAMA_MODEL")
+    ollama_model: str = Field("tinyllama", env="OLLAMA_MODEL")
     ollama_timeout: float = Field(30.0, env="OLLAMA_TIMEOUT")
     
     # Legacy compatibility (will be deprecated)

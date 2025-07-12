@@ -139,13 +139,43 @@ class LLMService:
     async def is_provider_available(self, provider_name: str) -> bool:
         """Check if a provider is available and configured."""
         try:
-            provider = self.get_provider(provider_name)
-            # Try a simple test invocation
-            test_response = await self.generate_response(
-                "Hello", 
-                provider_name=provider_name
-            )
-            return len(test_response) > 0
+            if provider_name == "ollama":
+                # Special handling for Ollama - check if server is running
+                import httpx
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    response = await client.get(f"{self.settings.ollama_base_url}/api/tags")
+                    if response.status_code != 200:
+                        logger.warning(f"Ollama server not responding: {response.status_code}")
+                        return False
+                    
+                    # Check if our model is available
+                    models = response.json().get("models", [])
+                    model_names = [model.get("name", "").split(":")[0] for model in models]
+                    available = self.settings.ollama_model in model_names
+                    
+                    if not available:
+                        logger.warning(f"Ollama model '{self.settings.ollama_model}' not found. Available: {model_names}")
+                        logger.info(f"To install: ollama pull {self.settings.ollama_model}")
+                    
+                    return available
+            
+            elif provider_name == "openai":
+                return bool(self.settings.openai_api_key)
+            
+            elif provider_name == "anthropic":
+                return bool(self.settings.anthropic_api_key)
+            
+            elif provider_name == "mock":
+                return True
+            
+            else:
+                # Try a simple test invocation for unknown providers
+                test_response = await self.generate_response(
+                    "Hello", 
+                    provider_name=provider_name
+                )
+                return len(test_response) > 0
+                
         except Exception as e:
             logger.debug(f"Provider {provider_name} availability check failed: {e}")
             return False
