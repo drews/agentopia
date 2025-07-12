@@ -48,5 +48,8 @@
   "devDependencies": {
     "@playwright/test": "^1.53.2",
     "playwright-bdd": "^8.3.1"
+  },
+  "dependencies": {
+    "puppeteer": "^24.12.1"
   }
 }

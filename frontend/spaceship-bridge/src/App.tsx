@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AgentShowcase from './AgentShowcase';
 import './App.css';
 
 interface Position {
@@ -40,8 +41,10 @@ interface BridgeState {
 }
 
 function App() {
+  const [showAgentShowcase, setShowAgentShowcase] = useState(true);
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [debugMode, setDebugMode] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
@@ -51,6 +54,8 @@ function App() {
   const [selectedAgent, setSelectedAgent] = useState<string>('');
 
   useEffect(() => {
+    if (showAgentShowcase) return; // Skip bridge connection when showing showcase
+    
     // Fetch initial bridge state
     fetch('http://localhost:8000/api/bridge/state')
       .then(res => res.json())
@@ -122,7 +127,35 @@ function App() {
     return () => {
       ws.close();
     };
-  }, []);
+  }, [showAgentShowcase]);
+
+  // Show agent showcase by default for development
+  if (showAgentShowcase) {
+    return (
+      <div className="App">
+        <nav style={{ 
+          padding: '10px 20px', 
+          borderBottom: '1px solid #ccc',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <button 
+            onClick={() => setShowAgentShowcase(false)}
+            style={{
+              padding: '8px 16px',
+              border: '1px solid #007bff',
+              borderRadius: '4px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            Switch to Bridge View
+          </button>
+        </nav>
+        <AgentShowcase />
+      </div>
+    );
+  }
 
   const sendChatMessage = async () => {
     if (!chatInput.trim() || !selectedAgent) return;
@@ -162,6 +195,25 @@ function App() {
     return (
       <div className="App">
         <header className="App-header">
+          <nav style={{ 
+            padding: '10px 20px', 
+            borderBottom: '1px solid #ccc',
+            backgroundColor: '#f8f9fa'
+          }}>
+            <button 
+              onClick={() => setShowAgentShowcase(true)}
+              style={{
+                padding: '8px 16px',
+                border: '1px solid #007bff',
+                borderRadius: '4px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              View Agent Showcase
+            </button>
+          </nav>
           <h1>🚀 Loading USS Agentopia Bridge...</h1>
           <p>Status: {connectionStatus}</p>
         </header>
@@ -172,6 +224,25 @@ function App() {
   return (
     <div className="App">
       <header className="bridge-header">
+        <nav style={{ 
+          padding: '10px 20px', 
+          borderBottom: '1px solid #ccc',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <button 
+            onClick={() => setShowAgentShowcase(true)}
+            style={{
+              padding: '8px 16px',
+              border: '1px solid #007bff',
+              borderRadius: '4px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+          >
+            View Agent Showcase
+          </button>
+        </nav>
         <h1>🚀 {bridgeState.bridge_id.toUpperCase()} Bridge</h1>
         <div className="status-indicators">
           <span className={`status ${bridgeState.status}`}>

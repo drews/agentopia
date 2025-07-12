@@ -387,7 +387,8 @@ export class ExecutiveAgencyEngine {
       const current = this.profile.commandVoice.communicationStyle;
       const target = template.communicationStyle;
       Object.keys(target).forEach(key => {
-        current[key] = current[key] * (1 - blendFactor) + target[key] * blendFactor;
+        const typedKey = key as keyof typeof current;
+        current[typedKey] = current[typedKey] * (1 - blendFactor) + target[typedKey] * blendFactor;
       });
     }
   }
