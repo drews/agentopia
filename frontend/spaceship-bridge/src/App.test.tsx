@@ -2,14 +2,20 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders loading state initially', () => {
+test('renders agent showcase initially', () => {
   render(<App />);
-  const loadingElement = screen.getByText(/Loading USS Agentopia Bridge/i);
-  expect(loadingElement).toBeInTheDocument();
+  const showcaseElement = screen.getByText(/Agent Representation Showcase/i);
+  expect(showcaseElement).toBeInTheDocument();
 });
 
-test('shows disconnected status initially', () => {
+test('shows switch to bridge view button', () => {
   render(<App />);
-  const statusElement = screen.getByText(/Status: Disconnected/i);
-  expect(statusElement).toBeInTheDocument();
+  const buttonElement = screen.getByText(/Switch to Bridge View/i);
+  expect(buttonElement).toBeInTheDocument();
+});
+
+test('shows LCARS theme selected by default', () => {
+  render(<App />);
+  const lcarsButton = screen.getByRole('button', { name: /lcars/i });
+  expect(lcarsButton).toHaveStyle('font-weight: bold');
 });

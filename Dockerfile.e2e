@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/playwright:v1.53.2-focal
+
+WORKDIR /app
+
+# Copy package files for E2E tests
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Install Playwright browsers
+RUN npx playwright install
+
+# Copy E2E test files and configuration
+COPY e2e/ ./e2e/
+COPY playwright*.config.ts ./
+COPY *.feature ./
+
+# Create output directories
+RUN mkdir -p playwright-report test-results
+
+# Default command to run E2E tests
+CMD ["npx", "playwright", "test"]

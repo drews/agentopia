@@ -4,7 +4,7 @@ import { Agent, AgentType, AgentStatus } from './agents/types';
 import './agents/AgentAnimations.css';
 
 const AgentShowcase: React.FC = () => {
-  const [selectedTheme, setSelectedTheme] = useState('retro');
+  const [selectedTheme, setSelectedTheme] = useState('lcars');
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [animationSpeed, setAnimationSpeed] = useState(1);
 
@@ -148,7 +148,7 @@ const AgentShowcase: React.FC = () => {
     }
   ];
 
-  const themes = ['retro', 'modern', 'minimal'];
+  const themes = ['retro', 'modern', 'minimal', 'lcars'];
 
   // Cycle through status states for demonstration
   useEffect(() => {
@@ -179,10 +179,12 @@ const AgentShowcase: React.FC = () => {
   return (
     <div style={{ 
       padding: '20px', 
-      fontFamily: 'system-ui, sans-serif',
-      backgroundColor: selectedTheme === 'retro' ? '#0a0f0a' : '#f8fafc',
-      color: selectedTheme === 'retro' ? '#00ff41' : '#1e293b',
-      minHeight: '100vh'
+      fontFamily: selectedTheme === 'lcars' ? "'Arial Narrow', 'Helvetica Condensed', sans-serif" : 'system-ui, sans-serif',
+      backgroundColor: selectedTheme === 'retro' ? '#0a0f0a' : selectedTheme === 'lcars' ? '#000000' : '#f8fafc',
+      color: selectedTheme === 'retro' ? '#00ff41' : selectedTheme === 'lcars' ? '#FFCC99' : '#1e293b',
+      minHeight: '100vh',
+      textTransform: selectedTheme === 'lcars' ? 'uppercase' : 'none',
+      letterSpacing: selectedTheme === 'lcars' ? '0.5px' : 'normal'
     }}>
       <div style={{ marginBottom: '30px' }}>
         <h1 style={{ marginBottom: '10px' }}>🚀 Agent Representation Showcase</h1>
@@ -203,7 +205,7 @@ const AgentShowcase: React.FC = () => {
                 border: selectedTheme === theme ? '2px solid currentColor' : '1px solid',
                 borderRadius: '6px',
                 backgroundColor: selectedTheme === theme ? 'currentColor' : 'transparent',
-                color: selectedTheme === theme ? (selectedTheme === 'retro' ? '#0a0f0a' : '#ffffff') : 'currentColor',
+                color: selectedTheme === theme ? (selectedTheme === 'retro' ? '#0a0f0a' : selectedTheme === 'lcars' ? '#000000' : '#ffffff') : 'currentColor',
                 cursor: 'pointer',
                 textTransform: 'capitalize',
                 fontWeight: selectedTheme === theme ? 'bold' : 'normal'
@@ -396,7 +398,7 @@ const AgentShowcase: React.FC = () => {
         padding: '20px', 
         border: '1px solid', 
         borderRadius: '8px',
-        backgroundColor: selectedTheme === 'retro' ? '#0f1a0f' : '#f1f5f9'
+        backgroundColor: selectedTheme === 'retro' ? '#0f1a0f' : selectedTheme === 'lcars' ? '#333366' : '#f1f5f9'
       }}>
         <h3>Implementation Features</h3>
         <ul style={{ lineHeight: '1.6' }}>

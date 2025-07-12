@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies including testing tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies + testing dependencies
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir pytest pytest-cov pytest-asyncio httpx
+
+# Copy application code
+COPY . .
+
+# Create test database directory
+RUN mkdir -p /app/data
+
+# Health check endpoint
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=5 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command for test environment
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -3,6 +3,7 @@ import { Agent, AgentRepresentationStrategy, AgentSize, AgentInteractionHandlers
 import { RetroAgentStrategy } from './strategies/RetroAgentStrategy';
 import { ModernAgentStrategy } from './strategies/ModernAgentStrategy';
 import { MinimalAgentStrategy } from './strategies/MinimalAgentStrategy';
+import { LCARSAgentStrategy } from './strategies/LCARSAgentStrategy';
 
 interface AgentComponentProps {
   agent: Agent;
@@ -35,6 +36,8 @@ const AgentComponent: React.FC<AgentComponentProps> = ({
           return new ModernAgentStrategy();
         case 'minimal':
           return new MinimalAgentStrategy();
+        case 'lcars':
+          return new LCARSAgentStrategy();
         case 'retro':
         default:
           return new RetroAgentStrategy();
@@ -117,14 +120,17 @@ const AgentComponent: React.FC<AgentComponentProps> = ({
             top: `-${finalSize.height + 20}px`,
             left: '50%',
             transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
+            backgroundColor: theme === 'lcars' ? '#333366' : 'rgba(0, 0, 0, 0.9)',
+            color: theme === 'lcars' ? '#FFCC99' : 'white',
             padding: '8px 12px',
-            borderRadius: '6px',
+            borderRadius: theme === 'lcars' ? '10px 0 10px 0' : '6px',
             fontSize: '12px',
             whiteSpace: 'nowrap',
             zIndex: 1000,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            border: theme === 'lcars' ? '1px solid #FFCC99' : 'none',
+            textTransform: theme === 'lcars' ? 'uppercase' : 'none',
+            letterSpacing: theme === 'lcars' ? '0.5px' : 'normal'
           }}
         >
           <div><strong>{agent.name}</strong></div>
