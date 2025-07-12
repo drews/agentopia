@@ -18,6 +18,7 @@ from core.schemas import (
     MissionRequest, MoveRequest, SuccessResponse, ConfigurationResponse
 )
 from services import WebSocketManager, SpaceshipService, AgentManager
+from database import db
 
 # Get settings and configure logging
 settings = get_settings()
@@ -184,7 +185,7 @@ async def assign_mission(agent_id: str, mission_data: MissionRequest) -> Success
     """Assign a mission to an agent with proper validation"""
     try:
         # Validate agent exists
-        agent = await spaceship_service.get_agent(agent_id)
+        agent = await db.get_agent(agent_id)
         if not agent:
             raise AgentNotFoundException(agent_id)
         
@@ -213,7 +214,7 @@ async def chat_with_agent(agent_id: str, chat_data: ChatRequest) -> SuccessRespo
     """Chat with a specific agent with proper validation"""
     try:
         # Validate agent exists
-        agent = await spaceship_service.get_agent(agent_id)
+        agent = await db.get_agent(agent_id)
         if not agent:
             raise AgentNotFoundException(agent_id)
         
@@ -241,7 +242,7 @@ async def move_agent(agent_id: str, move_data: MoveRequest) -> SuccessResponse:
     """Move an agent to a new position with proper validation"""
     try:
         # Validate agent exists
-        agent = await spaceship_service.get_agent(agent_id)
+        agent = await db.get_agent(agent_id)
         if not agent:
             raise AgentNotFoundException(agent_id)
         
