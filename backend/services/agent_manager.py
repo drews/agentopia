@@ -12,7 +12,9 @@ from database import db
 from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
 from services.llm_service import LLMService
+from services.agent_mcp_bridge import AgentMCPBridge
 from backend.core.config import get_settings
+from models.agent import AgentRole
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +31,15 @@ class AgentManager:
         self.running = False
         self.update_interval = 2.0  # Update every 2 seconds
         self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
+        self.mcp_bridge = AgentMCPBridge()  # Add MCP integration bridge
         
     async def initialize(self):
         """Initialize the agent manager"""
         try:
             # LLM service is ready to use (no async initialization needed with LangChain)
+            
+            # Initialize MCP bridge
+            await self.mcp_bridge.initialize()
             
             # Try to import and connect to existing agent system
             await self._connect_to_existing_agents()
@@ -86,6 +92,7 @@ class AgentManager:
     async def stop_monitoring(self):
         """Stop monitoring agent activities"""
         self.running = False
+        await self.mcp_bridge.shutdown()
         logger.info("Stopped agent monitoring")
     
     async def _monitoring_loop(self):
@@ -188,18 +195,31 @@ class AgentManager:
             
             logger.info(f"Mission sent to agent {agent_id}: {mission}")
             
-            # Get agent info for personality
+            # Get agent info for personality and role
             agent = await db.get_agent(agent_id)
             agent_name = agent.get("name", agent_id) if agent else agent_id
+            agent_role_str = agent.get("role", "bridge_crew") if agent else "bridge_crew"
             
-            # Create system prompt based on agent role
-            system_prompt = f"You are {agent_name}, an AI agent on a starship bridge. Respond professionally and helpfully to missions and requests."
+            # Convert role string to enum
+            try:
+                agent_role = AgentRole(agent_role_str)
+            except ValueError:
+                agent_role = AgentRole.BRIDGE_CREW
             
-            # Get LLM response using LangChain
-            response = await self.llm_service.generate_response(
-                prompt=mission,
-                system_prompt=system_prompt
-            )
+            # Check if this is an MCP command
+            mcp_result = await self._try_mcp_command(agent_id, agent_role, mission)
+            
+            if mcp_result["is_mcp_command"]:
+                response = mcp_result["response"]
+            else:
+                # Create system prompt based on agent role
+                system_prompt = f"You are {agent_name}, an AI agent on a starship bridge. You have access to real-world data through MCP integrations. Respond professionally and helpfully to missions and requests."
+                
+                # Get LLM response using LangChain
+                response = await self.llm_service.generate_response(
+                    prompt=mission,
+                    system_prompt=system_prompt
+                )
             
             if response and not response.startswith("I apologize"):
                 # Update agent status to active
@@ -229,6 +249,170 @@ class AgentManager:
         except Exception as e:
             logger.error(f"Error sending mission to agent {agent_id}: {e}")
             return False
+    
+    async def _try_mcp_command(self, agent_id: str, agent_role: AgentRole, mission: str) -> Dict[str, Any]:
+        """Try to process the mission as an MCP command."""
+        try:
+            # Parse mission for MCP commands
+            mission_lower = mission.lower().strip()
+            
+            # Define MCP command patterns
+            mcp_patterns = {
+                "get calendar": {"command": "get_calendar", "params": {}},
+                "check schedule": {"command": "check_schedule", "params": {}},
+                "get events": {"command": "get_events", "params": {}},
+                "get tasks": {"command": "get_tasks", "params": {}},
+                "list files": {"command": "list_files", "params": {}},
+                "plan day": {"command": "plan_day", "params": {}},
+                "plan my day": {"command": "plan_day", "params": {}},
+                "create event": {"command": "create_event", "params": self._parse_event_params(mission)},
+                "create task": {"command": "create_task", "params": self._parse_task_params(mission)},
+            }
+            
+            # Check for MCP command patterns
+            for pattern, config in mcp_patterns.items():
+                if pattern in mission_lower:
+                    # Execute MCP command
+                    result = await self.mcp_bridge.execute_agent_command(
+                        agent_id, agent_role, config["command"], config["params"]
+                    )
+                    
+                    if result["success"]:
+                        response = self._format_mcp_response(config["command"], result["data"])
+                        return {"is_mcp_command": True, "response": response}
+                    else:
+                        error_response = f"I encountered an error accessing external data: {result['error']}"
+                        return {"is_mcp_command": True, "response": error_response}
+            
+            # Not an MCP command
+            return {"is_mcp_command": False, "response": None}
+            
+        except Exception as e:
+            logger.error(f"Error processing MCP command for agent {agent_id}: {e}")
+            return {"is_mcp_command": False, "response": None}
+    
+    def _parse_event_params(self, mission: str) -> Dict[str, Any]:
+        """Parse event creation parameters from mission text."""
+        # Simple parsing - in a real implementation this would be more sophisticated
+        params = {}
+        
+        # Extract basic event info (this is a simplified example)
+        words = mission.split()
+        if "tomorrow" in mission.lower():
+            from datetime import datetime, timedelta
+            tomorrow = datetime.now() + timedelta(days=1)
+            params["start_time"] = tomorrow.strftime("%Y-%m-%d 09:00:00")
+            params["end_time"] = tomorrow.strftime("%Y-%m-%d 10:00:00")
+        
+        return params
+    
+    def _parse_task_params(self, mission: str) -> Dict[str, Any]:
+        """Parse task creation parameters from mission text."""
+        # Simple parsing - in a real implementation this would be more sophisticated
+        params = {}
+        
+        # Extract task title (everything after "create task")
+        if "create task" in mission.lower():
+            title_start = mission.lower().find("create task") + len("create task")
+            title = mission[title_start:].strip()
+            if title:
+                params["title"] = title
+        
+        return params
+    
+    def _format_mcp_response(self, command: str, data: Dict[str, Any]) -> str:
+        """Format MCP response data into a human-readable response."""
+        try:
+            if command == "get_calendar" or command == "get_events":
+                events = data.get("events", [])
+                if not events:
+                    return "No events found in your calendar."
+                
+                response = f"Found {len(events)} calendar events:\n"
+                for event in events[:5]:  # Show first 5 events
+                    title = event.get("title", "Untitled")
+                    start = event.get("start_time", "Unknown time")
+                    response += f"• {title} at {start}\n"
+                
+                if len(events) > 5:
+                    response += f"... and {len(events) - 5} more events"
+                
+                return response
+            
+            elif command == "get_tasks":
+                tasks = data.get("tasks", [])
+                if not tasks:
+                    return "No tasks found."
+                
+                response = f"Found {len(tasks)} tasks:\n"
+                for task in tasks[:5]:  # Show first 5 tasks
+                    title = task.get("title", "Untitled")
+                    status = task.get("status", "unknown")
+                    response += f"• {title} ({status})\n"
+                
+                if len(tasks) > 5:
+                    response += f"... and {len(tasks) - 5} more tasks"
+                
+                return response
+            
+            elif command == "check_schedule":
+                date = data.get("date", "today")
+                total_events = data.get("total_events", 0)
+                recommendations = data.get("recommendations", [])
+                
+                response = f"Schedule for {date}: {total_events} events"
+                if recommendations:
+                    response += "\nRecommendations:\n"
+                    for rec in recommendations:
+                        response += f"• {rec}\n"
+                
+                return response
+            
+            elif command == "plan_day":
+                date = data.get("date", "today")
+                events = data.get("scheduled_events", [])
+                tasks = data.get("available_tasks", [])
+                recommendations = data.get("recommendations", [])
+                
+                response = f"Daily plan for {date}:\n"
+                response += f"• {len(events)} scheduled events\n"
+                response += f"• {len(tasks)} available tasks\n"
+                
+                if recommendations:
+                    response += "\nRecommendations:\n"
+                    for rec in recommendations[:3]:
+                        response += f"• {rec}\n"
+                
+                return response
+            
+            elif command == "list_files":
+                files = data.get("files", [])
+                if not files:
+                    return "No files found."
+                
+                response = f"Found {len(files)} files:\n"
+                for file_info in files[:5]:
+                    name = file_info.get("name", "Unknown")
+                    path = file_info.get("path", "")
+                    response += f"• {name} ({path})\n"
+                
+                if len(files) > 5:
+                    response += f"... and {len(files) - 5} more files"
+                
+                return response
+            
+            elif command == "create_event":
+                return "Calendar event created successfully."
+            
+            elif command == "create_task":
+                return "Task created successfully."
+            
+            else:
+                return f"Command executed successfully. Data: {str(data)[:100]}..."
+            
+        except Exception as e:
+            logger.error(f"Error formatting MCP response: {e}")
+            return f"Command completed with data: {str(data)[:100]}..."
     
     async def get_agent_report(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """Get a status report from an agent"""

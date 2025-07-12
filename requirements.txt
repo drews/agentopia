@@ -19,6 +19,10 @@ langchain-anthropic
 langchain-ollama
 langchain-community
 
+# MCP integration
+mcp
+httpx
+
 # Testing dependencies
 pytest
 pytest-asyncio

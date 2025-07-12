@@ -303,6 +303,53 @@ async def get_agent_configs():
         logger.error(f"Error getting agent configs: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get configs: {str(e)}")
 
+@app.get("/api/mcp/status")
+async def get_mcp_status():
+    """Get MCP server connection status"""
+    try:
+        status = await agent_manager.mcp_bridge.get_mcp_status()
+        return status
+    except Exception as e:
+        logger.error(f"Error getting MCP status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get MCP status: {str(e)}")
+
+@app.post("/api/mcp/clear-cache")
+async def clear_mcp_cache():
+    """Clear MCP resource cache"""
+    try:
+        await agent_manager.mcp_bridge.clear_cache()
+        return {"status": "success", "message": "MCP cache cleared"}
+    except Exception as e:
+        logger.error(f"Error clearing MCP cache: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
+
+@app.get("/api/mcp/capabilities/{agent_id}")
+async def get_agent_mcp_capabilities(agent_id: str):
+    """Get MCP capabilities for a specific agent"""
+    try:
+        agent = await db.get_agent(agent_id)
+        if not agent:
+            raise HTTPException(status_code=404, detail="Agent not found")
+        
+        from models.agent import AgentRole
+        agent_role_str = agent.get("role", "bridge_crew")
+        try:
+            agent_role = AgentRole(agent_role_str)
+        except ValueError:
+            agent_role = AgentRole.BRIDGE_CREW
+        
+        capabilities = agent_manager.mcp_bridge.get_agent_capabilities(agent_role)
+        return {
+            "agent_id": agent_id,
+            "role": agent_role_str,
+            "mcp_capabilities": capabilities
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting agent MCP capabilities: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get capabilities: {str(e)}")
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket_manager.connect(websocket)

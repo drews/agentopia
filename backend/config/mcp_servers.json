@@ -1,0 +1,25 @@
+{
+  "servers": {
+    "calendar": {
+      "url": "http://localhost:3001",
+      "capabilities": ["calendar", "events", "scheduling"],
+      "timeout": 30,
+      "description": "Calendar MCP server for Google Calendar, Outlook, etc."
+    },
+    "tasks": {
+      "url": "http://localhost:3002", 
+      "capabilities": ["tasks", "projects", "todo"],
+      "timeout": 30,
+      "description": "Task management MCP server for Todoist, Notion, etc."
+    },
+    "files": {
+      "url": "http://localhost:3003",
+      "capabilities": ["files", "documents", "storage"],
+      "timeout": 30,
+      "description": "File system MCP server for local files, cloud storage"
+    }
+  },
+  "default_timeout": 30,
+  "retry_attempts": 3,
+  "retry_delay": 2.0
+}

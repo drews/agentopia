@@ -25,12 +25,14 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 
 ## Commands
 
-### Testing
-- `npm test` - Run basic health tests
-- `npm run docker:smoke` - Run Docker-orchestrated smoke tests (recommended)
-- `npm run docker:test` - Run full Docker test suite with rebuild
-- `npm run test:e2e` - Run Playwright E2E tests (requires services running)
+### Testing (Docker-Orchestrated)
+⚠️ **IMPORTANT**: This project uses Docker Compose for ALL testing. Do not run tests directly in local environments.
+
+- `npm run docker:smoke` - **RECOMMENDED**: Fast Docker-orchestrated smoke tests with health checks
+- `npm run docker:test` - Full Docker test suite with complete rebuild
+- `npm run test:e2e` - Run Playwright E2E tests (requires Docker services running)
 - `npm run docker:test:clean` - Clean up Docker test containers
+- `npm test` - Fallback basic health tests (use Docker commands instead)
 
 ### Development
 - `npm run dev` - Start development server
@@ -56,11 +58,15 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 - `.features-gen/` - Generated feature documentation
 - `playwright-report/` - E2E test reports
 
-## Testing Infrastructure
-- **Docker Compose**: Orchestrates backend + test containers with health checks
+## Testing Infrastructure (Docker-First)
+🐳 **All testing is containerized for consistency and isolation**
+
+- **Docker Compose**: Primary orchestration for backend + test containers with health checks
+- **Containerized Testing**: Ensures identical environments across development and CI
 - **Smoke Tests**: Simple curl-based health verification (fast, reliable)
-- **BDD Tests**: Playwright + Gherkin for behavior-driven testing
+- **BDD Tests**: Playwright + Gherkin for behavior-driven testing in containers
 - **Health Checks**: Automated service dependency management
+- **No Local Testing**: Avoid `pytest`, `python -m pytest` - use Docker commands instead
 
 ## Context Window Optimization
 - Working memory: ~30-40% current code context
