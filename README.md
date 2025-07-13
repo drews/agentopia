@@ -1,85 +1,199 @@
 # Agentopia
 
-**Empowering self-directed productivity through agentic thought augmentation.**
+**AI Spaceship Bridge - Executive Functioning Assistant**
 
-## Overview
+Agentopia is an AI-powered executive functioning tool that embodies AI agents as a virtual starship crew, creating an engaging, gamified productivity environment specifically designed for ADHD-friendly workflows. The spaceship bridge metaphor provides narrative cohesion while agents manage real-world tasks through MCP integrations.
 
-Agentopia is an executive functioning framework designed to help users manage projects, time, and priorities effectively. Built with a focus on flexibility, privacy, and user empowerment, the agent offers:
+## Vision
 
-- **Project Management**: Organize and track tasks and milestones.
-- **Time Management**: Assist with scheduling and time blocking.
-- **Priority and Values Alignment**: Ensure tasks align with user-defined priorities.
-- **Reflection and Accountability**: Facilitate regular reviews and progress tracking.
-- **Flexibility and Understanding**: Adapt to user preferences and provide empathetic support.
+A collaborative AI system that makes abstract productivity concepts concrete and engaging through:
 
-## Build Instructions
+- **Spaceship Bridge Interface** - Visual, intuitive command center for productivity
+- **Embodied AI Agents** - Specialized crew members with distinct personalities  
+- **Real-World Integration** - Direct connection to your digital life via MCP
+- **ADHD-Friendly Design** - Visual feedback, gamification, and adaptive pacing
 
-To build the Agentopia project, ensure you have Python installed and follow these steps:
+## Core Features
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/agentopia.git
-   cd agentopia
-   ```
+### 🚀 Spaceship Bridge Interface
+- Real-time agent visualization and status monitoring
+- Interactive station-based workflow management
+- WebSocket-powered live updates and agent communication
+- Debug mode with agent trails and performance metrics
 
-2. Set up a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+### 🤖 Configuration-Driven Agents
+- **Commander** (red_agent) - Strategic planning and mission coordination
+- **Science Officer** (blue_agent) - Research, analysis, and data processing
+- **Operations Officer** (yellow_agent) - Task execution and workflow optimization
+- JSON-configurable personalities, capabilities, and behaviors
 
-3. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### 💬 LLM Integration
+- Real-time chat with individual agents
+- Personality-driven responses based on agent roles
+- Mock responses for development (OpenAI integration ready)
+- WebSocket broadcasting of agent thoughts and responses
 
-## Running the Agent
+### 🔗 MCP Connectivity (Planned)
+- Calendar integration (Google Calendar, Outlook)
+- Task management (Todoist, Notion, Apple Reminders)
+- File systems (Google Drive, local files)
+- Communication platforms (Email, Slack)
 
-To run the Agentopia agent, execute the following command:
-    ```bash
-    python main.py
-    ```
+## Technology Stack
+
+- **Backend**: FastAPI with async support, WebSocket communication
+- **Frontend**: React with TypeScript, real-time WebSocket client
+- **Database**: SQLite with aiosqlite for async operations
+- **LLM**: OpenAI API (with mock fallback for development)
+- **Development**: Docker Compose with hot reload
+- **Testing**: Playwright with BDD scenarios
+
+## Getting Started
+
+### Quick Start with Docker (Recommended)
+
+1. **Clone and setup**:
+```bash
+git clone https://github.com/your-username/agentopia.git
+cd agentopia
+```
+
+2. **Start development environment**:
+```bash
+./dev.sh start
+```
+
+This will start both backend (port 8000) and frontend (port 3000) with hot reload.
+
+### Development Commands
+
+```bash
+./dev.sh start      # Start all services
+./dev.sh backend    # Backend only
+./dev.sh frontend   # Frontend only
+./dev.sh stop       # Stop all services
+./dev.sh logs       # View logs
+./dev.sh shell      # Open shell in container
+```
+
+### Manual Setup (Alternative)
+
+1. **Python environment**:
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+2. **Start backend**:
+```bash
+cd backend
+python main.py
+```
+
+3. **Start frontend** (new terminal):
+```bash
+cd frontend/spaceship-bridge
+npm install
+npm start
+```
+
+## Project Structure
+
+```
+agentopia/
+├── backend/                 # FastAPI backend
+│   ├── main.py             # Main application entry
+│   ├── services/           # Business logic services
+│   │   ├── agent_manager.py    # Agent lifecycle management
+│   │   ├── llm_client.py       # LLM integration
+│   │   ├── config_service.py   # Configuration management
+│   │   └── websocket_manager.py # Real-time communication
+│   └── models/             # Data models
+├── frontend/spaceship-bridge/  # React frontend
+├── config/                 # Agent configurations
+│   └── agents.json         # Agent personalities and roles
+├── characters/             # Legacy agent definitions
+├── e2e/                    # Playwright tests
+├── docker-compose.yml      # Development environment
+└── dev.sh                  # Development helper script
+```
+
+## Configuration
+
+Agent personalities and capabilities are defined in `config/agents.json`:
+
+```json
+{
+  "red_agent": {
+    "name": "Commander Data",
+    "role": "commander",
+    "system_prompt": "You are the Commander...",
+    "personality": {
+      "communication_style": "formal",
+      "specialization_focus": ["strategy", "leadership"]
+    }
+  }
+}
+```
+
+## API Endpoints
+
+- `GET /health` - Health check
+- `GET /api/bridge/state` - Current bridge status
+- `GET /api/agents` - List all agents
+- `POST /api/agents/{agent_id}/chat` - Chat with agent
+- `GET /api/config/agents` - Get agent configurations
+- `POST /api/config/reload` - Reload configurations
+- `WS /ws` - WebSocket for real-time updates
+
+## Testing
+
+⚠️ **IMPORTANT**: This project uses Docker Compose for ALL testing. Do not run tests directly in local environments.
+
+```bash
+# Recommended: Fast Docker-orchestrated smoke tests
+npm run docker:smoke
+
+# Full test suites
+npm run docker:test       # Full Docker test suite with complete rebuild
+npm run test:e2e          # Run Playwright E2E tests (requires Docker services)
+npm run test:e2e:headed   # Run with browser visible
+npm run test:mcp          # Run full test suite with MCP integration
+
+# Test management
+npm run docker:test:clean # Clean up Docker test containers
+./dev.sh logs backend     # View backend logs
+
+# Available but not recommended for regular use
+npm test                  # Fallback basic health tests (use Docker commands instead)
+```
+
+### Common Command Errors to Avoid
+
+❌ **These commands do NOT exist and will fail:**
+- `npm run lint` 
+- `npm run typecheck`
+- `npm run build`
+- `npm run dev`
+
+✅ **Use these Docker-orchestrated commands instead:**
+- `npm run docker:smoke` (testing)
+- `npm run dev:full` (development with MCP)
+- `./dev.sh start` (development)
 
 ## Architecture
 
-The agent is built using **Python** and the **smolagents** library, containerized with **Docker** for consistent deployment across environments.
-
-### Components
-
-#### **User Interface (UI)**
-- **Discord Integration**: Interact via a Discord bot with commands and interactive buttons.
-- **Obsidian Integration**: Sync notes and tasks with Obsidian for knowledge management.
-
-#### **Agent Core**
-- **Task Management Module**: Handle task creation, tracking, and updates.
-- **Scheduler Module**: Integrate with Google Calendar for scheduling and reminders.
-- **Knowledge Graph Module**: Develop a personal knowledge graph grounded in Wikipedia articles, allowing users to build and customize their own schema over time.
-
-#### **Data Storage**
-- **Local Database**: Store user data securely on their device to ensure privacy and control.
-
-## Data Flow
-
-1. **User Interaction**: Users interact with the agent via Discord or Obsidian.
-2. **Processing**: The Agent Core processes inputs, updates tasks, schedules events, and manages the knowledge graph.
-3. **Storage**: Data is stored locally, with regular backups to prevent data loss.
-
-## Future Enhancements
-
-While the initial implementation focuses on core functionalities, future developments may include:
-
-- **Voice Interaction**: Incorporate voice commands and responses for hands-free interaction.
-- **Advanced Analytics**: Provide insights into productivity patterns and suggest improvements.
-- **Customization Options**: Allow users to personalize the agent’s behavior, appearance, and responses.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system architecture and [SIMPLE_PLAN.md](SIMPLE_PLAN.md) for the current development roadmap.
 
 ## Contributing
 
-Contributions are welcome!
+We welcome contributions! The project uses:
+- Conventional commits (`feat:`, `fix:`, `docs:`)
+- Docker for consistent development environment
+- Configuration-driven design for easy customization
+- BDD testing with Playwright
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-Agentopia is designed to enhance self-empowerment by integrating agentic design principles into everyday productivity workflows. Let’s build the future of intelligent personal assistance together!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

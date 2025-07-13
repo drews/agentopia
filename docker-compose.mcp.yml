@@ -1,0 +1,147 @@
+version: '3.8'
+
+networks:
+  mcp-network:
+    driver: bridge
+    
+volumes:
+  calendar-data:
+    driver: local
+
+services:
+  # MCP Gateway - Single entry point for all MCP servers
+  mcp-gateway:
+    build:
+      context: ./mcp-servers/gateway
+      dockerfile: Dockerfile
+    container_name: agentopia-mcp-gateway
+    ports:
+      - "8001:8001"
+    networks:
+      - mcp-network
+    environment:
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=8001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      - datetime-mcp
+    labels:
+      - "mcp.service=gateway"
+      - "mcp.role=router"
+
+  # DateTime Tools MCP Server (our custom server)
+  datetime-mcp:
+    build:
+      context: ./mcp-servers/datetime-tools
+      dockerfile: Dockerfile
+    container_name: agentopia-datetime-mcp
+    # No external ports - only accessible via gateway
+    networks:
+      - mcp-network
+    environment:
+      - MCP_PORT=3000
+      - MCP_HOST=0.0.0.0
+      - TZ=America/New_York
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    labels:
+      - "mcp.server=datetime-tools"
+      - "mcp.capabilities=datetime,calendar,holidays,calculations"
+      - "mcp.offline=true"
+    
+  # Official Time MCP Server (when available)
+  time-mcp:
+    image: mcp-server-time:latest
+    container_name: agentopia-time-mcp
+    # No external ports - only accessible via gateway
+    networks:
+      - mcp-network
+    environment:
+      - MCP_PORT=3001
+      - MCP_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - time-server
+    labels:
+      - "mcp.server=time"
+      - "mcp.capabilities=time,timezone,conversion"
+      - "mcp.offline=true"
+    
+  # Calendar MCP Server (placeholder for future integration)
+  calendar-mcp:
+    image: nginx:alpine
+    container_name: agentopia-calendar-mcp
+    # No external ports - only accessible via gateway
+    networks:
+      - mcp-network
+    volumes:
+      - calendar-data:/data
+    environment:
+      - MCP_PORT=80
+    restart: unless-stopped
+    profiles:
+      - calendar-server
+    labels:
+      - "mcp.server=calendar"
+      - "mcp.capabilities=calendar,events,scheduling"
+      - "mcp.offline=false"
+    
+  # Tasks MCP Server (placeholder)
+  tasks-mcp:
+    image: nginx:alpine
+    container_name: agentopia-tasks-mcp
+    # No external ports - only accessible via gateway
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    profiles:
+      - tasks-server
+    labels:
+      - "mcp.server=tasks"
+      - "mcp.capabilities=tasks,projects,todo"
+      - "mcp.offline=false"
+    
+  # Filesystem MCP Server (official with security boundaries)
+  filesystem-mcp:
+    image: node:18-alpine
+    container_name: agentopia-filesystem-mcp
+    # No external ports - only accessible via gateway
+    networks:
+      - mcp-network
+    volumes:
+      - "./:/workspace:ro"  # Read-only project access
+      - "./docs:/app/docs:ro"  # Read-only docs access
+    working_dir: /app
+    command: >
+      sh -c "
+      npm install -g @modelcontextprotocol/server-filesystem &&
+      npx @modelcontextprotocol/server-filesystem /workspace /app/docs
+      "
+    environment:
+      - MCP_PORT=3003
+      - MCP_HOST=0.0.0.0
+      - NODE_ENV=production
+    restart: unless-stopped
+    profiles:
+      - filesystem-server
+    labels:
+      - "mcp.server=filesystem"
+      - "mcp.capabilities=files,documents,storage"
+      - "mcp.offline=true"
+      - "mcp.security=sandboxed"

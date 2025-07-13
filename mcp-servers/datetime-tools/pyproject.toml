@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datetime-tools-mcp"
+version = "1.0.0"
+description = "Offline datetime tools and calendar calculations for MCP"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "mcp>=1.0.0",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+
+[project.scripts]
+datetime-tools-mcp = "datetime_tools.server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["datetime_tools*"]

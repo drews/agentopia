@@ -3,24 +3,9 @@ import { createBdd } from 'playwright-bdd';
 
 const { Given, When, Then } = createBdd();
 
-// Background steps
-Given('the spaceship bridge backend is running on port {int}', async ({ page }, port: number) => {
-  // Check if backend is running by hitting health endpoint
-  const response = await page.request.get(`http://localhost:${port}/health`);
-  expect(response.status()).toBe(200);
-});
+// Background steps (backend/frontend checks are in health-check.steps.ts)
 
-Given('the React frontend is running on port {int}', async ({ page }, port: number) => {
-  // Check if frontend is accessible
-  const response = await page.request.get(`http://localhost:${port}/`);
-  expect(response.status()).toBe(200);
-});
-
-// Navigation steps
-When('I navigate to the bridge interface', async ({ page }) => {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-});
+// Navigation steps (navigation to bridge interface is in health-check.steps.ts)
 
 Given('I am on the bridge interface', async ({ page }) => {
   await page.goto('/');
@@ -76,7 +61,7 @@ When('I examine the bridge layout', async ({ page }) => {
   await page.waitForSelector('.station', { timeout: 10000 });
 });
 
-Then('I should see the {string} at position ({int}, {int})', async ({ page }, stationName: string, x: number, y: number) => {
+Then('I should see the {string} at position \\( {int}, {int} \\)', async ({ page }, stationName: string, x: number, y: number) => {
   const station = page.locator('.station').filter({ hasText: stationName });
   await expect(station).toBeVisible();
   

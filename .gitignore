@@ -7,9 +7,40 @@ node_modules/
 # Test reports and artifacts
 playwright-report/
 test-results/
+e2e/test-results/
+.features-gen/
 
 # MCP context database
 .context.db
 
 # Claude configuration (contains sensitive keys)
 .claude/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Environment variables
+.env
+.env.local
+.env.production
