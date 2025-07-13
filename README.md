@@ -149,11 +149,38 @@ Agent personalities and capabilities are defined in `config/agents.json`:
 
 ## Testing
 
+⚠️ **IMPORTANT**: This project uses Docker Compose for ALL testing. Do not run tests directly in local environments.
+
 ```bash
-npm run test:e2e          # Run E2E tests
+# Recommended: Fast Docker-orchestrated smoke tests
+npm run docker:smoke
+
+# Full test suites
+npm run docker:test       # Full Docker test suite with complete rebuild
+npm run test:e2e          # Run Playwright E2E tests (requires Docker services)
 npm run test:e2e:headed   # Run with browser visible
+npm run test:mcp          # Run full test suite with MCP integration
+
+# Test management
+npm run docker:test:clean # Clean up Docker test containers
 ./dev.sh logs backend     # View backend logs
+
+# Available but not recommended for regular use
+npm test                  # Fallback basic health tests (use Docker commands instead)
 ```
+
+### Common Command Errors to Avoid
+
+❌ **These commands do NOT exist and will fail:**
+- `npm run lint` 
+- `npm run typecheck`
+- `npm run build`
+- `npm run dev`
+
+✅ **Use these Docker-orchestrated commands instead:**
+- `npm run docker:smoke` (testing)
+- `npm run dev:full` (development with MCP)
+- `./dev.sh start` (development)
 
 ## Architecture
 

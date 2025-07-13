@@ -35,11 +35,18 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 - `npm test` - Fallback basic health tests (use Docker commands instead)
 
 ### Development
-- `npm run dev` - Start development server
-- `npm run build` - Build for production  
-- `npm run lint` - Run linter
-- `npm run typecheck` - Run TypeScript type checking
-- `npm run dev:full` - Start development server + MCP servers
+⚠️ **IMPORTANT**: This project uses Docker Compose for development. Traditional `npm run dev`, `npm run build`, `npm run lint`, and `npm run typecheck` commands are NOT available.
+
+- `npm run dev:full` - Start development server + MCP servers (Docker-orchestrated)
+- `./dev.sh start` - Start all development services (see README.md)
+- `./dev.sh backend` - Backend only development mode
+- `./dev.sh frontend` - Frontend only development mode
+- `./dev.sh stop` - Stop all development services
+
+**Code Quality**: This project does not have traditional lint/typecheck npm scripts. Code quality is managed through:
+- Docker-orchestrated testing (`npm run docker:smoke`, `npm run docker:test`)
+- Frontend-specific linting within the React development container
+- Backend Python linting through the FastAPI development container
 
 ### MCP Server Management (Docker-Orchestrated)
 🐳 **MCP servers run as isolated Docker containers for consistency and security**

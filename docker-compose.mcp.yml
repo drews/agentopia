@@ -117,17 +117,31 @@ services:
       - "mcp.capabilities=tasks,projects,todo"
       - "mcp.offline=false"
     
-  # Files MCP Server (placeholder)
-  files-mcp:
-    image: nginx:alpine
-    container_name: agentopia-files-mcp
+  # Filesystem MCP Server (official with security boundaries)
+  filesystem-mcp:
+    image: node:18-alpine
+    container_name: agentopia-filesystem-mcp
     # No external ports - only accessible via gateway
     networks:
       - mcp-network
+    volumes:
+      - "./:/workspace:ro"  # Read-only project access
+      - "./docs:/app/docs:ro"  # Read-only docs access
+    working_dir: /app
+    command: >
+      sh -c "
+      npm install -g @modelcontextprotocol/server-filesystem &&
+      npx @modelcontextprotocol/server-filesystem /workspace /app/docs
+      "
+    environment:
+      - MCP_PORT=3003
+      - MCP_HOST=0.0.0.0
+      - NODE_ENV=production
     restart: unless-stopped
     profiles:
-      - files-server
+      - filesystem-server
     labels:
-      - "mcp.server=files"
+      - "mcp.server=filesystem"
       - "mcp.capabilities=files,documents,storage"
-      - "mcp.offline=false"
+      - "mcp.offline=true"
+      - "mcp.security=sandboxed"

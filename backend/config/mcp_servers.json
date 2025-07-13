@@ -23,9 +23,12 @@
       "capabilities": ["tasks", "projects", "todo"],
       "description": "Task management MCP server for Todoist, Notion, etc."
     },
-    "files": {
-      "capabilities": ["files", "documents", "storage"],
-      "description": "File system MCP server for local files, cloud storage"
+    "filesystem": {
+      "capabilities": ["files", "documents", "storage", "read", "write", "list"],
+      "description": "Official filesystem MCP server with sandboxed access to project files",
+      "offline": true,
+      "security": "sandboxed",
+      "allowed_paths": ["/workspace", "/app/docs"]
     }
   },
   "default_timeout": 30,
