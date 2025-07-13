@@ -2,20 +2,25 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders agent showcase initially', () => {
+test('renders loading state initially', () => {
   render(<App />);
-  const showcaseElement = screen.getByText(/Agent Representation Showcase/i);
-  expect(showcaseElement).toBeInTheDocument();
+  const loadingElement = screen.getByText(/Loading USS Agentopia Bridge/i);
+  expect(loadingElement).toBeInTheDocument();
 });
 
-test('shows switch to bridge view button', () => {
+test('shows navigation with ship view, roster, and game mechanics buttons', () => {
   render(<App />);
-  const buttonElement = screen.getByText(/Switch to Bridge View/i);
-  expect(buttonElement).toBeInTheDocument();
+  const shipViewButton = screen.getByText(/Ship View/i);
+  const rosterButton = screen.getByText(/Roster/i);
+  const mechanicsButton = screen.getByText(/Game Mechanics/i);
+  
+  expect(shipViewButton).toBeInTheDocument();
+  expect(rosterButton).toBeInTheDocument();
+  expect(mechanicsButton).toBeInTheDocument();
 });
 
-test('shows LCARS theme selected by default', () => {
+test('shows ship view selected by default', () => {
   render(<App />);
-  const lcarsButton = screen.getByRole('button', { name: /lcars/i });
-  expect(lcarsButton).toHaveStyle('font-weight: bold');
+  const shipViewButton = screen.getByRole('button', { name: /ship view/i });
+  expect(shipViewButton).toHaveStyle('font-weight: 600');
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AgentShowcase from './AgentShowcase';
+import CharacterShowcase from './components/CharacterShowcase';
 import './App.css';
 
 interface Position {
@@ -41,20 +42,12 @@ interface BridgeState {
 }
 
 function App() {
-  const [showAgentShowcase, setShowAgentShowcase] = useState(true);
+  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics'>('ship');
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
-  const [websocket, setWebsocket] = useState<WebSocket | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-  const [debugMode, setDebugMode] = useState(false);
-  const [simulationSpeed, setSimulationSpeed] = useState(1);
-  const [agentTrails, setAgentTrails] = useState<{[key: string]: Position[]}>({});
-  const [chatMessages, setChatMessages] = useState<Array<{from: string, message: string, timestamp: string}>>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [selectedAgent, setSelectedAgent] = useState<string>('');
 
   useEffect(() => {
-    if (showAgentShowcase) return; // Skip bridge connection when showing showcase
+    if (currentView !== 'ship') return; // Skip bridge connection when not showing ship view
     
     // Fetch initial bridge state
     fetch('http://localhost:8000/api/bridge/state')
@@ -67,7 +60,6 @@ function App() {
     
     ws.onopen = () => {
       setConnectionStatus('Connected');
-      setWebsocket(ws);
     };
     
     ws.onmessage = (event) => {
@@ -76,47 +68,11 @@ function App() {
       
       if (message.type === 'initial_state') {
         setBridgeState(message.data);
-      } else if (message.type === 'chat_message') {
-        // Handle chat messages
-        setChatMessages(prev => [...prev, message.data]);
-      } else if (message.type === 'agent_response') {
-        // Handle agent responses
-        setChatMessages(prev => [...prev, {
-          from: message.data.agent_id,
-          message: message.data.response,
-          timestamp: message.data.timestamp
-        }]);
-      } else if (message.type === 'bridge_update') {
-        setBridgeState(prev => {
-          if (!prev) return prev;
-          
-          // Update agent trails when positions change
-          const updatedAgents = message.data.agents || prev.agents;
-          const newTrails = { ...agentTrails };
-          
-          updatedAgents.forEach((agent: Agent) => {
-            const prevAgent = prev.agents.find(a => a.id === agent.id);
-            if (prevAgent && (prevAgent.position.x !== agent.position.x || prevAgent.position.y !== agent.position.y)) {
-              // Add previous position to trail
-              if (!newTrails[agent.id]) newTrails[agent.id] = [];
-              newTrails[agent.id].push(prevAgent.position);
-              
-              // Limit trail length
-              if (newTrails[agent.id].length > 10) {
-                newTrails[agent.id].shift();
-              }
-            }
-          });
-          
-          setAgentTrails(newTrails);
-          return { ...prev, ...message.data };
-        });
       }
     };
     
     ws.onclose = () => {
       setConnectionStatus('Disconnected');
-      setWebsocket(null);
     };
     
     ws.onerror = (error) => {
@@ -127,93 +83,76 @@ function App() {
     return () => {
       ws.close();
     };
-  }, [showAgentShowcase]);
+  }, [currentView]);
 
-  // Show agent showcase by default for development
-  if (showAgentShowcase) {
-    return (
-      <div className="App">
-        <nav style={{ 
-          padding: '10px 20px', 
-          borderBottom: '1px solid #ccc',
-          backgroundColor: '#f8f9fa'
-        }}>
+  // Navigation component
+  const renderNavigation = () => (
+    <nav style={{ 
+      padding: '10px 20px', 
+      borderBottom: '1px solid #333',
+      backgroundColor: '#1a2332',
+      display: 'flex',
+      gap: '10px',
+      alignItems: 'center'
+    }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        {[
+          { id: 'ship', label: 'Ship View' },
+          { id: 'roster', label: 'Roster' },
+          { id: 'mechanics', label: 'Game Mechanics' }
+        ].map(view => (
           <button 
-            onClick={() => setShowAgentShowcase(false)}
+            key={view.id}
+            onClick={() => setCurrentView(view.id as any)}
             style={{
               padding: '8px 16px',
-              border: '1px solid #007bff',
+              border: currentView === view.id ? '2px solid #42a5f5' : '1px solid #555',
               borderRadius: '4px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              cursor: 'pointer'
+              backgroundColor: currentView === view.id ? '#42a5f5' : 'transparent',
+              color: currentView === view.id ? '#000' : '#e0e6ed',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: currentView === view.id ? '600' : '400',
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px',
+              transition: 'all 0.2s ease'
             }}
           >
-            Switch to Bridge View
+            {view.label}
           </button>
-        </nav>
+        ))}
+      </div>
+      <div style={{ marginLeft: 'auto', fontSize: '12px', color: '#78909c' }}>
+        Agentopia Bridge • {connectionStatus}
+      </div>
+    </nav>
+  );
+
+  // Show game mechanics (formerly agent showcase)
+  if (currentView === 'mechanics') {
+    return (
+      <div className="App">
+        {renderNavigation()}
         <AgentShowcase />
       </div>
     );
   }
 
-  const sendChatMessage = async () => {
-    if (!chatInput.trim() || !selectedAgent) return;
-    
-    try {
-      const response = await fetch(`http://localhost:8000/api/agents/${selectedAgent}/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: chatInput
-        })
-      });
-      
-      if (response.ok) {
-        // Add user message to chat
-        setChatMessages(prev => [...prev, {
-          from: 'Captain',
-          message: chatInput,
-          timestamp: new Date().toISOString()
-        }]);
-        setChatInput('');
-      }
-    } catch (error) {
-      console.error('Error sending chat message:', error);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      sendChatMessage();
-    }
-  };
+  // Show roster (formerly character stories)
+  if (currentView === 'roster') {
+    return (
+      <div className="App" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {renderNavigation()}
+        <CharacterShowcase />
+      </div>
+    );
+  }
 
   if (!bridgeState) {
     return (
       <div className="App">
+        {renderNavigation()}
         <header className="App-header">
-          <nav style={{ 
-            padding: '10px 20px', 
-            borderBottom: '1px solid #ccc',
-            backgroundColor: '#f8f9fa'
-          }}>
-            <button 
-              onClick={() => setShowAgentShowcase(true)}
-              style={{
-                padding: '8px 16px',
-                border: '1px solid #007bff',
-                borderRadius: '4px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                cursor: 'pointer'
-              }}
-            >
-              View Agent Showcase
-            </button>
-          </nav>
           <h1>🚀 Loading USS Agentopia Bridge...</h1>
           <p>Status: {connectionStatus}</p>
         </header>
@@ -223,26 +162,8 @@ function App() {
 
   return (
     <div className="App">
+      {renderNavigation()}
       <header className="bridge-header">
-        <nav style={{ 
-          padding: '10px 20px', 
-          borderBottom: '1px solid #ccc',
-          backgroundColor: '#f8f9fa'
-        }}>
-          <button 
-            onClick={() => setShowAgentShowcase(true)}
-            style={{
-              padding: '8px 16px',
-              border: '1px solid #007bff',
-              borderRadius: '4px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              cursor: 'pointer'
-            }}
-          >
-            View Agent Showcase
-          </button>
-        </nav>
         <h1>🚀 {bridgeState.bridge_id.toUpperCase()} Bridge</h1>
         <div className="status-indicators">
           <span className={`status ${bridgeState.status}`}>
@@ -251,28 +172,6 @@ function App() {
           <span className={`connection ${connectionStatus.toLowerCase()}`}>
             WS: {connectionStatus}
           </span>
-          <span className="agent-count">
-            Agents: {bridgeState.agents.length}
-          </span>
-        </div>
-        <div className="debug-controls">
-          <button 
-            className={`debug-toggle ${debugMode ? 'active' : ''}`}
-            onClick={() => setDebugMode(!debugMode)}
-          >
-            🔍 Debug {debugMode ? 'ON' : 'OFF'}
-          </button>
-          <div className="speed-control">
-            <label>Speed: {simulationSpeed}x</label>
-            <input 
-              type="range" 
-              min="0.1" 
-              max="3" 
-              step="0.1"
-              value={simulationSpeed}
-              onChange={(e) => setSimulationSpeed(parseFloat(e.target.value))}
-            />
-          </div>
         </div>
       </header>
       
@@ -303,46 +202,19 @@ function App() {
             </div>
           ))}
           
-          {/* Render agent trails */}
-          {debugMode && Object.entries(agentTrails).map(([agentId, trail]) => (
-            <div key={`trail-${agentId}`} className="agent-trail">
-              {trail.map((pos, index) => (
-                <div
-                  key={index}
-                  className="trail-dot"
-                  style={{
-                    gridColumn: pos.x + 1,
-                    gridRow: pos.y + 1,
-                    opacity: (index + 1) / trail.length * 0.3,
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-          
           {/* Render agents */}
           {bridgeState.agents.map(agent => (
             <div
               key={agent.id}
-              className={`agent ${agent.status} ${debugMode ? 'debug' : ''}`}
+              className={`agent ${agent.status}`}
               style={{
                 gridColumn: agent.position.x + 1,
                 gridRow: agent.position.y + 1,
-                animationDuration: `${2 / simulationSpeed}s`,
               }}
               title={`${agent.name} - ${agent.status}`}
             >
               <span className="agent-avatar">{agent.avatar}</span>
               <span className="agent-name">{agent.name}</span>
-              {debugMode && (
-                <div className="debug-info">
-                  <div className="debug-tooltip">
-                    <div>ID: {agent.id}</div>
-                    <div>Pos: ({agent.position.x}, {agent.position.y})</div>
-                    <div>Status: {agent.status}</div>
-                  </div>
-                </div>
-              )}
             </div>
           ))}
         </div>
