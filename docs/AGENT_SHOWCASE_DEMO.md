@@ -1,4 +1,4 @@
-# Agent Representation System Demo
+# Game Mechanics Demonstration
 
 ## Live Screenshot
 
@@ -41,11 +41,12 @@ The showcase adapts to different screen sizes:
 - Color-blind friendly status indicators
 
 ## Live Demo
-Visit **http://localhost:3000** to interact with the showcase and experience:
-- Real-time theme switching
-- Agent interactions and tooltips
-- Responsive design testing
+Visit **http://localhost:3000** and navigate to the **Game Mechanics** tab to experience:
+- Real-time theme switching demonstrations
+- Agent interaction patterns and tooltips
+- Responsive design testing across devices
 - All animation states and transitions
+- System capability demonstrations
 
 ## Technical Implementation
 - **Strategy Pattern**: Pluggable rendering strategies for themes
@@ -53,3 +54,10 @@ Visit **http://localhost:3000** to interact with the showcase and experience:
 - **React 18**: Modern component architecture with hooks
 - **CSS Animations**: Performance-optimized with GPU acceleration
 - **Accessibility**: WCAG 2.1 AA compliant implementation
+
+## Purpose in Ship Operations Interface
+The Game Mechanics tab serves as a testing and demonstration environment for:
+- Visual theme systems used across Ship View and Roster
+- Agent interaction patterns that inform crew management
+- System capabilities that support ship operations
+- Accessibility features used throughout the interface
