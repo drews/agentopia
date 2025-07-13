@@ -303,6 +303,62 @@ async def get_agent_configs():
         logger.error(f"Error getting agent configs: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get configs: {str(e)}")
 
+@app.get("/api/personas")
+async def get_available_personas():
+    """Get all available personas with descriptions"""
+    try:
+        personas = await agent_manager.get_available_personas()
+        active_persona = await agent_manager.get_active_persona()
+        return {
+            "personas": personas,
+            "active_persona": active_persona
+        }
+    except Exception as e:
+        logger.error(f"Error getting personas: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get personas: {str(e)}")
+
+@app.post("/api/personas/{persona_id}/activate")
+async def activate_persona(persona_id: str):
+    """Activate a specific persona for all agents"""
+    try:
+        success = await agent_manager.set_persona(persona_id)
+        if success:
+            return {"status": "success", "message": f"Persona '{persona_id}' activated", "active_persona": persona_id}
+        else:
+            raise HTTPException(status_code=404, detail=f"Persona '{persona_id}' not found")
+    except Exception as e:
+        logger.error(f"Error activating persona: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to activate persona: {str(e)}")
+
+@app.post("/api/agents/{agent_id}/mission/persona", response_model=SuccessResponse)
+async def assign_mission_with_persona(agent_id: str, mission_data: MissionRequest, persona_id: Optional[str] = None):
+    """Assign a mission to an agent with a specific persona"""
+    try:
+        # Validate agent exists
+        agent = await db.get_agent(agent_id)
+        if not agent:
+            raise AgentNotFoundException(agent_id)
+        
+        # Send persona-aware mission to agent
+        success = await agent_manager.send_mission_to_agent_with_persona(
+            agent_id, mission_data.mission, persona_id
+        )
+        if not success:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to assign persona mission to agent {agent_id}"
+            )
+        
+        return SuccessResponse(
+            success=True, 
+            message=f"Mission assigned to {agent_id} with persona context"
+        )
+    except AgentNotFoundException:
+        raise  # Re-raise the custom exception
+    except Exception as e:
+        logger.error(f"Error assigning persona mission to {agent_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/mcp/status")
 async def get_mcp_status():
     """Get MCP server connection status"""

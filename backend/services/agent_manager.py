@@ -15,6 +15,7 @@ from services.llm_service import LLMService
 from services.agent_mcp_bridge import AgentMCPBridge
 from backend.core.config import get_settings
 from models.agent import AgentRole
+from services.config_service import config_service
 
 logger = logging.getLogger(__name__)
 
@@ -633,3 +634,111 @@ class AgentManager:
         except Exception as e:
             logger.error(f"Error getting bridge summary: {e}")
             return {"error": str(e)}
+    
+    async def set_persona(self, persona_id: str) -> bool:
+        """Set the active persona for all agents"""
+        try:
+            success = config_service.set_active_persona(persona_id)
+            if success:
+                # Notify all agents that persona has changed
+                agents = await db.get_all_agents()
+                for agent in agents:
+                    await self.websocket_manager.broadcast_agent_update(agent)
+                
+                # Broadcast persona change to frontend
+                await self.websocket_manager.broadcast_bridge_status({
+                    "persona_changed": persona_id,
+                    "timestamp": datetime.now().isoformat()
+                })
+                
+                logger.info(f"Persona set to: {persona_id}")
+            return success
+        except Exception as e:
+            logger.error(f"Error setting persona: {e}")
+            return False
+    
+    async def get_active_persona(self) -> Optional[str]:
+        """Get the currently active persona"""
+        return config_service.get_active_persona()
+    
+    async def get_available_personas(self) -> Dict[str, str]:
+        """Get list of available personas"""
+        return config_service.get_available_personas()
+    
+    async def send_mission_to_agent_with_persona(self, agent_id: str, mission: str, persona_id: str = None) -> bool:
+        """Send a mission to an agent with persona-specific behavior"""
+        try:
+            # Get persona-modified agent config
+            agent_config = config_service.apply_persona_to_agent(agent_id, persona_id)
+            if not agent_config:
+                # Fallback to regular mission sending
+                return await self.send_mission_to_agent(agent_id, mission)
+            
+            # Update agent status with persona awareness
+            await self.spaceship_service.update_agent_status(agent_id, "thinking", mission)
+            
+            # Get persona-modified system prompt
+            system_prompt = agent_config.get("system_prompt", "You are a helpful AI assistant.")
+            agent_name = agent_config.get("name", agent_id)
+            
+            # Check persona for Claude Code specific behaviors
+            persona_config = config_service.get_persona_config(persona_id or config_service.get_active_persona())
+            if persona_config:
+                communication_style = persona_config.get("communication_style", "measured")
+                work_pace = persona_config.get("work_pace", "balanced")
+                
+                # Modify response approach based on persona
+                if work_pace == "intense":
+                    system_prompt += " Respond quickly and focus on immediate actionable steps."
+                elif work_pace == "sustainable":
+                    system_prompt += " Take time to consider all implications and provide thorough analysis."
+                elif work_pace == "thorough":
+                    system_prompt += " Be extremely detailed and consider all security and quality aspects."
+            
+            # Check if this is an MCP command
+            agent_role_str = agent_config.get("role", "bridge_crew")
+            try:
+                agent_role = AgentRole(agent_role_str)
+            except ValueError:
+                agent_role = AgentRole.BRIDGE_CREW
+            
+            mcp_result = await self._try_mcp_command(agent_id, agent_role, mission)
+            
+            if mcp_result["is_mcp_command"]:
+                response = mcp_result["response"]
+            else:
+                # Get LLM response with persona-aware prompt
+                response = await self.llm_service.generate_response(
+                    prompt=mission,
+                    system_prompt=system_prompt
+                )
+            
+            if response and not response.startswith("I apologize"):
+                # Update agent status to active
+                await self.spaceship_service.update_agent_status(agent_id, "active", response)
+                
+                # Send chat message with persona-influenced tone
+                await self.websocket_manager.broadcast_chat_message({
+                    "from": agent_id,
+                    "to": "bridge",
+                    "message": response,
+                    "persona_context": persona_id or config_service.get_active_persona(),
+                    "timestamp": datetime.now().isoformat()
+                })
+                
+                logger.info(f"Agent {agent_id} responded with persona {persona_id}: {response[:50]}...")
+            else:
+                # Handle error
+                await self.spaceship_service.update_agent_status(agent_id, "idle", "Error processing mission")
+                logger.error(f"Agent {agent_id} failed to process persona-aware mission: {response}")
+            
+            # Broadcast agent update
+            agent = await db.get_agent(agent_id)
+            if agent:
+                await self.websocket_manager.broadcast_agent_update(agent)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending persona-aware mission to agent {agent_id}: {e}")
+            return False
