@@ -1,27 +1,21 @@
-# Claude Code Context Management
+# Agentopia Development Guide
 
-## Project Overview
-Agentopia - AI agent development platform with longitudinal task performance optimization
+AI agent development platform with longitudinal task performance optimization.
 
-## Context Management Strategy
+See @README.md for project overview and @package.json for available npm commands.
 
-### MCP-Mediated Resources
-- **Implementation Plans**: Store detailed specs, architecture decisions in external documents
-- **Code Patterns**: Maintain project-specific style guides and architectural decisions
-- **Historical Context**: Keep logs of implementations, decisions, and lessons learned
-- **Test Cases**: Externalize expected behaviors and acceptance criteria
+## Key Context
+- @docs/index.md - Documentation navigation
+- @docs/architecture/ - System design and technical decisions  
+- @docs/mcp/ - MCP integration guides and setup
+- @backend/BACKLOG.md - Backend development priorities
+- @frontend/BACKLOG.md - Frontend development priorities
 
-### Development Workflow
-- **Incremental Commits**: Small, focused commits preserving implementation reasoning
-- **Feature Flags**: Manage incremental implementation across sessions
-- **Branch Naming**: Use descriptive names encoding task context
-- **PR Templates**: Capture implementation approach, testing strategy, context
-
-### Source Control as Context Store
-- **Issue Tracking**: Link commits to issues for broader context retrieval
-- **Strategic Comments**: Explain "why" for future context loading
-- **Documentation as Code**: Version-controlled architecture decisions
-- **State Checkpoints**: Commit WIP with clear context markers
+## Development Patterns
+- Docker-first architecture: All dev/test commands use containers
+- MCP integration: Agents connect to real-world data via MCP servers
+- Conventional commits: Use `feat:`, `fix:`, `docs:`, `refactor:`
+- Branch naming: Use descriptive names encoding task context
 
 ## Commands
 
@@ -72,15 +66,17 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 - `/frontend` - React/TypeScript frontend
 - `/backend` - Python FastAPI backend with core modules (config, exceptions, schemas)
 - `/e2e` - Playwright test suites and BDD features
-- `/docs` - Project documentation
+- `/docs` - Project documentation (organized by topic)
+  - `/architecture` - System design and technical decisions
+  - `/mcp` - MCP integration guides and setup
+  - `/development` - Setup guides and workflows
+  - `/planning` - Roadmaps and project status
 - `/mcp-servers/` - Custom MCP server implementations
   - `/datetime-tools/` - Offline datetime calculations and calendar tools
 - `/scripts/` - Orchestration and utility scripts
 - `docker-compose.test.yml` - Docker orchestration for testing
 - `docker-compose.mcp.yml` - Docker orchestration for MCP servers
 - `playwright-*.config.ts` - Playwright configurations for different test types
-- `.features-gen/` - Generated feature documentation
-- `playwright-report/` - E2E test reports
 
 ## Testing Infrastructure (Docker-First)
 🐳 **All testing is containerized for consistency and isolation**
