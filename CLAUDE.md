@@ -4,6 +4,14 @@ AI agent development platform with longitudinal task performance optimization.
 
 See @README.md for project overview and @package.json for available npm commands.
 
+## Current Architecture
+- **Ship Operations Interface**: Three-tab system (Ship View, Roster, Game Mechanics)
+- **Bridge Operations**: Real-time ship status, crew positioning, system monitoring
+- **Character-Driven Roster**: Personnel profiles with operational context
+- **MCP Integration**: Props represent tool capabilities with character associations
+
+## Context Management Strategy
+
 ## Key Context
 - @docs/index.md - Documentation navigation
 - @docs/architecture/ - System design and technical decisions  
@@ -63,8 +71,13 @@ See @README.md for project overview and @package.json for available npm commands
 - **mcp-obsidian**: Connected to local Obsidian vault for knowledge management
 
 ## Project Structure
-- `/frontend` - React/TypeScript frontend
-- `/backend` - Python FastAPI backend with core modules (config, exceptions, schemas)
+- `/frontend/spaceship-bridge/` - React/TypeScript ship operations interface
+  - `/src/types/character.ts` - Core character, scene, prop interfaces
+  - `/src/components/CharacterCard.tsx` - Individual character representation
+  - `/src/components/SceneView.tsx` - Environmental character context
+  - `/src/components/CharacterShowcase.tsx` - Roster interface
+  - `/src/agents/` - Game mechanics system (LCARS themes, strategies)
+- `/backend` - Python FastAPI backend with ship/crew management
 - `/e2e` - Playwright test suites and BDD features
 - `/docs` - Project documentation (organized by topic)
   - `/architecture` - System design and technical decisions
@@ -72,11 +85,12 @@ See @README.md for project overview and @package.json for available npm commands
   - `/development` - Setup guides and workflows
   - `/planning` - Roadmaps and project status
 - `/mcp-servers/` - Custom MCP server implementations
-  - `/datetime-tools/` - Offline datetime calculations and calendar tools
 - `/scripts/` - Orchestration and utility scripts
 - `docker-compose.test.yml` - Docker orchestration for testing
 - `docker-compose.mcp.yml` - Docker orchestration for MCP servers
 - `playwright-*.config.ts` - Playwright configurations for different test types
+- `ROADMAP.md` - Development progression and baselines
+- `playwright-report/` - E2E test reports
 
 ## Testing Infrastructure (Docker-First)
 🐳 **All testing is containerized for consistency and isolation**
@@ -98,3 +112,13 @@ See @README.md for project overview and @package.json for available npm commands
 - Use git log/diff to reconstruct session state
 - Maintain dependency tracking between changes
 - Strategic rollback points for safe restoration
+
+### Available Baselines (git commits)
+- **312d016**: Complex pane-based system (full-featured, overwhelming UX)
+- **f6d7f50**: Simplified character-driven system (story-focused)
+
+### Key Development Insights
+- **Complexity Trap**: Initial pane system was technically impressive but overwhelming
+- **Ship Operations Focus**: Three-tab interface provides clear operational structure
+- **Character Integration**: Roster provides personnel context within ship operations
+- **System Demonstration**: Game Mechanics tab showcases technical capabilities

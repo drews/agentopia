@@ -1,7 +1,5 @@
-version: '3.8'
-
+# Testing environment with isolated services
 services:
-  # Backend service (extends the main docker-compose.yml)
   backend:
     build:
       context: .
@@ -27,19 +25,15 @@ services:
     networks:
       - agentopia-test
 
-  # Frontend service (extends the main docker-compose.yml)
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend/spaceship-bridge/src:/app/src
-      - ./frontend/spaceship-bridge/public:/app/public
     environment:
       - REACT_APP_API_URL=http://backend:8000
-      - CHOKIDAR_USEPOLLING=true
+      - CI=true
       - GENERATE_SOURCEMAP=false
     depends_on:
       backend:
@@ -53,7 +47,6 @@ services:
     networks:
       - agentopia-test
 
-  # Playwright test service
   tests:
     image: mcr.microsoft.com/playwright:v1.53.2-noble
     working_dir: /app
@@ -67,6 +60,8 @@ services:
       - FRONTEND_URL=http://frontend:3000
     depends_on:
       backend:
+        condition: service_healthy
+      frontend:
         condition: service_healthy
     command: |
       sh -c "

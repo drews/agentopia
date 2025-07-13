@@ -1,5 +1,4 @@
-version: '3.8'
-
+# Base services for development
 services:
   backend:
     build:
@@ -19,9 +18,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_interval: 5s
 
   frontend:
     build:
@@ -29,14 +29,11 @@ services:
       dockerfile: Dockerfile.frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend/spaceship-bridge/src:/app/src
-      - ./frontend/spaceship-bridge/public:/app/public
     environment:
       - REACT_APP_API_URL=http://localhost:8000
-      - CHOKIDAR_USEPOLLING=true
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
