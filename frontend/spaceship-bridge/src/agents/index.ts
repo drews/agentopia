@@ -1,4 +1,8 @@
 // Agent representation system exports
+import { AgentRepresentationStrategy } from './types';
+import { RetroAgentStrategy } from './strategies/RetroAgentStrategy';
+import { ModernAgentStrategy } from './strategies/ModernAgentStrategy';
+import { MinimalAgentStrategy } from './strategies/MinimalAgentStrategy';
 
 export * from './types';
 export { default as AgentComponent } from './AgentComponent';
@@ -8,6 +12,7 @@ export { BaseAgentStrategy } from './strategies/BaseAgentStrategy';
 export { RetroAgentStrategy } from './strategies/RetroAgentStrategy';
 export { ModernAgentStrategy } from './strategies/ModernAgentStrategy';
 export { MinimalAgentStrategy } from './strategies/MinimalAgentStrategy';
+export { LCARSAgentStrategy } from './strategies/LCARSAgentStrategy';
 
 // Themes
 export { RetroTheme } from './themes/RetroTheme';
@@ -15,10 +20,6 @@ export { ModernTheme } from './themes/ModernTheme';
 export { MinimalTheme } from './themes/MinimalTheme';
 
 // Strategy factory
-import { AgentRepresentationStrategy } from './types';
-import { RetroAgentStrategy } from './strategies/RetroAgentStrategy';
-import { ModernAgentStrategy } from './strategies/ModernAgentStrategy';
-import { MinimalAgentStrategy } from './strategies/MinimalAgentStrategy';
 
 export const createAgentStrategy = (theme: string): AgentRepresentationStrategy => {
   switch (theme.toLowerCase()) {

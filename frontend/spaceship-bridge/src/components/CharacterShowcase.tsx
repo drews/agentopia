@@ -269,9 +269,9 @@ const CharacterShowcase: React.FC = () => {
       `}</style>
 
       <div className="showcase-header">
-        <div className="showcase-title">Character Stories</div>
+        <div className="showcase-title">Roster</div>
         <div className="showcase-subtitle">
-          Characters in their environments with story-connected tools
+          Active crew members in their operational contexts
         </div>
         
         <div className="scene-selector">
@@ -297,8 +297,8 @@ const CharacterShowcase: React.FC = () => {
         />
         
         <div className="showcase-info">
-          Click characters to see details • Props show MCP tool connections • 
-          Character attributes and traits reference external systems
+          Click crew members to view profiles • Equipment shows tool capabilities • 
+          Skills and relationships tracked through external systems
         </div>
       </div>
     </div>
