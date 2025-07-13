@@ -29,13 +29,13 @@ class AgentMCPBridge:
         self.resource_manager = MCPResourceManager()
         self.agent_capabilities: Dict[AgentRole, List[str]] = {
             AgentRole.EXECUTIVE_OFFICER: [
-                "calendar", "tasks", "planning", "scheduling", "reporting"
+                "calendar", "tasks", "planning", "scheduling", "reporting", "datetime", "holidays"
             ],
             AgentRole.SCIENCE_OFFICER: [
-                "files", "research", "analysis", "documents", "data"
+                "files", "research", "analysis", "documents", "data", "datetime", "calculations"
             ],
             AgentRole.OPERATIONS_OFFICER: [
-                "tasks", "workflow", "automation", "monitoring", "execution"
+                "tasks", "workflow", "automation", "monitoring", "execution", "datetime", "time"
             ]
         }
         self.command_handlers: Dict[str, Callable] = {}
@@ -77,6 +77,15 @@ class AgentMCPBridge:
             "list_files": self._handle_list_files,
             "read_file": self._handle_read_file,
             "search_files": self._handle_search_files,
+            
+            # DateTime commands
+            "current_time": self._handle_current_time,
+            "days_until": self._handle_days_until,
+            "days_between": self._handle_days_between,
+            "day_of_week": self._handle_day_of_week,
+            "is_leap_year": self._handle_is_leap_year,
+            "next_holiday": self._handle_next_holiday,
+            "is_holiday": self._handle_is_holiday,
             
             # Planning commands
             "plan_day": self._handle_plan_day,
@@ -374,6 +383,168 @@ class AgentMCPBridge:
         }
         
         return report
+    
+    # DateTime command handlers
+    async def _handle_current_time(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle current time command."""
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                server = await self.resource_manager.server_manager.find_resource_server("time")
+            
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "current_time", params, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            # Fallback to local time
+            from datetime import datetime
+            now = datetime.now()
+            return {
+                "datetime": now.isoformat(),
+                "formatted": now.strftime("%A, %B %d, %Y at %I:%M %p"),
+                "source": "local_fallback"
+            }
+    
+    async def _handle_days_until(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle days until command."""
+        target_date = params.get("target_date") or params.get("date")
+        if not target_date:
+            return {"error": "Missing target_date parameter"}
+        
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "days_until", {"target_date": target_date}, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            # Fallback calculation
+            from datetime import datetime, date
+            try:
+                if target_date.lower() == "christmas":
+                    target = date(date.today().year, 12, 25)
+                    if target < date.today():
+                        target = date(date.today().year + 1, 12, 25)
+                else:
+                    target = datetime.strptime(target_date, "%Y-%m-%d").date()
+                
+                days = (target - date.today()).days
+                return {
+                    "days_until": days,
+                    "target_date": target.isoformat(),
+                    "message": f"{days} days until {target_date}",
+                    "source": "local_fallback"
+                }
+            except Exception:
+                return {"error": f"Could not calculate days until {target_date}"}
+    
+    async def _handle_days_between(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle days between command.""" 
+        start_date = params.get("start_date")
+        end_date = params.get("end_date")
+        
+        if not start_date or not end_date:
+            return {"error": "Missing start_date or end_date parameter"}
+        
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "days_between", {"start_date": start_date, "end_date": end_date}, 
+                preferred_server=server
+            )
+            return result
+        except Exception as e:
+            return {"error": f"Could not calculate days between dates: {str(e)}"}
+    
+    async def _handle_day_of_week(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle day of week command."""
+        target_date = params.get("date") or params.get("target_date")
+        if not target_date:
+            return {"error": "Missing date parameter"}
+        
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "day_of_week", {"target_date": target_date}, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            return {"error": f"Could not determine day of week: {str(e)}"}
+    
+    async def _handle_is_leap_year(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle leap year check command."""
+        year = params.get("year")
+        if not year:
+            return {"error": "Missing year parameter"}
+        
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "is_leap_year", {"year": int(year)}, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            # Fallback calculation
+            try:
+                import calendar
+                year_int = int(year)
+                is_leap = calendar.isleap(year_int)
+                return {
+                    "year": year_int,
+                    "is_leap_year": is_leap,
+                    "message": f"{year_int} {'is' if is_leap else 'is not'} a leap year",
+                    "source": "local_fallback"
+                }
+            except Exception:
+                return {"error": f"Could not check if {year} is a leap year"}
+    
+    async def _handle_next_holiday(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle next holiday command."""
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "next_holiday", {}, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            return {"error": f"Could not find next holiday: {str(e)}"}
+    
+    async def _handle_is_holiday(self, agent_id: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle holiday check command."""
+        target_date = params.get("date") or params.get("target_date")
+        if not target_date:
+            return {"error": "Missing date parameter"}
+        
+        try:
+            server = await self.resource_manager.server_manager.find_resource_server("datetime")
+            if not server:
+                raise Exception("No datetime server available")
+            
+            result = await self.resource_manager.server_manager.call_tool(
+                "is_holiday", {"target_date": target_date}, preferred_server=server
+            )
+            return result
+        except Exception as e:
+            return {"error": f"Could not check if {target_date} is a holiday: {str(e)}"}
     
     async def get_mcp_status(self) -> Dict[str, Any]:
         """Get status of MCP connections and resources."""

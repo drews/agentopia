@@ -20,7 +20,18 @@
     "docker:test:logs": "docker compose -f docker-compose.test.yml logs",
     "docker:test:build": "docker compose -f docker-compose.test.yml build",
     "docker:services:up": "docker compose -f docker-compose.test.yml up -d backend frontend",
-    "docker:services:down": "docker compose -f docker-compose.test.yml down"
+    "docker:services:down": "docker compose -f docker-compose.test.yml down",
+    "mcp:start": "bash scripts/mcp-control.sh start",
+    "mcp:stop": "bash scripts/mcp-control.sh stop",
+    "mcp:restart": "bash scripts/mcp-control.sh restart",
+    "mcp:status": "bash scripts/mcp-control.sh status",
+    "mcp:logs": "bash scripts/mcp-control.sh logs",
+    "mcp:scale": "bash scripts/mcp-control.sh scale",
+    "mcp:build": "bash scripts/mcp-control.sh build",
+    "mcp:clean": "bash scripts/mcp-control.sh clean",
+    "mcp:test": "bash scripts/mcp-control.sh test",
+    "dev:full": "npm run mcp:start && npm run docker:services:up",
+    "test:mcp": "npm run mcp:start && npm run docker:smoke && npm run mcp:stop"
   },
   "repository": {
     "type": "git",

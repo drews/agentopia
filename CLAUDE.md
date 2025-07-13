@@ -36,9 +36,22 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 
 ### Development
 - `npm run dev` - Start development server
-- `npm run build` - Build for production
+- `npm run build` - Build for production  
 - `npm run lint` - Run linter
 - `npm run typecheck` - Run TypeScript type checking
+- `npm run dev:full` - Start development server + MCP servers
+
+### MCP Server Management (Docker-Orchestrated)
+🐳 **MCP servers run as isolated Docker containers for consistency and security**
+
+- `npm run mcp:start` - Start all MCP server containers
+- `npm run mcp:stop` - Stop all MCP server containers
+- `npm run mcp:status` - Show status of all MCP servers
+- `npm run mcp:logs` - Show logs from MCP servers
+- `npm run mcp:scale` - Start only essential MCP servers
+- `npm run mcp:build` - Build MCP server Docker images
+- `npm run mcp:test` - Test MCP server connectivity
+- `npm run test:mcp` - Run full test suite with MCP integration
 
 ### Git Workflow
 - Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`
@@ -53,7 +66,11 @@ Agentopia - AI agent development platform with longitudinal task performance opt
 - `/backend` - Python FastAPI backend with core modules (config, exceptions, schemas)
 - `/e2e` - Playwright test suites and BDD features
 - `/docs` - Project documentation
+- `/mcp-servers/` - Custom MCP server implementations
+  - `/datetime-tools/` - Offline datetime calculations and calendar tools
+- `/scripts/` - Orchestration and utility scripts
 - `docker-compose.test.yml` - Docker orchestration for testing
+- `docker-compose.mcp.yml` - Docker orchestration for MCP servers
 - `playwright-*.config.ts` - Playwright configurations for different test types
 - `.features-gen/` - Generated feature documentation
 - `playwright-report/` - E2E test reports

@@ -267,6 +267,17 @@ class AgentManager:
                 "plan my day": {"command": "plan_day", "params": {}},
                 "create event": {"command": "create_event", "params": self._parse_event_params(mission)},
                 "create task": {"command": "create_task", "params": self._parse_task_params(mission)},
+                
+                # DateTime patterns
+                "current time": {"command": "current_time", "params": {}},
+                "what time": {"command": "current_time", "params": {}},
+                "days until": {"command": "days_until", "params": self._parse_days_until_params(mission)},
+                "how many days": {"command": "days_until", "params": self._parse_days_until_params(mission)},
+                "when is": {"command": "day_of_week", "params": self._parse_date_params(mission)},
+                "what day": {"command": "day_of_week", "params": self._parse_date_params(mission)},
+                "leap year": {"command": "is_leap_year", "params": self._parse_year_params(mission)},
+                "next holiday": {"command": "next_holiday", "params": {}},
+                "is holiday": {"command": "is_holiday", "params": self._parse_date_params(mission)},
             }
             
             # Check for MCP command patterns
@@ -317,6 +328,62 @@ class AgentManager:
             title = mission[title_start:].strip()
             if title:
                 params["title"] = title
+        
+        return params
+    
+    def _parse_days_until_params(self, mission: str) -> Dict[str, Any]:
+        """Parse 'days until' parameters from mission text."""
+        params = {}
+        mission_lower = mission.lower()
+        
+        # Look for holiday names
+        holidays = ["christmas", "new year", "thanksgiving", "halloween", "valentine", "easter"]
+        for holiday in holidays:
+            if holiday in mission_lower:
+                params["target_date"] = holiday.title()
+                return params
+        
+        # Look for dates (simple patterns)
+        import re
+        date_patterns = [
+            r'(\d{4}-\d{2}-\d{2})',  # YYYY-MM-DD
+            r'(\d{1,2}/\d{1,2}/\d{4})',  # MM/DD/YYYY
+        ]
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, mission)
+            if match:
+                params["target_date"] = match.group(1)
+                return params
+        
+        return params
+    
+    def _parse_date_params(self, mission: str) -> Dict[str, Any]:
+        """Parse date parameters from mission text."""
+        params = {}
+        
+        import re
+        date_patterns = [
+            r'(\d{4}-\d{2}-\d{2})',  # YYYY-MM-DD
+            r'(\d{1,2}/\d{1,2}/\d{4})',  # MM/DD/YYYY
+        ]
+        
+        for pattern in date_patterns:
+            match = re.search(pattern, mission)
+            if match:
+                params["date"] = match.group(1)
+                return params
+        
+        return params
+    
+    def _parse_year_params(self, mission: str) -> Dict[str, Any]:
+        """Parse year parameters from mission text."""
+        params = {}
+        
+        import re
+        year_match = re.search(r'\b(\d{4})\b', mission)
+        if year_match:
+            params["year"] = int(year_match.group(1))
         
         return params
     
@@ -406,6 +473,65 @@ class AgentManager:
             
             elif command == "create_task":
                 return "Task created successfully."
+            
+            # DateTime commands
+            elif command == "current_time":
+                formatted = data.get("formatted", data.get("datetime", ""))
+                return f"Current time: {formatted}"
+            
+            elif command == "days_until":
+                if "error" in data:
+                    return data["error"]
+                message = data.get("message", "")
+                if message:
+                    return message
+                days = data.get("days_until", 0)
+                target = data.get("target_date", "")
+                return f"{days} days until {target}"
+            
+            elif command == "day_of_week":
+                if "error" in data:
+                    return data["error"]
+                message = data.get("message", "")
+                if message:
+                    return message
+                day = data.get("day_of_week", "")
+                date_str = data.get("date", "")
+                return f"{date_str} is a {day}"
+            
+            elif command == "is_leap_year":
+                if "error" in data:
+                    return data["error"]
+                message = data.get("message", "")
+                if message:
+                    return message
+                year = data.get("year", "")
+                is_leap = data.get("is_leap_year", False)
+                return f"{year} {'is' if is_leap else 'is not'} a leap year"
+            
+            elif command == "next_holiday":
+                if "error" in data:
+                    return data["error"]
+                message = data.get("message", "")
+                if message:
+                    return message
+                holiday = data.get("holiday", "")
+                days = data.get("days_until", 0)
+                return f"Next holiday is {holiday} in {days} days"
+            
+            elif command == "is_holiday":
+                if "error" in data:
+                    return data["error"]
+                message = data.get("message", "")
+                if message:
+                    return message
+                is_holiday = data.get("is_holiday", False)
+                date_str = data.get("date", "")
+                if is_holiday:
+                    holiday_name = data.get("holiday_name", "a holiday")
+                    return f"{date_str} is {holiday_name}"
+                else:
+                    return f"{date_str} is not a holiday"
             
             else:
                 return f"Command executed successfully. Data: {str(data)[:100]}..."

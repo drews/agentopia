@@ -15,28 +15,48 @@ logger = logging.getLogger(__name__)
 class MCPServerConfig:
     """Configuration for an MCP server connection."""
     name: str
-    url: str
-    auth: Optional[Dict[str, Any]] = None
     capabilities: List[str] = None
+    auth: Optional[Dict[str, Any]] = None
     timeout: int = 30
+    offline: bool = False
+
+@dataclass  
+class MCPGatewayConfig:
+    """Configuration for MCP gateway connection."""
+    url: str
+    timeout: int = 30
+    auth: Optional[Dict[str, Any]] = None
 
 
 class MCPClient:
     """
-    MCP client for communicating with MCP servers.
+    MCP client for communicating with MCP servers via gateway.
     
-    Handles the low-level protocol communication and maintains
-    connections to MCP servers.
+    Routes requests through a single MCP gateway using the pattern:
+    /mcp/<server-name>/<endpoint>
     """
     
     def __init__(self):
         self.servers: Dict[str, MCPServerConfig] = {}
-        self.connections: Dict[str, httpx.AsyncClient] = {}
+        self.gateway_config: Optional[MCPGatewayConfig] = None
+        self.gateway_client: Optional[httpx.AsyncClient] = None
         self.initialized = False
         
     async def initialize(self):
-        """Initialize the MCP client."""
+        """Initialize the MCP client and connect to gateway."""
         try:
+            if self.gateway_config:
+                self.gateway_client = httpx.AsyncClient(
+                    base_url=self.gateway_config.url,
+                    timeout=self.gateway_config.timeout,
+                    headers={"Content-Type": "application/json"}
+                )
+                
+                # Test gateway connection
+                response = await self.gateway_client.get("/health")
+                response.raise_for_status()
+                logger.info(f"Connected to MCP gateway: {self.gateway_config.url}")
+            
             self.initialized = True
             logger.info("MCP client initialized")
         except Exception as e:
@@ -44,17 +64,21 @@ class MCPClient:
             raise
             
     async def shutdown(self):
-        """Shutdown the MCP client and close all connections."""
+        """Shutdown the MCP client and close gateway connection."""
         try:
-            # Close all HTTP connections
-            for client in self.connections.values():
-                await client.aclose()
-            self.connections.clear()
+            if self.gateway_client:
+                await self.gateway_client.aclose()
+                self.gateway_client = None
             
             self.initialized = False
             logger.info("MCP client shut down")
         except Exception as e:
             logger.error(f"Error during MCP client shutdown: {e}")
+    
+    def set_gateway(self, config: MCPGatewayConfig):
+        """Set the MCP gateway configuration."""
+        self.gateway_config = config
+        logger.info(f"Set MCP gateway: {config.url}")
     
     def add_server(self, config: MCPServerConfig):
         """Add an MCP server configuration."""
@@ -62,76 +86,79 @@ class MCPClient:
         logger.info(f"Added MCP server configuration: {config.name}")
     
     async def connect_to_server(self, server_name: str) -> bool:
-        """Connect to an MCP server."""
+        """Check if an MCP server is available via gateway."""
         try:
+            if not self.gateway_client:
+                raise ValueError("Gateway not connected")
+                
             if server_name not in self.servers:
                 raise ValueError(f"Unknown server: {server_name}")
             
-            config = self.servers[server_name]
-            
-            # Create HTTP client for this server
-            client = httpx.AsyncClient(
-                base_url=config.url,
-                timeout=config.timeout,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            # Test connection with a health check
-            response = await client.get("/health")
+            # Test server availability via gateway
+            response = await self.gateway_client.get(f"/mcp/{server_name}")
             response.raise_for_status()
             
-            self.connections[server_name] = client
-            logger.info(f"Connected to MCP server: {server_name}")
+            logger.info(f"MCP server available: {server_name}")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to connect to MCP server {server_name}: {e}")
+            logger.error(f"MCP server {server_name} not available: {e}")
             return False
     
     async def disconnect_from_server(self, server_name: str):
-        """Disconnect from an MCP server."""
-        try:
-            if server_name in self.connections:
-                await self.connections[server_name].aclose()
-                del self.connections[server_name]
-                logger.info(f"Disconnected from MCP server: {server_name}")
-        except Exception as e:
-            logger.error(f"Error disconnecting from server {server_name}: {e}")
+        """Disconnect from an MCP server (no-op for gateway architecture)."""
+        logger.info(f"Server {server_name} managed by gateway - no disconnect needed")
     
     async def send_request(self, server_name: str, method: str, resource: str, 
                           data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Send a request to an MCP server."""
+        """Send a request to an MCP server via gateway."""
         try:
-            if server_name not in self.connections:
-                raise ValueError(f"Not connected to server: {server_name}")
+            if not self.gateway_client:
+                raise ValueError("Gateway not connected")
+                
+            if server_name not in self.servers:
+                raise ValueError(f"Unknown server: {server_name}")
             
-            client = self.connections[server_name]
-            
-            # Construct MCP request
-            mcp_request = {
-                "jsonrpc": "2.0",
-                "id": f"{method}_{resource}_{asyncio.current_task().get_name()}",
-                "method": method,
-                "params": {
-                    "resource": resource,
-                    **(data or {})
-                }
-            }
-            
-            # Send request
-            response = await client.post("/rpc", json=mcp_request)
-            response.raise_for_status()
-            
-            result = response.json()
-            
-            # Handle MCP response format
-            if "error" in result:
-                raise Exception(f"MCP error: {result['error']}")
-            
-            return result.get("result", {})
+            # Route through gateway using /mcp/<server-name>/<endpoint> pattern
+            if method == "tools/call":
+                # Call tool endpoint: POST /mcp/<server-name>/mcp/tools/{tool_name}
+                url = f"/mcp/{server_name}/mcp/tools/{resource}"
+                response = await self.gateway_client.post(url, json=data or {})
+                response.raise_for_status()
+                return response.json()
+                
+            elif method == "resources/read":
+                # Get resource endpoint: GET /mcp/<server-name>/mcp/resources/{resource_name}
+                # Extract resource name from URI (e.g., "datetime://holidays" -> "holidays")
+                resource_name = resource.split("://")[-1] if "://" in resource else resource
+                url = f"/mcp/{server_name}/mcp/resources/{resource_name}"
+                response = await self.gateway_client.get(url)
+                response.raise_for_status()
+                return response.json()
+                
+            elif method == "capabilities":
+                # Get capabilities endpoint: GET /mcp/<server-name>/capabilities
+                url = f"/mcp/{server_name}/capabilities"
+                response = await self.gateway_client.get(url)
+                response.raise_for_status()
+                return response.json()
+                
+            elif method == "health":
+                # Health check endpoint: GET /mcp/<server-name>/health
+                url = f"/mcp/{server_name}/health"
+                response = await self.gateway_client.get(url)
+                response.raise_for_status()
+                return response.json()
+                
+            else:
+                # For other methods, try gateway's generic routing
+                url = f"/mcp/{server_name}/{resource}"
+                response = await self.gateway_client.post(url, json=data or {})
+                response.raise_for_status()
+                return response.json()
             
         except Exception as e:
-            logger.error(f"Error sending request to {server_name}: {e}")
+            logger.error(f"Error sending request to {server_name} via gateway: {e}")
             raise
     
     async def list_resources(self, server_name: str) -> List[Dict[str, Any]]:
@@ -164,7 +191,7 @@ class MCPClient:
                 server_name,
                 "tools/call",
                 tool_name,
-                {"arguments": arguments}
+                arguments  # Pass arguments directly, not nested
             )
             return result
         except Exception as e:
@@ -174,16 +201,33 @@ class MCPClient:
     async def get_server_capabilities(self, server_name: str) -> Dict[str, Any]:
         """Get capabilities of an MCP server."""
         try:
-            result = await self.send_request(server_name, "initialize", "")
-            return result.get("capabilities", {})
+            result = await self.send_request(server_name, "capabilities", "")
+            return result
         except Exception as e:
             logger.error(f"Error getting capabilities from {server_name}: {e}")
             return {}
     
     def is_connected(self, server_name: str) -> bool:
-        """Check if connected to a specific server."""
-        return server_name in self.connections
+        """Check if connected to a specific server via gateway."""
+        return (self.gateway_client is not None and 
+                server_name in self.servers)
     
     def get_connected_servers(self) -> List[str]:
-        """Get list of currently connected servers."""
-        return list(self.connections.keys())
+        """Get list of available servers via gateway."""
+        if self.gateway_client is None:
+            return []
+        return list(self.servers.keys())
+    
+    async def list_gateway_servers(self) -> Dict[str, Dict[str, Any]]:
+        """List all servers available through the gateway."""
+        try:
+            if not self.gateway_client:
+                raise ValueError("Gateway not connected")
+                
+            response = await self.gateway_client.get("/mcp")
+            response.raise_for_status()
+            return response.json()
+            
+        except Exception as e:
+            logger.error(f"Error listing gateway servers: {e}")
+            return {}
