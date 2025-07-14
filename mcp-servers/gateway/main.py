@@ -9,11 +9,12 @@ Routes requests to appropriate MCP servers with pattern:
 import asyncio
 import logging
 import os
+import json
+from pathlib import Path
 from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 import httpx
-import yaml
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,9 +25,10 @@ app = FastAPI(title="MCP Gateway", description="Gateway for Model Context Protoc
 class MCPGateway:
     """Gateway that routes requests to appropriate MCP servers."""
     
-    def __init__(self):
+    def __init__(self, config_path: str = "/workspace/config/mcp_config.json"):
         self.servers: Dict[str, Dict] = {}
         self.http_client = httpx.AsyncClient(timeout=30.0)
+        self.config_path = config_path
         
     async def initialize(self):
         """Initialize the gateway and discover MCP servers."""
@@ -34,42 +36,74 @@ class MCPGateway:
         logger.info(f"MCP Gateway initialized with {len(self.servers)} servers")
         
     async def discover_servers(self):
-        """Discover available MCP servers from configuration."""
-        # Load server configuration from docker-compose labels or config file
-        server_configs = {
+        """Discover available MCP servers from configuration file."""
+        try:
+            config_file = Path(self.config_path)
+            
+            # Fallback to relative path if absolute doesn't exist
+            if not config_file.exists():
+                config_file = Path("../../config/mcp_config.json")
+            
+            if not config_file.exists():
+                logger.warning(f"Config file not found at {self.config_path}, using hardcoded defaults")
+                await self.load_default_servers()
+                return
+            
+            with open(config_file, 'r') as f:
+                config_data = json.load(f)
+            
+            self.servers.clear()
+            
+            for server_name, server_config in config_data.get("servers", {}).items():
+                # Use internal docker URL for gateway-to-server communication
+                server_url = server_config["url"]
+                
+                self.servers[server_name] = {
+                    "url": server_url,
+                    "capabilities": server_config.get("capabilities", []),
+                    "description": server_config.get("description", ""),
+                    "timeout": server_config.get("timeout", 30),
+                    "offline": server_config.get("offline", False)
+                }
+            
+            logger.info(f"Loaded {len(self.servers)} server configurations from {config_file}")
+            
+        except Exception as e:
+            logger.error(f"Error loading server configuration: {e}")
+            await self.load_default_servers()
+    
+    async def load_default_servers(self):
+        """Load hardcoded default server configuration as fallback."""
+        self.servers = {
             "datetime-tools": {
                 "url": "http://datetime-mcp:3000",
                 "capabilities": ["datetime", "calendar", "holidays", "calculations"],
-                "description": "Offline datetime tools and calendar calculations"
+                "description": "Offline datetime tools and calendar calculations",
+                "timeout": 30,
+                "offline": True
             },
             "calendar": {
                 "url": "http://calendar-mcp:80", 
                 "capabilities": ["calendar", "events", "scheduling"],
-                "description": "Calendar management server"
+                "description": "Calendar management server",
+                "timeout": 30,
+                "offline": False
             },
             "tasks": {
                 "url": "http://tasks-mcp:80",
                 "capabilities": ["tasks", "projects", "todo"], 
-                "description": "Task management server"
+                "description": "Task management server",
+                "timeout": 30,
+                "offline": False
             },
-            "files": {
-                "url": "http://files-mcp:80",
+            "filesystem": {
+                "url": "http://filesystem-mcp:80",
                 "capabilities": ["files", "documents", "storage"],
-                "description": "File system management server"
+                "description": "File system management server",
+                "timeout": 30,
+                "offline": False
             }
         }
-        
-        # Test connectivity to each server
-        for server_name, config in server_configs.items():
-            try:
-                response = await self.http_client.get(f"{config['url']}/health", timeout=5.0)
-                if response.status_code == 200:
-                    self.servers[server_name] = config
-                    logger.info(f"✅ Discovered MCP server: {server_name}")
-                else:
-                    logger.warning(f"⚠️ MCP server {server_name} not healthy: {response.status_code}")
-            except Exception as e:
-                logger.warning(f"⚠️ MCP server {server_name} not available: {e}")
         
     async def route_request(self, server_name: str, path: str, method: str, 
                            request_data: Optional[bytes] = None, 

@@ -23,7 +23,7 @@ class MCPServerManager:
     
     def __init__(self, config_path: Optional[str] = None):
         self.client = MCPClient()
-        self.config_path = config_path or "config/mcp_servers.json"
+        self.config_path = config_path or "config/mcp_config.json"
         self.server_configs: Dict[str, MCPServerConfig] = {}
         self.connection_retry_count = 3
         self.connection_retry_delay = 2.0
@@ -62,13 +62,21 @@ class MCPServerManager:
             
             self.server_configs.clear()
             
+            # Get default timeout from config
+            default_timeout = config_data.get("default_timeout", 30)
+            self.connection_retry_count = config_data.get("retry_attempts", 3)
+            self.connection_retry_delay = config_data.get("retry_delay", 2.0)
+            
             for server_name, server_config in config_data.get("servers", {}).items():
+                # Use external_url for client connections, fall back to url
+                server_url = server_config.get("external_url", server_config["url"])
+                
                 config = MCPServerConfig(
                     name=server_name,
-                    url=server_config["url"],
+                    url=server_url,
                     auth=server_config.get("auth"),
                     capabilities=server_config.get("capabilities", []),
-                    timeout=server_config.get("timeout", 30)
+                    timeout=server_config.get("timeout", default_timeout)
                 )
                 
                 self.server_configs[server_name] = config

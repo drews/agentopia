@@ -6,29 +6,44 @@
   },
   "servers": {
     "datetime-tools": {
+      "url": "http://datetime-mcp:3000",
+      "external_url": "http://localhost:3000",
       "capabilities": ["datetime", "calendar", "holidays", "calculations"],
       "description": "Offline datetime tools and calendar calculations",
-      "offline": true
+      "offline": true,
+      "timeout": 30
     },
     "time": {
+      "url": "http://time-mcp:80",
+      "external_url": "http://localhost:3001",
       "capabilities": ["time", "timezone", "conversion"],
       "description": "Official Time MCP server for timezone operations",
-      "offline": true
+      "offline": true,
+      "timeout": 30
     },
     "calendar": {
+      "url": "http://calendar-mcp:80",
+      "external_url": "http://localhost:3002",
       "capabilities": ["calendar", "events", "scheduling"],
-      "description": "Calendar MCP server for Google Calendar, Outlook, etc."
+      "description": "Calendar MCP server for Google Calendar, Outlook, etc.",
+      "timeout": 30
     },
     "tasks": {
+      "url": "http://tasks-mcp:80",
+      "external_url": "http://localhost:3003",
       "capabilities": ["tasks", "projects", "todo"],
-      "description": "Task management MCP server for Todoist, Notion, etc."
+      "description": "Task management MCP server for Todoist, Notion, etc.",
+      "timeout": 30
     },
     "filesystem": {
+      "url": "http://filesystem-mcp:80",
+      "external_url": "http://localhost:3004",
       "capabilities": ["files", "documents", "storage", "read", "write", "list"],
       "description": "Official filesystem MCP server with sandboxed access to project files",
       "offline": true,
       "security": "sandboxed",
-      "allowed_paths": ["/workspace", "/app/docs"]
+      "allowed_paths": ["/workspace", "/app/docs"],
+      "timeout": 30
     }
   },
   "default_timeout": 30,
