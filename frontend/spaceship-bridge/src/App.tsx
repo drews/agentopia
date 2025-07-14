@@ -85,47 +85,132 @@ function App() {
     };
   }, [currentView]);
 
-  // Navigation component
+  // LCARS Navigation component
   const renderNavigation = () => (
-    <nav style={{ 
-      padding: '10px 20px', 
-      borderBottom: '1px solid #333',
-      backgroundColor: '#1a2332',
+    <div style={{
+      position: 'relative',
+      height: '60px',
+      backgroundColor: '#000000',
       display: 'flex',
-      gap: '10px',
-      alignItems: 'center'
+      alignItems: 'stretch'
     }}>
-      <div style={{ display: 'flex', gap: '8px' }}>
+      {/* Left LCARS Panel */}
+      <div style={{
+        width: '320px',
+        height: '100%',
+        background: 'linear-gradient(90deg, #CC6699 0%, #CC6699 280px, #000000 320px)',
+        borderRadius: '0 30px 0 0',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: '20px'
+      }}>
+        <div style={{
+          fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
+          fontSize: '16px',
+          fontWeight: 'bold',
+          color: '#000000',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
+        }}>
+          AGENTOPIA BRIDGE
+        </div>
+      </div>
+
+      {/* Center Navigation Buttons */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '2px',
+        paddingLeft: '20px'
+      }}>
         {[
-          { id: 'ship', label: 'Ship View' },
-          { id: 'roster', label: 'Roster' },
-          { id: 'mechanics', label: 'Game Mechanics' }
-        ].map(view => (
-          <button 
-            key={view.id}
-            onClick={() => setCurrentView(view.id as any)}
-            style={{
-              padding: '8px 16px',
-              border: currentView === view.id ? '2px solid #42a5f5' : '1px solid #555',
-              borderRadius: '4px',
-              backgroundColor: currentView === view.id ? '#42a5f5' : 'transparent',
-              color: currentView === view.id ? '#000' : '#e0e6ed',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: currentView === view.id ? '600' : '400',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {view.label}
-          </button>
+          { id: 'ship', label: 'SHIP OPERATIONS', color: '#99CCFF' },
+          { id: 'roster', label: 'PERSONNEL', color: '#FFCC99' },
+          { id: 'mechanics', label: 'SYSTEMS', color: '#CCFF99' }
+        ].map((view, index) => (
+          <div key={view.id} style={{ display: 'flex' }}>
+            <button 
+              onClick={() => setCurrentView(view.id as any)}
+              style={{
+                height: '30px',
+                minWidth: '120px',
+                border: 'none',
+                borderRadius: index === 0 ? '15px 0 0 15px' : index === 2 ? '0 15px 15px 0' : '0',
+                backgroundColor: currentView === view.id ? view.color : '#333366',
+                color: currentView === view.id ? '#000000' : '#FFCC99',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
+                transition: 'all 0.2s ease',
+                padding: '0 12px',
+                position: 'relative'
+              }}
+            >
+              {view.label}
+            </button>
+            {index < 2 && (
+              <div style={{
+                width: '2px',
+                height: '30px',
+                backgroundColor: '#000000'
+              }} />
+            )}
+          </div>
         ))}
       </div>
-      <div style={{ marginLeft: 'auto', fontSize: '12px', color: '#78909c' }}>
-        Agentopia Bridge • {connectionStatus}
+
+      {/* Right LCARS Panel */}
+      <div style={{
+        width: '200px',
+        height: '100%',
+        background: 'linear-gradient(270deg, #99CCFF 0%, #99CCFF 150px, #000000 200px)',
+        borderRadius: '30px 0 0 0',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingRight: '20px'
+      }}>
+        <div style={{
+          fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
+          fontSize: '11px',
+          fontWeight: 'bold',
+          color: '#000000',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          textAlign: 'right'
+        }}>
+          STATUS: {connectionStatus}
+        </div>
       </div>
-    </nav>
+
+      {/* Corner curves */}
+      <div style={{
+        position: 'absolute',
+        bottom: '-8px',
+        left: '312px',
+        width: '16px',
+        height: '8px',
+        backgroundColor: '#CC6699',
+        borderRadius: '0 0 16px 0'
+      }} />
+      
+      <div style={{
+        position: 'absolute',
+        bottom: '-8px',
+        right: '192px',
+        width: '16px',
+        height: '8px',
+        backgroundColor: '#99CCFF',
+        borderRadius: '0 0 0 16px'
+      }} />
+    </div>
   );
 
   // Show game mechanics (formerly agent showcase)

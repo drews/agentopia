@@ -33,6 +33,7 @@ body {
   position: relative;
   flex-wrap: wrap;
   gap: 1rem;
+  margin-top: 0;
 }
 
 .bridge-header::before {
@@ -55,6 +56,29 @@ body {
   height: 4px;
   background: #99CCFF;
   border-radius: 20px;
+}
+
+/* LCARS Frame Integration */
+.bridge-main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 60px;
+  background: #CC6699;
+  border-radius: 0 0 8px 0;
+}
+
+.bridge-main::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 60px;
+  background: #99CCFF;
+  border-radius: 0 0 0 8px;
 }
 
 .bridge-header h1 {
@@ -189,13 +213,14 @@ body {
   padding: 1rem;
   position: relative;
   min-height: 0;
+  margin: 8px;
 }
 
 .bridge-grid::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  left: -8px;
   width: 30px;
   height: 100%;
   background: #FFCC99;
@@ -206,11 +231,45 @@ body {
   content: '';
   position: absolute;
   top: 0;
-  right: 0;
+  right: -8px;
   width: 30px;
   height: 100%;
   background: #CC99FF;
   border-radius: 20px 0 0 20px;
+}
+
+/* LCARS Section Dividers */
+.bridge-grid .section-divider {
+  position: absolute;
+  background: linear-gradient(90deg, #CC6699 0%, #99CCFF 50%, #CCFF99 100%);
+  height: 4px;
+  width: calc(100% - 60px);
+  left: 30px;
+  border-radius: 2px;
+}
+
+.bridge-grid .section-divider.top {
+  top: 0;
+}
+
+.bridge-grid .section-divider.bottom {
+  bottom: 0;
+}
+
+/* Vertical LCARS elements */
+.lcars-vertical-element {
+  position: absolute;
+  width: 6px;
+  background: #FFCC99;
+  border-radius: 3px;
+}
+
+.lcars-vertical-element.left {
+  left: 8px;
+}
+
+.lcars-vertical-element.right {
+  right: 8px;
 }
 
 /* Stations - LCARS Style */
@@ -327,17 +386,29 @@ body {
   padding: 1rem;
   overflow-y: auto;
   position: relative;
+  margin: 8px 8px 8px 0;
 }
 
 .bridge-sidebar::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  left: -8px;
   bottom: 0;
-  width: 20px;
-  background: #CC6699;
-  border-radius: 0 10px 10px 0;
+  width: 25px;
+  background: linear-gradient(180deg, #CC6699 0%, #99CCFF 50%, #CCFF99 100%);
+  border-radius: 0 12px 12px 0;
+}
+
+.bridge-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  background: #333366;
+  border-radius: 4px 0 0 4px;
 }
 
 .panel {
@@ -345,31 +416,79 @@ body {
 }
 
 .panel h3 {
-  color: #FFCC99;
+  color: #000000;
   margin-bottom: 0.75rem;
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom: 3px solid #CC99FF;
-  padding-bottom: 0.25rem;
-  background: #666699;
-  padding: 8px 12px;
-  border-radius: 20px 0 0 20px;
-  margin-left: 20px;
+  border: none;
+  background: linear-gradient(90deg, #CC6699 0%, #99CCFF 60%, #CCFF99 100%);
+  padding: 10px 20px;
+  border-radius: 25px 8px 8px 25px;
+  margin-left: 25px;
+  position: relative;
+  font-weight: bold;
+}
+
+.panel h3::before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: #CC6699;
+  border-radius: 50%;
+}
+
+.panel h3::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #CCFF99;
+  border-radius: 0 2px 2px 0;
 }
 
 .crew-item, .system-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   background: #333366;
-  border: none;
-  border-radius: 15px 0 15px 0;
+  border: 2px solid #666699;
+  border-radius: 20px 4px 4px 20px;
   font-size: 0.8rem;
-  margin-left: 20px;
+  margin-left: 25px;
   color: #FFCC99;
+  position: relative;
+}
+
+.crew-item::before, .system-item::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background: #FFCC99;
+  border-radius: 50%;
+}
+
+.crew-item::after, .system-item::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+  background: #666699;
+  border-radius: 0 1px 1px 0;
 }
 
 .crew-item:hover, .system-item:hover {
@@ -494,7 +613,6 @@ body {
   }
 }
 
-<<<<<<< HEAD
 /* Debug Mode Styles */
 .agent.debug {
   position: relative;
@@ -559,8 +677,6 @@ body {
   }
 }
 
-||||||| parent of ec9375e (feat: Implement LCARS design system with containerized testing)
-=======
 /* LCARS-specific animations */
 @keyframes lcars-pulse {
   0%, 100% { 
@@ -620,8 +736,6 @@ body {
 .lcars-agent .status-communicating {
   animation: lcars-pulse 2s infinite;
 }
-
->>>>>>> ec9375e (feat: Implement LCARS design system with containerized testing)
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .bridge-sidebar {
