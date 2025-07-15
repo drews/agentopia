@@ -74,6 +74,11 @@ services:
         grep -q '\"bridge_status\":\"operational\"' /tmp/health.json &&
         echo '✅ Health response validation passed' &&
         echo '' &&
+        echo 'Test 3: MCP architecture validation...' &&
+        curl -f http://backend:8000/test/architecture > /tmp/arch.json &&
+        grep -q '\"architecture_valid\":true' /tmp/arch.json &&
+        echo '✅ MCP architecture tests passed' &&
+        echo '' &&
         echo '🎉 All smoke tests passed! System is operational.' &&
         echo 'Backend URL: http://backend:8000/health' &&
         cat /tmp/health.json
