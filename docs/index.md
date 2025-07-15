@@ -16,11 +16,16 @@
 
 **File Pattern Triggers** (future automation hooks):
 - `docker-compose*.yml` changes → update `mcp/MCP_DOCKER_ORCHESTRATION.md`
+- `docker/*.Dockerfile` changes → update `development/` setup guides
 - `*/requirements.txt`, `package.json` → update `development/` setup guides
 - `backend/services/*.py` → review `architecture/ARCHITECTURE.md`
 - `config/*.json` → update relevant `mcp/` and `architecture/` docs
 - `scripts/*.sh` → document in `development/CONTEXT_MANAGEMENT.md`
 - `*.md` in root → migrate to appropriate `docs/` category
+
+### [Legacy](./legacy/)
+Historical documentation and prototypes for reference
+**Key:** Archived summaries, proposals, and prototypes from early development
 
 ---
 
@@ -32,7 +37,7 @@ System design, component relationships, technical patterns
 
 ### [Development](./development/)
 Environment setup, workflow automation, context management  
-**Key:** OLLAMA_SETUP.md, CONTEXT_MANAGEMENT.md
+**Key:** OLLAMA_SETUP.md, CONTEXT_MANAGEMENT.md, PERSONAL_LOG.md, DOCKER_TESTING.md
 
 ### [Planning](./planning/)
 Strategic roadmaps, feature prioritization, development milestones

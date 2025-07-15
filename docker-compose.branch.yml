@@ -1,0 +1,61 @@
+# Branch-isolated Docker Compose configuration
+# Uses COMPOSE_PROJECT_NAME for isolation and internal service discovery
+name: ${COMPOSE_PROJECT_NAME:-agentopia-main}
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    # No ports - Docker will assign random ones
+    # Use `docker compose port backend 8000` to discover
+    volumes:
+      - ./backend:/app/backend
+      - ./config:/app/config
+      - ./characters:/app/characters
+      - ./missions:/app/missions
+      - ./agentopia.db:/app/agentopia.db
+    environment:
+      - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - BRANCH_NAME=${BRANCH_NAME:-main}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - agentopia
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    # No ports - Docker will assign random ones
+    # Use `docker compose port frontend 3000` to discover
+    environment:
+      # Use internal service discovery for API calls
+      - REACT_APP_API_URL=http://backend:8000
+      - BRANCH_NAME=${BRANCH_NAME:-main}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - agentopia
+
+networks:
+  agentopia:
+    driver: bridge
+    name: ${COMPOSE_PROJECT_NAME:-agentopia-main}_network
+
+volumes:
+  node_modules:

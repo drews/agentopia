@@ -105,6 +105,7 @@ See @README.md for project overview and @package.json for available npm commands
 - `/scripts/` - Orchestration and utility scripts
 - `docker-compose.test.yml` - Docker orchestration for testing
 - `docker-compose.mcp.yml` - Docker orchestration for MCP servers
+- `docker/` - Consolidated Dockerfiles for all services
 - `playwright-*.config.ts` - Playwright configurations for different test types
 - `ROADMAP.md` - Development progression and baselines
 - `playwright-report/` - E2E test reports

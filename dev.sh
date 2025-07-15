@@ -48,6 +48,9 @@ case "$1" in
         docker-compose down -v
         docker system prune -f
         ;;
+    "dashboard")
+        ./scripts/compose-dashboard.sh
+        ;;
     *)
         echo "Agentopia Development Script"
         echo ""
@@ -63,10 +66,12 @@ case "$1" in
         echo "  shell     - Open shell in service (default: backend)"
         echo "  test      - Run tests"
         echo "  clean     - Clean up Docker resources"
+        echo "  dashboard - Show all running branch stacks with URLs"
         echo ""
         echo "Examples:"
         echo "  $0 start"
         echo "  $0 logs backend"
         echo "  $0 shell frontend"
+        echo "  $0 dashboard"
         ;;
 esac
