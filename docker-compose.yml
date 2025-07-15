@@ -1,4 +1,6 @@
 # Base services for development
+name: agentopia-dev
+
 services:
   backend:
     build:

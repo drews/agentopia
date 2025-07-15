@@ -1,6 +1,8 @@
-import { Given, When, Then } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { createBdd } from 'playwright-bdd';
 import { execSync } from 'child_process';
+
+const { Given, When, Then } = createBdd();
 
 // Background steps
 Given('the Agentopia backend is running', async ({ page }) => {

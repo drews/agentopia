@@ -1,11 +1,13 @@
-# Testing environment with isolated services
+# Testing environment with isolated services  
+name: agentopia-test
+
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ./backend:/app/backend
       - ./config:/app/config
@@ -30,7 +32,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - REACT_APP_API_URL=http://backend:8000
       - CI=true
@@ -58,6 +60,8 @@ services:
       - CI=true
       - BACKEND_URL=http://backend:8000
       - FRONTEND_URL=http://frontend:3000
+      - EXTERNAL_BACKEND_URL=http://localhost:8001
+      - EXTERNAL_FRONTEND_URL=http://localhost:3001
     depends_on:
       backend:
         condition: service_healthy

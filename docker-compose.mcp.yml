@@ -1,4 +1,4 @@
-version: '3.8'
+name: agentopia-mcp
 
 networks:
   mcp-network:
@@ -16,7 +16,7 @@ services:
       dockerfile: Dockerfile
     container_name: agentopia-mcp-gateway
     ports:
-      - "8001:8001"
+      - "8002:8001"
     networks:
       - mcp-network
     environment:

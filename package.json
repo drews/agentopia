@@ -4,6 +4,7 @@
   "description": "**Empowering self-directed productivity through agentic thought augmentation.**",
   "main": "index.js",
   "scripts": {
+    "setup": "npm install && npx playwright install",
     "test": "npm run test:health",
     "test:health": "npx bddgen --config playwright-simple.config.ts && npx playwright test --config playwright-simple.config.ts",
     "test:health:headed": "npx bddgen --config playwright-simple.config.ts && npx playwright test --config playwright-simple.config.ts --headed",

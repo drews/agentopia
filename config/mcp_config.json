@@ -1,49 +1,34 @@
 {
-  "gateway": {
-    "url": "http://localhost:8001",
-    "timeout": 30,
-    "description": "MCP Gateway - single entry point for all MCP servers"
-  },
   "servers": {
-    "datetime-tools": {
-      "url": "http://datetime-mcp:3000",
-      "external_url": "http://localhost:3000",
-      "capabilities": ["datetime", "calendar", "holidays", "calculations"],
-      "description": "Offline datetime tools and calendar calculations",
-      "offline": true,
-      "timeout": 30
-    },
-    "time": {
-      "url": "http://time-mcp:80",
-      "external_url": "http://localhost:3001",
-      "capabilities": ["time", "timezone", "conversion"],
-      "description": "Official Time MCP server for timezone operations",
-      "offline": true,
-      "timeout": 30
-    },
     "calendar": {
-      "url": "http://calendar-mcp:80",
-      "external_url": "http://localhost:3002",
-      "capabilities": ["calendar", "events", "scheduling"],
-      "description": "Calendar MCP server for Google Calendar, Outlook, etc.",
-      "timeout": 30
+      "url": "http://localhost:3001",
+      "capabilities": [
+        "calendar",
+        "events",
+        "scheduling"
+      ],
+      "timeout": 30,
+      "description": "Calendar MCP server for Google Calendar, Outlook, etc."
     },
     "tasks": {
-      "url": "http://tasks-mcp:80",
-      "external_url": "http://localhost:3003",
-      "capabilities": ["tasks", "projects", "todo"],
-      "description": "Task management MCP server for Todoist, Notion, etc.",
-      "timeout": 30
+      "url": "http://localhost:3002",
+      "capabilities": [
+        "tasks",
+        "projects",
+        "todo"
+      ],
+      "timeout": 30,
+      "description": "Task management MCP server for Todoist, Notion, etc."
     },
-    "filesystem": {
-      "url": "http://filesystem-mcp:80",
-      "external_url": "http://localhost:3004",
-      "capabilities": ["files", "documents", "storage", "read", "write", "list"],
-      "description": "Official filesystem MCP server with sandboxed access to project files",
-      "offline": true,
-      "security": "sandboxed",
-      "allowed_paths": ["/workspace", "/app/docs"],
-      "timeout": 30
+    "files": {
+      "url": "http://localhost:3003",
+      "capabilities": [
+        "files",
+        "documents",
+        "storage"
+      ],
+      "timeout": 30,
+      "description": "File system MCP server for local files, cloud storage"
     }
   },
   "default_timeout": 30,
