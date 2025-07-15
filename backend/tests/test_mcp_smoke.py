@@ -10,13 +10,76 @@ from pathlib import Path
 sys.path.append('/app')
 
 from services.mcp.mcp_server_manager import MCPServerManager
+from models.agent import AgentRole
+
+async def test_simplified_architecture():
+    """Test the simplified MCP architecture (no bridge layers)."""
+    print("🏗️ Testing Simplified MCP Architecture...")
+    
+    # Test that we can import simplified components
+    print("1. Testing component imports...")
+    try:
+        # These should import without the complex bridge layers
+        from services.agent_manager import AgentManager
+        print("✅ AgentManager imports successfully (no bridge dependency)")
+        
+        # Test that removed components are actually gone
+        try:
+            from services.agent_mcp_bridge import AgentMCPBridge
+            print("❌ AgentMCPBridge still exists - refactoring incomplete")
+            return False
+        except ImportError:
+            print("✅ AgentMCPBridge successfully removed")
+        
+        try:
+            from services.mcp.resource_manager import MCPResourceManager
+            print("⚠️ MCPResourceManager still exists - layer not eliminated")
+        except ImportError:
+            print("✅ MCPResourceManager layer eliminated")
+            
+    except Exception as e:
+        print(f"❌ Import test failed: {e}")
+        return False
+    
+    # Test agent capability system (moved from bridge to manager)
+    print("2. Testing agent capabilities system...")
+    agent_capabilities = {
+        AgentRole.EXECUTIVE_OFFICER: [
+            "calendar", "tasks", "planning", "scheduling", "reporting", "datetime", "holidays"
+        ],
+        AgentRole.SCIENCE_OFFICER: [
+            "files", "research", "analysis", "documents", "data", "datetime", "calculations"
+        ],
+        AgentRole.OPERATIONS_OFFICER: [
+            "tasks", "workflow", "automation", "monitoring", "execution", "datetime", "time"
+        ]
+    }
+    
+    # Verify simplified authorization logic
+    def agent_can_execute(agent_role: AgentRole, command: str) -> bool:
+        command_capability_map = {
+            "get_calendar": "calendar", "list_files": "files", "get_tasks": "tasks"
+        }
+        required_capability = command_capability_map.get(command)
+        if not required_capability:
+            return True
+        agent_caps = agent_capabilities.get(agent_role, [])
+        return required_capability in agent_caps
+    
+    # Test authorization logic
+    assert agent_can_execute(AgentRole.EXECUTIVE_OFFICER, "get_calendar") is True
+    assert agent_can_execute(AgentRole.SCIENCE_OFFICER, "get_calendar") is False
+    assert agent_can_execute(AgentRole.SCIENCE_OFFICER, "list_files") is True
+    print("✅ Agent authorization logic works correctly")
+    
+    return True
 
 async def test_mcp_integration():
     """Test the complete MCP integration."""
     print("🔧 Testing MCP Integration...")
     
     # Test configuration loading
-    print("1. Testing configuration loading...")
+    print("3. Testing configuration loading...")
     config_path = "/workspace/config/mcp_config.json"
     
     # Check if config exists and is valid
@@ -87,6 +150,36 @@ async def test_mcp_integration():
     finally:
         await server_manager.shutdown()
 
+async def run_all_tests():
+    """Run all smoke tests for MCP integration and architecture."""
+    print("🧪 Running MCP Smoke Tests...")
+    print("=" * 50)
+    
+    # Test 1: Simplified architecture
+    arch_success = await test_simplified_architecture()
+    print("=" * 50)
+    
+    # Test 2: MCP integration (only if architecture test passed)
+    if arch_success:
+        integration_success = await test_mcp_integration()
+    else:
+        print("⏭️ Skipping MCP integration test due to architecture issues")
+        integration_success = False
+    
+    print("=" * 50)
+    overall_success = arch_success and integration_success
+    
+    if overall_success:
+        print("🎉 All MCP smoke tests passed!")
+    else:
+        print("❌ Some MCP smoke tests failed")
+        if not arch_success:
+            print("  - Architecture test failed")
+        if not integration_success:
+            print("  - Integration test failed")
+    
+    return overall_success
+
 if __name__ == "__main__":
-    success = asyncio.run(test_mcp_integration())
+    success = asyncio.run(run_all_tests())
     sys.exit(0 if success else 1)

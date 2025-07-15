@@ -7,6 +7,5 @@ and external MCP servers for real-world data access.
 
 from .mcp_client import MCPClient
 from .mcp_server_manager import MCPServerManager
-from .resource_manager import MCPResourceManager
 
-__all__ = ['MCPClient', 'MCPServerManager', 'MCPResourceManager']
+__all__ = ['MCPClient', 'MCPServerManager']

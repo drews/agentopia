@@ -12,7 +12,7 @@ from database import db
 from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
 from services.llm_service import LLMService
-from services.agent_mcp_bridge import AgentMCPBridge
+from services.mcp.mcp_server_manager import MCPServerManager
 from backend.core.config import get_settings
 from models.agent import AgentRole
 from services.config_service import config_service
@@ -32,15 +32,28 @@ class AgentManager:
         self.running = False
         self.update_interval = 2.0  # Update every 2 seconds
         self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
-        self.mcp_bridge = AgentMCPBridge()  # Add MCP integration bridge
+        self.mcp_server_manager = MCPServerManager()  # Direct MCP integration
+        
+        # Agent capabilities and permissions (moved from AgentMCPBridge)
+        self.agent_capabilities: Dict[AgentRole, List[str]] = {
+            AgentRole.EXECUTIVE_OFFICER: [
+                "calendar", "tasks", "planning", "scheduling", "reporting", "datetime", "holidays"
+            ],
+            AgentRole.SCIENCE_OFFICER: [
+                "files", "research", "analysis", "documents", "data", "datetime", "calculations"
+            ],
+            AgentRole.OPERATIONS_OFFICER: [
+                "tasks", "workflow", "automation", "monitoring", "execution", "datetime", "time"
+            ]
+        }
         
     async def initialize(self):
         """Initialize the agent manager"""
         try:
             # LLM service is ready to use (no async initialization needed with LangChain)
             
-            # Initialize MCP bridge
-            await self.mcp_bridge.initialize()
+            # Initialize MCP server manager
+            await self.mcp_server_manager.initialize()
             
             # Try to import and connect to existing agent system
             await self._connect_to_existing_agents()
@@ -93,7 +106,7 @@ class AgentManager:
     async def stop_monitoring(self):
         """Stop monitoring agent activities"""
         self.running = False
-        await self.mcp_bridge.shutdown()
+        await self.mcp_server_manager.shutdown()
         logger.info("Stopped agent monitoring")
     
     async def _monitoring_loop(self):
@@ -284,10 +297,13 @@ class AgentManager:
             # Check for MCP command patterns
             for pattern, config in mcp_patterns.items():
                 if pattern in mission_lower:
-                    # Execute MCP command
-                    result = await self.mcp_bridge.execute_agent_command(
-                        agent_id, agent_role, config["command"], config["params"]
-                    )
+                    # Check agent authorization for this command
+                    if not self._agent_can_execute(agent_role, config["command"]):
+                        error_response = f"I don't have permission to {config['command']} - that's outside my role as {agent_role.value}"
+                        return {"is_mcp_command": True, "response": error_response}
+                    
+                    # Execute MCP command directly through server manager
+                    result = await self._execute_mcp_command(config["command"], config["params"])
                     
                     if result["success"]:
                         response = self._format_mcp_response(config["command"], result["data"])
@@ -742,3 +758,69 @@ class AgentManager:
         except Exception as e:
             logger.error(f"Error sending persona-aware mission to agent {agent_id}: {e}")
             return False
+    
+    def _agent_can_execute(self, agent_role: AgentRole, command: str) -> bool:
+        """Check if an agent role is authorized to execute a specific command."""
+        # Get command capabilities mapping
+        command_capability_map = {
+            "get_calendar": "calendar",
+            "get_events": "calendar", 
+            "create_event": "calendar",
+            "check_schedule": "calendar",
+            "get_tasks": "tasks",
+            "create_task": "tasks",
+            "update_task": "tasks",
+            "get_projects": "tasks",
+            "list_files": "files",
+            "read_file": "files",
+            "search_files": "files",
+            "current_time": "datetime",
+            "days_until": "datetime",
+            "days_between": "datetime",
+            "day_of_week": "datetime",
+            "is_leap_year": "datetime",
+            "next_holiday": "holidays",
+            "is_holiday": "holidays",
+            "plan_day": "planning",
+            "analyze_workload": "planning",
+            "generate_report": "reporting"
+        }
+        
+        required_capability = command_capability_map.get(command)
+        if not required_capability:
+            return True  # Unknown commands are allowed by default
+        
+        agent_caps = self.agent_capabilities.get(agent_role, [])
+        return required_capability in agent_caps
+    
+    async def _execute_mcp_command(self, command: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute an MCP command directly through the server manager."""
+        try:
+            # Map commands to MCP server operations
+            if command in ["current_time", "days_until", "days_between", "day_of_week", "is_leap_year", "next_holiday", "is_holiday"]:
+                # DateTime commands go to datetime-tools server
+                result = await self.mcp_server_manager.call_tool(command, parameters, "datetime-tools")
+                return {"success": True, "data": result}
+            
+            elif command in ["get_calendar", "get_events", "create_event", "check_schedule"]:
+                # Calendar commands - for now return mock data since actual calendar server isn't implemented
+                return {"success": True, "data": {"events": [], "message": "Calendar integration not yet implemented"}}
+            
+            elif command in ["get_tasks", "create_task", "update_task", "get_projects"]:
+                # Task commands - for now return mock data since actual task server isn't implemented  
+                return {"success": True, "data": {"tasks": [], "message": "Task integration not yet implemented"}}
+            
+            elif command in ["list_files", "read_file", "search_files"]:
+                # File commands - for now return mock data since actual file server isn't implemented
+                return {"success": True, "data": {"files": [], "message": "File integration not yet implemented"}}
+            
+            elif command in ["plan_day", "analyze_workload", "generate_report"]:
+                # Planning commands - these would combine multiple MCP sources
+                return {"success": True, "data": {"message": "Planning integration not yet implemented"}}
+            
+            else:
+                return {"success": False, "error": f"Unknown command: {command}"}
+                
+        except Exception as e:
+            logger.error(f"Error executing MCP command {command}: {e}")
+            return {"success": False, "error": str(e)}

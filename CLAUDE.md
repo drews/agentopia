@@ -67,6 +67,23 @@ See @README.md for project overview and @package.json for available npm commands
 - Include context in commit messages
 - Tag significant milestones
 
+## Claude Code Command Overlays
+
+### Snapshot Commands
+- Quality: `npm run docker:smoke`
+- Quality: `npm run test:mcp` (when MCP integration testing needed)
+
+### Progress Commands
+- Status: `@docs/planning/` - roadmaps vs current state
+- Status: `@backend/BACKLOG.md` - backend progress
+- Status: `@frontend/BACKLOG.md` - frontend progress  
+- Status: `@docs/mcp/` - MCP integration status
+
+### Reflect Commands
+- Log File: `docs/development/PERSONAL_LOG.md`
+- Log Format: "Developer's Log, [date]. [reflection]"
+- Style: "First person, technical but reflective, captain's log style"
+
 ## Current MCP Servers
 - **mcp-obsidian**: Connected to local Obsidian vault for knowledge management
 
