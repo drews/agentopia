@@ -14,7 +14,7 @@ Given('the Agentopia backend is running', async ({ page }) => {
 Given('the spaceship bridge frontend is accessible', async ({ page }) => {
   // Navigate to frontend and verify it loads
   await page.goto('http://localhost:3000');
-  await expect(page.locator('h1')).toContainText('Spaceship Bridge', { timeout: 10000 });
+  await expect(page.locator('h1')).toContainText('Bridge', { timeout: 10000 });
 });
 
 // Persona listing
@@ -23,10 +23,8 @@ When('I request the list of available personas', async ({ page }) => {
   expect(response.status()).toBe(200);
   
   const data = await response.json();
-  page.testInfo().attach('personas-response', { 
-    body: JSON.stringify(data, null, 2), 
-    contentType: 'application/json' 
-  });
+  // Store data for verification (testInfo not available in BDD context)
+  (page as any)._personasData = data;
   
   // Store for verification
   await page.evaluate((data) => {

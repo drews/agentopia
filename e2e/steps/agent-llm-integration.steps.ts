@@ -48,7 +48,7 @@ When('I send a mission {string} to the Commander', async ({ page }, mission: str
   const response = await page.request.post('http://localhost:8000/api/agents/red_agent/mission', {
     data: {
       mission: mission,
-      priority: 'normal'
+      priority: 5
     }
   });
   
