@@ -84,33 +84,33 @@ class SimpleLLMClient:
         # Generate appropriate mock responses based on agent role and message
         if agent_role == "commander":
             if "plan" in user_message or "schedule" in user_message:
-                return "Understood. I'll analyze the situation and create a strategic plan. All systems nominal."
+                return "📅 Daily schedule optimized for your energy patterns. 3 priority tasks identified for peak focus windows. Time blocking activated."
             elif "status" in user_message:
-                return "Current status: All stations operational. Crew performing at 95% efficiency."
+                return "📊 Executive function status: Focus capacity 85%, task momentum building. Energy management protocol active."
             elif "priority" in user_message:
-                return "Priority assessment complete. Recommending immediate action on critical tasks."
+                return "⚡ Priority matrix updated. Urgent vs important analysis complete. Dopamine reward system aligned with critical tasks."
             else:
-                return "Acknowledged. Initiating command protocols and coordinating response."
+                return "🎯 Strategic planning engaged. Breaking complex goals into manageable steps. Executive function support deployed."
         
         elif agent_role == "science_officer":
             if "research" in user_message or "analyze" in user_message:
-                return "Fascinating. Beginning comprehensive analysis. Preliminary data suggests multiple variables."
+                return "🧠 Pattern analysis complete. Your peak focus windows: 9-11am, 2-4pm. Cognitive load optimized for task batching."
             elif "data" in user_message:
-                return "Processing data streams. Correlating patterns across multiple databases."
+                return "📈 Productivity data analyzed. 23% improvement in task completion when using pomodoro technique. Recommending 25-min blocks."
             elif "investigate" in user_message:
-                return "Investigation protocols initiated. Gathering relevant information from all sources."
+                return "🔍 ADHD productivity research active. Studies show visual organization increases completion rates by 40%. Implementing spatial cues."
             else:
-                return "Intriguing. Applying logical analysis to determine optimal approach."
+                return "🤔 Fascinating behavioral patterns detected. Your motivation spikes correlate with novel challenges. Gamification protocols recommended."
         
         elif agent_role == "operations_officer":
             if "execute" in user_message or "do" in user_message:
-                return "Roger that. Initiating execution protocols. All systems ready for deployment."
+                return "⚙️ Workflow automation deployed! Body doubling mode active. 47% reduction in task-switching overhead. Deep work session ready."
             elif "task" in user_message:
-                return "Task parameters received. Optimizing workflow for maximum efficiency."
+                return "📋 Task breakdown complete. Large project divided into 12 micro-tasks. Dopamine hits scheduled every 15 minutes."
             elif "complete" in user_message:
-                return "Completion status: On track. All operational parameters within normal range."
+                return "✅ Completion protocols engaged! Progress tracking shows 3 major wins today. Celebrating achievements to maintain momentum."
             else:
-                return "Acknowledged. Proceeding with operational procedures as directed."
+                return "🔧 Executive function support online. Environment optimized, distractions filtered. Time to make things happen."
         
         else:
             # Generic response for unknown roles
