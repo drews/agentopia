@@ -44,3 +44,19 @@ test-results/
 *.md
 PROPOSAL
 WORKPLAN
+
+# Large development files that slow builds
+e2e/
+playwright-report/
+.features-gen/
+e2e/test-results/
+e2e/screenshots/
+
+# Frontend build artifacts
+frontend/spaceship-bridge/build/
+frontend/spaceship-bridge/.next/
+
+# Large Python files not needed in containers
+*.pkl
+*.model
+*.weights
