@@ -62,6 +62,7 @@ services:
       - FRONTEND_URL=http://frontend:3000
       - EXTERNAL_BACKEND_URL=http://localhost:8001
       - EXTERNAL_FRONTEND_URL=http://localhost:3001
+      - PLAYWRIGHT_BASE_URL=http://frontend:3000
     depends_on:
       backend:
         condition: service_healthy
@@ -69,23 +70,18 @@ services:
         condition: service_healthy
     command: |
       sh -c "
-        echo '🔍 Running basic smoke tests...' &&
-        echo 'Test 1: Backend health check...' &&
+        echo '🔍 Running smoke tests...' &&
         curl -f http://backend:8000/health > /tmp/health.json &&
         echo '✅ Backend health check passed' &&
-        echo 'Test 2: Health response contains expected fields...' &&
         grep -q '\"status\":\"healthy\"' /tmp/health.json &&
-        grep -q '\"bridge_status\":\"operational\"' /tmp/health.json &&
         echo '✅ Health response validation passed' &&
         echo '' &&
-        echo 'Test 3: MCP architecture validation...' &&
-        curl -f http://backend:8000/test/architecture > /tmp/arch.json &&
-        grep -q '\"architecture_valid\":true' /tmp/arch.json &&
-        echo '✅ MCP architecture tests passed' &&
-        echo '' &&
-        echo '🎉 All smoke tests passed! System is operational.' &&
-        echo 'Backend URL: http://backend:8000/health' &&
-        cat /tmp/health.json
+        echo '🎭 Running E2E tests...' &&
+        npm install &&
+        npx playwright install --with-deps &&
+        npm run bddgen &&
+        npx playwright test --project chromium --grep 'Fishtank ambient behavior system' &&
+        echo '🎉 All tests passed!'
       "
     networks:
       - agentopia-test

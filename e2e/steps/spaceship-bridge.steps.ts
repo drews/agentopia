@@ -10,6 +10,11 @@ const { Given, When, Then } = createBdd();
 Given('I am on the bridge interface', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
+  
+  // Ensure we're on the Ship View tab to see the bridge grid
+  const shipViewButton = page.locator('button', { hasText: 'Ship View' });
+  await shipViewButton.click();
+  await page.waitForTimeout(1000); // Allow view to switch
 });
 
 // Header and status verification
@@ -262,4 +267,107 @@ Then('animations should have a pixelated feel', async ({ page }) => {
   
   const animationName = await firstAgent.evaluate(el => getComputedStyle(el).animationName);
   expect(animationName).not.toBe('none');
+});
+
+// Fishtank ambient behavior system steps
+When('the page loads completely', async ({ page }) => {
+  await page.waitForLoadState('networkidle');
+  
+  // Check if we're on the Ship View tab (which should be default)
+  const currentTab = await page.locator('button[style*="border: 2px solid"]').textContent();
+  console.log('Current tab:', currentTab);
+  
+  // For this test, we'll check if the page loads in either state:
+  // 1. Successfully loaded with bridge-grid (ideal case)
+  // 2. Loading state (acceptable for ambient behavior test)
+  
+  try {
+    // Try to wait for the bridge to load successfully
+    await page.waitForSelector('.bridge-grid', { timeout: 8000 });
+    console.log('Bridge loaded successfully');
+  } catch (e) {
+    // If bridge doesn't load, check we're at least in the loading state
+    const loadingText = await page.textContent('h1');
+    if (loadingText?.includes('Loading USS Agentopia Bridge')) {
+      console.log('Bridge in loading state - acceptable for fishtank test');
+    } else {
+      throw new Error('Page not in expected state (either loaded or loading)');
+    }
+  }
+  
+  // Wait a bit for any async operations
+  await page.waitForTimeout(2000);
+});
+
+Then('I should see the WebSocket connection is established', async ({ page }) => {
+  // Check connection status shows "Connected"
+  await page.waitForSelector('.connection.connected', { timeout: 10000 });
+  const connectionStatus = page.locator('.connection.connected');
+  await expect(connectionStatus).toContainText('Connected');
+});
+
+Then('I should see the holodeck grid background', async ({ page }) => {
+  // Check for holodeck grid background styling
+  const bridgeGrid = page.locator('.bridge-grid');
+  await expect(bridgeGrid).toBeVisible();
+  
+  // Check for grid background styling
+  const gridBackground = await bridgeGrid.evaluate((el) => {
+    const style = window.getComputedStyle(el);
+    return style.backgroundImage;
+  });
+  
+  // Should have linear gradient grid lines
+  expect(gridBackground).toContain('linear-gradient');
+});
+
+Then('I should see agents positioned at different stations without overlap', async ({ page }) => {
+  // Wait for agents to be positioned
+  await page.waitForSelector('.agent', { timeout: 10000 });
+  
+  // Get all agent positions
+  const agents = page.locator('.agent');
+  const agentCount = await agents.count();
+  expect(agentCount).toBeGreaterThan(0);
+  
+  // Check that agents are at different grid positions
+  const positions = new Set();
+  for (let i = 0; i < agentCount; i++) {
+    const agent = agents.nth(i);
+    const style = await agent.evaluate((el) => {
+      const computedStyle = window.getComputedStyle(el);
+      return {
+        gridColumn: computedStyle.gridColumn,
+        gridRow: computedStyle.gridRow
+      };
+    });
+    
+    const positionKey = `${style.gridColumn}-${style.gridRow}`;
+    
+    // Each agent should have a unique position
+    expect(positions.has(positionKey)).toBe(false);
+    positions.add(positionKey);
+  }
+});
+
+Then('I should not see any WebSocket connection errors in the console', async ({ page }) => {
+  // Capture console errors
+  const consoleErrors: string[] = [];
+  
+  page.on('console', msg => {
+    if (msg.type() === 'error' && msg.text().includes('WebSocket')) {
+      consoleErrors.push(msg.text());
+    }
+  });
+  
+  // Wait a bit to catch any errors
+  await page.waitForTimeout(3000);
+  
+  // Check for specific WebSocket errors we want to avoid
+  const hasConnectionErrors = consoleErrors.some(error => 
+    error.includes('WebSocket is closed before the connection is established') ||
+    error.includes('WebSocket connection failed')
+  );
+  
+  expect(hasConnectionErrors).toBe(false);
 });

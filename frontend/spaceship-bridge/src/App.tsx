@@ -46,42 +46,103 @@ function App() {
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
+  // Get API URL from environment or default to localhost
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const wsUrl = apiUrl.replace('http', 'ws');
+
   useEffect(() => {
     if (currentView !== 'ship') return; // Skip bridge connection when not showing ship view
     
     // Fetch initial bridge state
-    fetch('http://localhost:8000/api/bridge/state')
+    fetch(`${apiUrl}/api/bridge/state`)
       .then(res => res.json())
       .then(data => setBridgeState(data))
       .catch(err => console.error('Failed to fetch bridge state:', err));
 
-    // Setup WebSocket connection
-    const ws = new WebSocket('ws://localhost:8000/ws');
+    // Setup WebSocket connection with reconnection
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let mounted = true;
     
-    ws.onopen = () => {
-      setConnectionStatus('Connected');
-    };
-    
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log('WebSocket message:', message);
+    const connectWebSocket = () => {
+      if (!mounted || ws) return; // Don't connect if already have a connection or unmounted
       
-      if (message.type === 'initial_state') {
-        setBridgeState(message.data);
-      }
+      setConnectionStatus('Connecting');
+      
+      ws = new WebSocket(`${wsUrl}/ws`);
+      
+      ws.onopen = () => {
+        if (!mounted) return;
+        setConnectionStatus('Connected');
+        // Clear any pending reconnection
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout);
+          reconnectTimeout = null;
+        }
+      };
+      
+      ws.onmessage = (event) => {
+        if (!mounted) return;
+        
+        const message = JSON.parse(event.data);
+        console.log('WebSocket message:', message);
+        
+        if (message.type === 'initial_state') {
+          setBridgeState(message.data);
+        } else if (message.type === 'agent_movement') {
+          // Update agent position in bridge state
+          setBridgeState(prevState => {
+            if (!prevState) return prevState;
+            
+            const updatedAgents = prevState.agents.map(agent => {
+              if (agent.id === message.data.agent_id) {
+                return {
+                  ...agent,
+                  position: message.data.position,
+                  status: message.data.is_moving ? 'moving' : message.data.activity_hint
+                };
+              }
+              return agent;
+            });
+            
+            return { ...prevState, agents: updatedAgents };
+          });
+        }
+      };
+      
+      ws.onclose = (event) => {
+        ws = null; // Clear reference
+        if (!mounted) return;
+        
+        setConnectionStatus('Disconnected');
+        // Attempt to reconnect after 2 seconds
+        reconnectTimeout = setTimeout(() => {
+          if (mounted) {
+            console.log('Attempting to reconnect WebSocket...');
+            connectWebSocket();
+          }
+        }, 2000);
+      };
+      
+      ws.onerror = (error) => {
+        if (!mounted) return;
+        console.log('WebSocket connection error, will retry...');
+        setConnectionStatus('Reconnecting');
+      };
     };
     
-    ws.onclose = () => {
-      setConnectionStatus('Disconnected');
-    };
-    
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setConnectionStatus('Error');
-    };
+    // Connect immediately
+    connectWebSocket();
 
     return () => {
-      ws.close();
+      mounted = false;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
     };
   }, [currentView]);
 
