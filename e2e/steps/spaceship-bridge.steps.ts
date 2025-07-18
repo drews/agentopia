@@ -11,9 +11,9 @@ Given('I am on the bridge interface', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   
-  // Ensure we're on the Ship View tab to see the bridge grid
-  const shipViewButton = page.locator('button', { hasText: 'Ship View' });
-  await shipViewButton.click();
+  // Ensure we're on the Ship tab to see the bridge grid
+  const shipButton = page.locator('button', { hasText: 'Ship' });
+  await shipButton.click();
   await page.waitForTimeout(1000); // Allow view to switch
 });
 
@@ -273,7 +273,7 @@ Then('animations should have a pixelated feel', async ({ page }) => {
 When('the page loads completely', async ({ page }) => {
   await page.waitForLoadState('networkidle');
   
-  // Check if we're on the Ship View tab (which should be default)
+  // Check if we're on the Ship tab (which should be default)
   const currentTab = await page.locator('button[style*="border: 2px solid"]').textContent();
   console.log('Current tab:', currentTab);
   

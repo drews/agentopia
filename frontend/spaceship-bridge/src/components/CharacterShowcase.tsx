@@ -269,7 +269,7 @@ const CharacterShowcase: React.FC = () => {
       `}</style>
 
       <div className="showcase-header">
-        <div className="showcase-title">Roster</div>
+        <div className="showcase-title">Manifest</div>
         <div className="showcase-subtitle">
           Active crew members in their operational contexts
         </div>

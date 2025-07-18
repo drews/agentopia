@@ -8,19 +8,19 @@ test('renders loading state initially', () => {
   expect(loadingElement).toBeInTheDocument();
 });
 
-test('shows navigation with ship view, roster, and game mechanics buttons', () => {
+test('shows navigation with ship, manifest, and screen buttons', () => {
   render(<App />);
-  const shipViewButton = screen.getByText(/Ship View/i);
-  const rosterButton = screen.getByText(/Roster/i);
-  const mechanicsButton = screen.getByText(/Game Mechanics/i);
+  const shipButton = screen.getByText(/Ship/i);
+  const manifestButton = screen.getByText(/Manifest/i);
+  const screenButton = screen.getByText(/Screen/i);
   
-  expect(shipViewButton).toBeInTheDocument();
-  expect(rosterButton).toBeInTheDocument();
-  expect(mechanicsButton).toBeInTheDocument();
+  expect(shipButton).toBeInTheDocument();
+  expect(manifestButton).toBeInTheDocument();
+  expect(screenButton).toBeInTheDocument();
 });
 
-test('shows ship view selected by default', () => {
+test('shows screen selected by default', () => {
   render(<App />);
-  const shipViewButton = screen.getByRole('button', { name: /ship view/i });
-  expect(shipViewButton).toHaveStyle('font-weight: 600');
+  const screenButton = screen.getByRole('button', { name: /screen/i });
+  expect(screenButton).toHaveStyle('font-weight: 600');
 });

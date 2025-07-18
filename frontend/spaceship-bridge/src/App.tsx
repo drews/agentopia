@@ -42,7 +42,7 @@ interface BridgeState {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics'>('ship');
+  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics'>('mechanics');
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
@@ -158,9 +158,9 @@ function App() {
     }}>
       <div style={{ display: 'flex', gap: '8px' }}>
         {[
-          { id: 'ship', label: 'Ship View' },
-          { id: 'roster', label: 'Roster' },
-          { id: 'mechanics', label: 'Game Mechanics' }
+          { id: 'mechanics', label: 'Screen' },
+          { id: 'ship', label: 'Ship' },
+          { id: 'roster', label: 'Manifest' }
         ].map(view => (
           <button 
             key={view.id}
