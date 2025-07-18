@@ -31,6 +31,12 @@ class SpaceshipService:
             }
         except Exception as e:
             logger.error(f"Error refreshing bridge cache: {e}")
+            # Initialize empty cache on error to prevent KeyError
+            self.bridge_cache = {
+                "agents": {},
+                "stations": {},
+                "last_updated": datetime.now().isoformat()
+            }
     
     async def get_bridge_state(self) -> Dict[str, Any]:
         """Get the complete current state of the bridge"""

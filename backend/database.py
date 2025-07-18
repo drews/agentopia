@@ -127,6 +127,11 @@ class Database:
                 await db.execute("ALTER TABLE agents ADD COLUMN target_position TEXT DEFAULT NULL")
                 migrations_applied += 1
             
+            if 'path_json' not in columns:
+                logger.info("Adding 'path_json' column to agents table")
+                await db.execute("ALTER TABLE agents ADD COLUMN path_json TEXT DEFAULT '[]'")
+                migrations_applied += 1
+            
             if migrations_applied > 0:
                 logger.info(f"Applied {migrations_applied} schema migrations")
             else:
@@ -272,12 +277,14 @@ class Database:
         for agent in agents:
             await db.execute("""
                 INSERT INTO agents (id, name, role, position_x, position_y,
-                                  assigned_station, avatar, last_activity)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                  assigned_station, status, current_task, intent,
+                                  target_position, avatar, path_json, last_activity)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 agent["id"], agent["name"], agent["role"],
                 agent["position_x"], agent["position_y"],
-                agent.get("assigned_station"), agent["avatar"], now
+                agent.get("assigned_station"), "idle", None, "idle",
+                None, agent["avatar"], "[]", now
             ))
         
         logger.info("Default data inserted")

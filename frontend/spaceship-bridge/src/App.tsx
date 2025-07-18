@@ -51,13 +51,15 @@ function App() {
   const wsUrl = apiUrl.replace('http', 'ws');
 
   useEffect(() => {
-    if (currentView !== 'ship') return; // Skip bridge connection when not showing ship view
-    
-    // Fetch initial bridge state
-    fetch(`${apiUrl}/api/bridge/state`)
-      .then(res => res.json())
-      .then(data => setBridgeState(data))
-      .catch(err => console.error('Failed to fetch bridge state:', err));
+    // Always maintain WebSocket connection for real-time updates
+    // Only fetch bridge state when actually showing ship view
+    if (currentView === 'ship') {
+      // Fetch initial bridge state
+      fetch(`${apiUrl}/api/bridge/state`)
+        .then(res => res.json())
+        .then(data => setBridgeState(data))
+        .catch(err => console.error('Failed to fetch bridge state:', err));
+    }
 
     // Setup WebSocket connection with reconnection
     let ws: WebSocket | null = null;
