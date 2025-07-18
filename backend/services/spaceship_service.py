@@ -100,6 +100,25 @@ class SpaceshipService:
             return True
             
         except Exception as e:
+            logger.error(f"Error updating agent {agent_id} status: {e}")
+            return False
+    
+    async def update_agent_intent(self, agent_id: str, intent: str, target_position: Optional[Dict[str, int]] = None) -> bool:
+        """Update agent intent and target position (backend manages intent, frontend handles manifestation)"""
+        try:
+            # Update agent intent in database
+            await db.update_agent_intent(agent_id, intent, target_position)
+            
+            # Update cache
+            if agent_id in self.bridge_cache["agents"]:
+                self.bridge_cache["agents"][agent_id]["intent"] = intent
+                if target_position:
+                    self.bridge_cache["agents"][agent_id]["target_position"] = target_position
+            
+            logger.info(f"Agent {agent_id} intent updated: {intent}")
+            return True
+            
+        except Exception as e:
             logger.error(f"Error updating agent status {agent_id}: {e}")
             return False
     

@@ -102,7 +102,7 @@ class LLMService:
         **kwargs
     ) -> str:
         """
-        Generate a response from the LLM.
+        Generate a response from the LLM with automatic fallback.
         
         Args:
             prompt: User prompt
@@ -113,28 +113,66 @@ class LLMService:
         Returns:
             str: Generated response
         """
+        provider_name = provider_name or self.settings.default_llm_provider
+        
+        # Try primary provider first
         try:
-            llm = self.get_provider(provider_name)
-            
-            # Handle different LLM types
-            if hasattr(llm, 'invoke') and 'chat' in str(type(llm)).lower():
-                # Chat models expect messages
-                messages = []
-                if system_prompt:
-                    messages.append(SystemMessage(content=system_prompt))
-                messages.append(HumanMessage(content=prompt))
-                
-                response = await llm.ainvoke(messages) if hasattr(llm, 'ainvoke') else llm.invoke(messages)
-                return response.content if hasattr(response, 'content') else str(response)
-            else:
-                # Text completion models expect strings
-                full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-                response = await llm.ainvoke(full_prompt) if hasattr(llm, 'ainvoke') else llm.invoke(full_prompt)
-                return str(response)
-                
+            response = await self._try_generate_response(prompt, system_prompt, provider_name)
+            if response and not response.startswith("I apologize"):
+                return response
         except Exception as e:
-            logger.error(f"Error generating response: {e}")
-            return f"I apologize, but I encountered an error: {str(e)}"
+            logger.warning(f"Primary provider {provider_name} failed: {e}")
+        
+        # Try fallback providers
+        fallback_providers = ["ollama", "mock"]
+        for fallback_provider in fallback_providers:
+            if fallback_provider != provider_name:
+                try:
+                    logger.info(f"Trying fallback provider: {fallback_provider}")
+                    response = await self._try_generate_response(prompt, system_prompt, fallback_provider)
+                    if response and not response.startswith("I apologize"):
+                        return response
+                except Exception as e:
+                    logger.warning(f"Fallback provider {fallback_provider} failed: {e}")
+                    continue
+        
+        # If all providers fail, return a generic error message
+        return "I apologize, but I'm currently unable to process your request. Please try again later."
+    
+    async def _try_generate_response(
+        self, 
+        prompt: str, 
+        system_prompt: Optional[str] = None,
+        provider_name: str = "mock"
+    ) -> str:
+        """
+        Try to generate a response from a specific provider.
+        
+        Args:
+            prompt: User prompt
+            system_prompt: Optional system prompt
+            provider_name: Provider to use
+            
+        Returns:
+            str: Generated response
+        """
+        llm = self.get_provider(provider_name)
+        
+        # Handle different LLM types
+        if hasattr(llm, 'invoke') and 'chat' in str(type(llm)).lower():
+            # Chat models expect messages
+            messages = []
+            if system_prompt:
+                messages.append(SystemMessage(content=system_prompt))
+            messages.append(HumanMessage(content=prompt))
+            
+            response = await llm.ainvoke(messages) if hasattr(llm, 'ainvoke') else llm.invoke(messages)
+            return response.content if hasattr(response, 'content') else str(response)
+        else:
+            # Text completion models expect strings
+            full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+            response = await llm.ainvoke(full_prompt) if hasattr(llm, 'ainvoke') else llm.invoke(full_prompt)
+            return str(response)
     
     async def is_provider_available(self, provider_name: str) -> bool:
         """Check if a provider is available and configured."""

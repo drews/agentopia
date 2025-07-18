@@ -1,7 +1,10 @@
 import logging
 import asyncio
+import random
+import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from pathlib import Path
 import sys
 import os
 
@@ -12,12 +15,118 @@ from database import db
 from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
 from services.llm_service import LLMService
-from services.mcp.mcp_server_manager import MCPServerManager
+from services.mcp.mcp_client import MCPClient, MCPServerConfig
 from backend.core.config import get_settings
 from models.agent import AgentRole
 from services.config_service import config_service
 
 logger = logging.getLogger(__name__)
+
+class MovementOrchestrator:
+    """
+    Orchestrates ambient agent movement on the bridge with slot-filling mechanics
+    """
+    
+    def __init__(self):
+        self.bridge_bounds = {"width": 24, "height": 16}  # Match bridge grid
+        self.station_positions = [
+            {"x": 5, "y": 8, "name": "command_station"},
+            {"x": 15, "y": 6, "name": "science_station"},
+            {"x": 18, "y": 12, "name": "engineering_station"}
+        ]
+        # Grid occupation tracking
+        self.occupied_slots = set()  # Track occupied grid positions
+        self.agent_positions = {}  # Track current agent positions
+    
+    def generate_ambient_target(self, agent_id: str, current_position: Dict[str, int]) -> Dict[str, int]:
+        """Generate a new ambient movement target for an agent with slot-filling"""
+        # Update current position tracking
+        current_slot = (current_position["x"], current_position["y"])
+        
+        # 70% chance to move to a nearby position, 30% chance to move to a station
+        if random.random() < 0.7:
+            # Move to nearby position
+            return self._generate_nearby_position(agent_id, current_position)
+        else:
+            # Move toward a station
+            return self._choose_station_position(agent_id)
+    
+    def _generate_nearby_position(self, agent_id: str, current: Dict[str, int]) -> Dict[str, int]:
+        """Generate a position near the current location with collision avoidance"""
+        attempts = 0
+        max_attempts = 10
+        
+        while attempts < max_attempts:
+            # Move 1-3 spaces in a random direction
+            dx = random.randint(-3, 3)
+            dy = random.randint(-3, 3)
+            
+            new_x = max(2, min(self.bridge_bounds["width"] - 2, current["x"] + dx))
+            new_y = max(2, min(self.bridge_bounds["height"] - 2, current["y"] + dy))
+            
+            candidate_slot = (new_x, new_y)
+            
+            # Check if slot is available
+            if not self._is_slot_occupied(candidate_slot, agent_id):
+                return {"x": new_x, "y": new_y}
+            
+            attempts += 1
+        
+        # If no nearby position found, return current position
+        return current
+    
+    def _choose_station_position(self, agent_id: str) -> Dict[str, int]:
+        """Choose a station position based on agent role with collision avoidance"""
+        # Simple role-based station preference
+        if agent_id == "red_agent":
+            station = self.station_positions[0]  # Command station
+        elif agent_id == "blue_agent":
+            station = self.station_positions[1]  # Science station
+        else:
+            station = self.station_positions[2]  # Engineering station
+        
+        # Try to find an available slot around the station
+        offsets = [
+            (0, 0),   # Exact station position
+            (-1, 0), (1, 0), (0, -1), (0, 1),  # Adjacent positions
+            (-1, -1), (-1, 1), (1, -1), (1, 1)  # Diagonal positions
+        ]
+        
+        for offset_x, offset_y in offsets:
+            candidate_x = max(1, min(self.bridge_bounds["width"] - 1, station["x"] + offset_x))
+            candidate_y = max(1, min(self.bridge_bounds["height"] - 1, station["y"] + offset_y))
+            candidate_slot = (candidate_x, candidate_y)
+            
+            if not self._is_slot_occupied(candidate_slot, agent_id):
+                return {"x": candidate_x, "y": candidate_y}
+        
+        # If no station slots available, find any nearby position
+        for radius in range(2, 5):  # Expand search radius
+            for dx in range(-radius, radius + 1):
+                for dy in range(-radius, radius + 1):
+                    candidate_x = max(1, min(self.bridge_bounds["width"] - 1, station["x"] + dx))
+                    candidate_y = max(1, min(self.bridge_bounds["height"] - 1, station["y"] + dy))
+                    candidate_slot = (candidate_x, candidate_y)
+                    
+                    if not self._is_slot_occupied(candidate_slot, agent_id):
+                        return {"x": candidate_x, "y": candidate_y}
+        
+        # Fallback to current position if no slots found
+        return self.agent_positions.get(agent_id, {"x": 10, "y": 8})
+    
+    def _is_slot_occupied(self, slot: tuple, requesting_agent_id: str) -> bool:
+        """Check if a grid slot is occupied by another agent"""
+        # A slot is occupied if another agent is there
+        for agent_id, position in self.agent_positions.items():
+            if agent_id != requesting_agent_id:
+                agent_slot = (position["x"], position["y"])
+                if agent_slot == slot:
+                    return True
+        return False
+    
+    def update_agent_position(self, agent_id: str, new_position: Dict[str, int]):
+        """Update agent position in the orchestrator's tracking"""
+        self.agent_positions[agent_id] = new_position
 
 class AgentManager:
     """
@@ -30,9 +139,17 @@ class AgentManager:
         self.websocket_manager = websocket_manager
         self.agent_instances = {}  # Will store references to actual agent instances
         self.running = False
-        self.update_interval = 2.0  # Update every 2 seconds
+        self.intent_update_interval = get_settings().agent_status_update_interval  # Renamed for clarity
         self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
-        self.mcp_server_manager = MCPServerManager()  # Direct MCP integration
+        # Direct MCP integration - consolidated from MCPServerManager
+        self.mcp_client = MCPClient()
+        self.config_path = "config/agentopia.json"
+        self.mcp_server_configs: Dict[str, MCPServerConfig] = {}
+        self.config_data = None
+        
+        # Movement orchestration
+        self.movement_orchestrator = MovementOrchestrator()
+        self.movement_interval = 1.0  # Move agents every 1 second (reasonable for smooth movement)
         
         # Agent capabilities and permissions (moved from AgentMCPBridge)
         self.agent_capabilities: Dict[AgentRole, List[str]] = {
@@ -52,8 +169,9 @@ class AgentManager:
         try:
             # LLM service is ready to use (no async initialization needed with LangChain)
             
-            # Initialize MCP server manager
-            await self.mcp_server_manager.initialize()
+            # Initialize MCP client directly
+            await self.mcp_client.initialize()
+            await self._load_consolidated_configuration()
             
             # Try to import and connect to existing agent system
             await self._connect_to_existing_agents()
@@ -100,59 +218,216 @@ class AgentManager:
         self.running = True
         logger.info("Started agent monitoring")
         
-        # Start the monitoring loop
-        asyncio.create_task(self._monitoring_loop())
+        # Start the intent monitoring loop (every 2 seconds)
+        asyncio.create_task(self._intent_monitoring_loop())
+        
+        # Start the movement orchestration loop (every 1 second)
+        logger.info("Starting movement orchestration loop...")
+        asyncio.create_task(self._movement_loop())
     
     async def stop_monitoring(self):
         """Stop monitoring agent activities"""
         self.running = False
-        await self.mcp_server_manager.shutdown()
+        await self.mcp_client.shutdown()
         logger.info("Stopped agent monitoring")
     
-    async def _monitoring_loop(self):
-        """Main monitoring loop that updates agent status and positions"""
+    async def _load_consolidated_configuration(self):
+        """Load consolidated configuration from agentopia.json."""
+        try:
+            config_file = Path(self.config_path)
+            if not config_file.exists():
+                await self._create_default_consolidated_configuration()
+                return
+                
+            with open(config_file, 'r') as f:
+                self.config_data = json.load(f)
+            
+            # Load MCP server configurations
+            mcp_servers = self.config_data.get("mcp_servers", {})
+            mcp_defaults = self.config_data.get("defaults", {}).get("mcp", {})
+            default_timeout = mcp_defaults.get("timeout", 30)
+            
+            for server_name, server_config in mcp_servers.items():
+                server_url = server_config.get("external_url", server_config["url"])
+                
+                config = MCPServerConfig(
+                    name=server_name,
+                    capabilities=server_config.get("capabilities", []),
+                    timeout=server_config.get("timeout", default_timeout)
+                )
+                
+                self.mcp_server_configs[server_name] = config
+                self.mcp_client.add_server(config)
+            
+            logger.info(f"Loaded consolidated configuration with {len(self.mcp_server_configs)} MCP servers")
+            
+        except Exception as e:
+            logger.error(f"Error loading consolidated configuration: {e}")
+            await self._create_default_consolidated_configuration()
+    
+    async def _create_default_consolidated_configuration(self):
+        """Create a default consolidated configuration file."""
+        try:
+            config_file = Path(self.config_path)
+            config_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Copy the existing agentopia.json as default
+            logger.info(f"Using existing agentopia.json configuration at {config_file}")
+            
+        except Exception as e:
+            logger.error(f"Error creating default consolidated configuration: {e}")
+    
+    async def _intent_monitoring_loop(self):
+        """Intent monitoring loop that updates agent intentions and states"""
         while self.running:
             try:
-                await self._update_agent_status()
-                await asyncio.sleep(self.update_interval)
+                await self._update_agent_intentions()
+                await asyncio.sleep(self.intent_update_interval)
             except Exception as e:
-                logger.error(f"Error in monitoring loop: {e}")
+                logger.error(f"Error in intent monitoring loop: {e}")
                 await asyncio.sleep(5)  # Wait longer if there's an error
     
-    async def _update_agent_status(self):
-        """Update agent status and broadcast changes"""
+    # Removed coordinate monitoring - frontend handles physical manifestation
+    
+    async def _movement_loop(self):
+        """Movement orchestration loop for ambient agent behavior"""
+        logger.info("Movement loop started")
+        while self.running:
+            try:
+                await self._orchestrate_ambient_movement()
+                await asyncio.sleep(self.movement_interval)
+            except Exception as e:
+                logger.error(f"Error in movement loop: {e}")
+                await asyncio.sleep(5)  # Wait longer if there's an error
+    
+    async def _update_agent_intentions(self):
+        """Update agent intentions and broadcast intent changes"""
         try:
             # Get current agent states from database
             agents = await db.get_all_agents()
             
             for agent in agents:
-                # Simulate agent activity for now
-                # In a real integration, this would check actual agent status
-                await self._simulate_agent_activity(agent)
+                # Simulate agent intention changes for now
+                # In a real integration, this would check actual agent intentions
+                await self._simulate_agent_intentions(agent)
                 
-                # Broadcast agent update
-                await self.websocket_manager.broadcast_agent_update(agent)
+                # Broadcast intent update (not coordinates - frontend handles that)
+                await self.websocket_manager.broadcast({
+                    "type": "agent_intent_update",
+                    "data": {
+                        "agent_id": agent["id"],
+                        "intent": agent.get("intent", "idle"),
+                        "status": agent["status"],
+                        "target_station": agent.get("target_station"),
+                        "current_task": agent.get("current_task"),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                })
                 
         except Exception as e:
-            logger.error(f"Error updating agent status: {e}")
+            logger.error(f"Error updating agent intentions: {e}")
     
-    async def _simulate_agent_activity(self, agent: Dict[str, Any]):
-        """Simulate agent activity (replace with real agent integration)"""
+    # Removed coordinate updates - frontend handles physical manifestation
+    
+    async def _simulate_agent_intentions(self, agent: Dict[str, Any]):
+        """Simulate agent intention changes (replace with real agent integration)"""
         import random
         
         agent_id = agent["id"]
         current_status = agent["status"]
         
-        # Simulate random status changes
-        if random.random() < 0.1:  # 10% chance of status change
+        # Simulate random intention changes
+        if random.random() < 0.1:  # 10% chance of intention change
             new_status = random.choice(["active", "thinking", "working", "idle"])
             if new_status != current_status:
                 await self.spaceship_service.update_agent_status(agent_id, new_status)
-                logger.info(f"Agent {agent_id} status changed to {new_status}")
+                logger.info(f"Agent {agent_id} intention changed to {new_status}")
         
-        # Simulate random movement occasionally
-        if random.random() < 0.05:  # 5% chance of movement
-            await self._simulate_agent_movement(agent_id)
+        # Simulate random movement intentions occasionally
+        if random.random() < 0.05:  # 5% chance of movement intention
+            await self._simulate_movement_intention(agent_id)
+    
+    async def _simulate_movement_intention(self, agent_id: str):
+        """Simulate agent movement intention (backend signals intent, frontend handles movement)"""
+        try:
+            # Get current agent position
+            agent = await db.get_agent(agent_id)
+            if not agent:
+                return
+            
+            current_position = {"x": agent["position"]["x"], "y": agent["position"]["y"]}
+            
+            # Generate movement intention using orchestrator
+            target_position = self.movement_orchestrator.generate_ambient_target(agent_id, current_position)
+            
+            # Only signal intention if target is different from current position
+            if target_position != current_position:
+                # Update agent intent in database
+                await self.spaceship_service.update_agent_intent(agent_id, "moving", target_position)
+                
+                # Update position tracking in orchestrator
+                self.movement_orchestrator.update_agent_position(agent_id, target_position)
+                
+                # Broadcast movement intention (frontend handles smooth animation)
+                await self.websocket_manager.broadcast({
+                    "type": "agent_movement_intent",
+                    "data": {
+                        "agent_id": agent_id,
+                        "intent": "move_to_position",
+                        "target_position": target_position,
+                        "activity_hint": self._get_activity_hint(agent_id, target_position),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                })
+                
+        except Exception as e:
+            logger.error(f"Error simulating movement intention for agent {agent_id}: {e}")
+    
+    async def _orchestrate_ambient_movement(self):
+        """Orchestrate ambient movement for all agents"""
+        try:
+            logger.info("Orchestrating ambient movement...")
+            # Get current agent states
+            agents = await db.get_all_agents()
+            
+            for agent in agents:
+                agent_id = agent["id"]
+                current_position = {"x": agent["position"]["x"], "y": agent["position"]["y"]}
+                
+                # Generate new ambient target
+                target_position = self.movement_orchestrator.generate_ambient_target(agent_id, current_position)
+                logger.info(f"Agent {agent_id} ambient target: {target_position} (current: {current_position})")
+                
+                # Only move if the target is different from current position
+                if target_position != current_position:
+                    await self.spaceship_service.move_agent(agent_id, target_position)
+                    
+                    # Update position tracking in orchestrator
+                    self.movement_orchestrator.update_agent_position(agent_id, target_position)
+                    
+                    # Broadcast movement intention (frontend handles physical manifestation)
+                    await self.websocket_manager.broadcast({
+                        "type": "agent_movement_intent",
+                        "data": {
+                            "agent_id": agent_id,
+                            "intent": "move_to_position",
+                            "target_position": target_position,
+                            "activity_hint": self._get_activity_hint(agent_id, target_position),
+                            "timestamp": datetime.now().isoformat()
+                        }
+                    })
+                    
+        except Exception as e:
+            logger.error(f"Error orchestrating ambient movement: {e}")
+    
+    def _get_activity_hint(self, agent_id: str, position: Dict[str, int]) -> str:
+        """Get activity hint based on agent position"""
+        # Check if near any station
+        for station in self.movement_orchestrator.station_positions:
+            if abs(position["x"] - station["x"]) <= 2 and abs(position["y"] - station["y"]) <= 2:
+                return f"approaching_{station['name']}"
+        
+        return "patrolling"
     
     async def _simulate_agent_movement(self, agent_id: str):
         """Simulate agent movement between stations"""
@@ -799,7 +1074,7 @@ class AgentManager:
             # Map commands to MCP server operations
             if command in ["current_time", "days_until", "days_between", "day_of_week", "is_leap_year", "next_holiday", "is_holiday"]:
                 # DateTime commands go to datetime-tools server
-                result = await self.mcp_server_manager.call_tool(command, parameters, "datetime-tools")
+                result = await self.mcp_client.call_tool("datetime-tools", command, parameters)
                 return {"success": True, "data": result}
             
             elif command in ["get_calendar", "get_events", "create_event", "check_schedule"]:

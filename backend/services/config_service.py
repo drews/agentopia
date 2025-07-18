@@ -20,27 +20,30 @@ class ConfigService:
         else:
             self.config_dir = Path(config_dir)
         
-        self.agent_config = None
-        self.station_config = None
-        self.persona_config = None
+        self.consolidated_config = None
         self.active_persona = None
         
-    def load_agent_config(self) -> Dict[str, Any]:
-        """Load agent configuration from JSON file"""
-        if self.agent_config is None:
-            config_file = self.config_dir / "agents.json"
+    def load_consolidated_config(self) -> Dict[str, Any]:
+        """Load consolidated configuration from agentopia.json file"""
+        if self.consolidated_config is None:
+            config_file = self.config_dir / "agentopia.json"
             try:
                 with open(config_file, 'r') as f:
-                    self.agent_config = json.load(f)
-                logger.info(f"Loaded agent configuration from {config_file}")
+                    self.consolidated_config = json.load(f)
+                logger.info(f"Loaded consolidated configuration from {config_file}")
             except FileNotFoundError:
-                logger.error(f"Agent config file not found: {config_file}")
-                self.agent_config = {"agents": {}, "defaults": {}}
+                logger.error(f"Consolidated config file not found: {config_file}")
+                self.consolidated_config = {"agents": {}, "personas": {}, "mcp_servers": {}, "defaults": {}}
             except json.JSONDecodeError as e:
-                logger.error(f"Error parsing agent config: {e}")
-                self.agent_config = {"agents": {}, "defaults": {}}
+                logger.error(f"Error parsing consolidated config: {e}")
+                self.consolidated_config = {"agents": {}, "personas": {}, "mcp_servers": {}, "defaults": {}}
         
-        return self.agent_config
+        return self.consolidated_config
+        
+    def load_agent_config(self) -> Dict[str, Any]:
+        """Load agent configuration from consolidated config"""
+        config = self.load_consolidated_config()
+        return {"agents": config.get("agents", {}), "defaults": config.get("defaults", {}).get("agents", {})}
     
     def get_agent_config(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """Get configuration for a specific agent"""
@@ -110,37 +113,23 @@ class ConfigService:
     
     def reload_config(self):
         """Reload configuration from files"""
-        self.agent_config = None
-        self.station_config = None
-        self.persona_config = None
+        self.consolidated_config = None
         logger.info("Configuration reloaded")
     
     def load_persona_config(self) -> Dict[str, Any]:
-        """Load persona configuration from JSON file"""
-        if self.persona_config is None:
-            config_file = self.config_dir / "personas.json"
-            try:
-                with open(config_file, 'r') as f:
-                    self.persona_config = json.load(f)
-                logger.info(f"Loaded persona configuration from {config_file}")
-            except FileNotFoundError:
-                logger.error(f"Persona config file not found: {config_file}")
-                self.persona_config = {"personas": {}, "claude_code_personas": {}}
-            except json.JSONDecodeError as e:
-                logger.error(f"Error parsing persona config: {e}")
-                self.persona_config = {"personas": {}, "claude_code_personas": {}}
-        
-        return self.persona_config
+        """Load persona configuration from consolidated config"""
+        config = self.load_consolidated_config()
+        return config.get("personas", {})
     
     def get_persona_config(self, persona_id: str) -> Optional[Dict[str, Any]]:
         """Get configuration for a specific persona"""
         config = self.load_persona_config()
-        return config.get("personas", {}).get(persona_id)
+        return config.get(persona_id)
     
     def get_claude_code_persona_config(self, persona_id: str) -> Optional[Dict[str, Any]]:
-        """Get Claude Code specific persona configuration"""
-        config = self.load_persona_config()
-        return config.get("claude_code_personas", {}).get(persona_id)
+        """Get Claude Code specific persona configuration - deprecated, use get_persona_config instead"""
+        # This method is deprecated since claude_code_personas section was merged into main personas
+        return self.get_persona_config(persona_id)
     
     def set_active_persona(self, persona_id: str) -> bool:
         """Set the active persona for the session"""
@@ -201,8 +190,7 @@ class ConfigService:
     
     def get_available_personas(self) -> Dict[str, str]:
         """Get list of available personas with descriptions"""
-        config = self.load_persona_config()
-        personas = config.get("personas", {})
+        personas = self.load_persona_config()
         return {
             persona_id: persona_config.get("description", "No description")
             for persona_id, persona_config in personas.items()
@@ -210,8 +198,8 @@ class ConfigService:
     
     def get_context_suggested_persona(self, context: str) -> Optional[str]:
         """Get suggested persona based on context triggers"""
-        config = self.load_persona_config()
-        triggers = config.get("context_triggers", {})
+        config = self.load_consolidated_config()
+        triggers = config.get("defaults", {}).get("personas", {}).get("context_triggers", {})
         return triggers.get(context)
 
 

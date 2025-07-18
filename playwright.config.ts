@@ -28,8 +28,8 @@ export default defineConfig({
   
   // Global test settings
   use: {
-    // Base URL for our application
-    baseURL: 'http://localhost:3000',
+    // Base URL for our application (supports Docker environment)
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     
     // Capture screenshot on failure
     screenshot: 'only-on-failure',

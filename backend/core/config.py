@@ -38,14 +38,14 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
     
     # Default LLM Provider Settings
-    default_llm_provider: str = Field("mock", env="DEFAULT_LLM_PROVIDER")
+    default_llm_provider: str = Field("ollama", env="DEFAULT_LLM_PROVIDER")
     default_llm_model: str = Field("gpt-3.5-turbo", env="DEFAULT_LLM_MODEL")
     default_llm_temperature: float = Field(0.7, env="DEFAULT_LLM_TEMPERATURE")
     default_llm_max_tokens: int = Field(150, env="DEFAULT_LLM_MAX_TOKENS")
     
     # Ollama Configuration
-    ollama_base_url: str = Field("http://localhost:11434", env="OLLAMA_BASE_URL")
-    ollama_model: str = Field("tinyllama", env="OLLAMA_MODEL")
+    ollama_base_url: str = Field("http://host.docker.internal:11434", env="OLLAMA_BASE_URL")
+    ollama_model: str = Field("qwen3:latest", env="OLLAMA_MODEL")
     ollama_timeout: float = Field(30.0, env="OLLAMA_TIMEOUT")
     
     # Legacy compatibility (will be deprecated)
@@ -55,14 +55,15 @@ class Settings(BaseSettings):
     
     # Agent Configuration
     agent_config_path: Path = Field(
-        Path(__file__).parent.parent.parent / "config" / "agents.json",
+        Path(__file__).parent.parent.parent / "config" / "agentopia.json",
         env="AGENT_CONFIG_PATH"
     )
     
     # Monitoring
-    agent_update_interval: float = Field(2.0, env="AGENT_UPDATE_INTERVAL")
-    websocket_ping_interval: int = Field(20, env="WEBSOCKET_PING_INTERVAL")
-    websocket_ping_timeout: int = Field(20, env="WEBSOCKET_PING_TIMEOUT")
+    agent_status_update_interval: float = Field(2.0, env="AGENT_STATUS_UPDATE_INTERVAL")
+    agent_coordinate_update_interval: float = Field(0.1, env="AGENT_COORDINATE_UPDATE_INTERVAL")
+    websocket_ping_interval: int = Field(1, env="WEBSOCKET_PING_INTERVAL")
+    websocket_ping_timeout: int = Field(5, env="WEBSOCKET_PING_TIMEOUT")
     
     # Logging
     log_level: str = Field("INFO", env="LOG_LEVEL")

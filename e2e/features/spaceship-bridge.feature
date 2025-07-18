@@ -10,7 +10,7 @@ Feature: AI Spaceship Bridge Interface
   @critical @visual
   Scenario: Bridge interface loads successfully
     When I navigate to the bridge interface
-    Then I should see the bridge header with "USS AGENTOPIA BRIDGE"
+    Then I should see the bridge header with "USS_AGENTOPIA Bridge"
     And I should see the connection status as "Connected"
     And I should see the bridge status as "OPERATIONAL"
     And I should take a screenshot of the "bridge-loaded"
@@ -62,16 +62,17 @@ Feature: AI Spaceship Bridge Interface
     And all elements should remain accessible
     And I should take a screenshot of the "mobile-layout"
 
-  @animation @status-changes
-  Scenario: Agent status animations work correctly
+  @animation @status-changes @intent-driven
+  Scenario: Agent status animations work correctly with intent-driven system
     Given I am on the bridge interface
     And I can see all agents
-    When an agent status changes to "thinking"
+    When an agent intent changes to "thinking"
     Then the agent should display a thinking animation
-    When an agent status changes to "working"
+    When an agent intent changes to "working"
     Then the agent should display a working animation
-    When an agent status changes to "moving"
-    Then the agent should display a moving animation
+    When an agent receives a "move_to_position" intent
+    Then the agent should display smooth movement animation
+    And the frontend should interpolate coordinates at 10 FPS locally
 
   @interaction @station-details
   Scenario: Station interaction shows details
@@ -90,3 +91,43 @@ Feature: AI Spaceship Bridge Interface
     And colors should have a green terminal theme
     And animations should have a pixelated feel
     And I should take a screenshot of the "lo-fi-aesthetic"
+
+  @fishtank @ambient-behavior
+  Scenario: Fishtank ambient behavior system
+    Given I am on the bridge interface
+    When the page loads completely
+    Then I should see the WebSocket connection is established
+    And I should see the holodeck grid background
+    And I should see agents positioned at different stations without overlap
+    And I should not see any WebSocket connection errors in the console
+    And I should take a screenshot of the "fishtank-holodeck-grid"
+
+  @llm @agent-intelligence @critical
+  Scenario: LLM integration is active and working
+    Given I am on the bridge interface
+    And the WebSocket connection is established
+    When I observe the system behavior for 10 seconds
+    Then the agents should be using real LLM responses
+    And the system should not be in mock mode
+    And I should take a screenshot of the "llm-integration-active"
+
+  @intent-architecture @websocket @critical
+  Scenario: Intent-based architecture is working correctly
+    Given I am on the bridge interface
+    And the WebSocket connection is established
+    When I observe WebSocket messages for 5 seconds
+    Then I should see "agent_intent_update" messages from the backend
+    And I should see "agent_movement_intent" messages when agents move
+    And the backend should not be sending coordinate updates
+    And the frontend should handle smooth animations locally
+    And I should take a screenshot of the "intent-architecture-working"
+
+  @separation-of-concerns @backend-frontend
+  Scenario: Backend manages intent, frontend handles manifestation
+    Given I am on the bridge interface
+    And the WebSocket connection is established
+    When I monitor the system architecture for 8 seconds
+    Then the backend should only broadcast agent intentions and states
+    And the frontend should handle all visual animations independently
+    And agent movements should be smooth despite backend only sending intentions
+    And I should take a screenshot of the "separation-of-concerns-demo"

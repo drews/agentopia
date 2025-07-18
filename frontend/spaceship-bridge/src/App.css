@@ -167,6 +167,30 @@ body {
   border-radius: 20px;
 }
 
+.connection.reconnecting {
+  color: #000000;
+  border-color: #FFB84D;
+  background: #FFB84D;
+  border-radius: 20px;
+  animation: lcars-pulse 1s infinite;
+}
+
+.connection.connecting {
+  color: #000000;
+  border-color: #66BB6A;
+  background: #66BB6A;
+  border-radius: 20px;
+  animation: lcars-pulse 0.8s infinite;
+}
+
+.connection.error {
+  color: #000000;
+  border-color: #FF5252;
+  background: #FF5252;
+  border-radius: 20px;
+  animation: lcars-pulse 1.2s infinite;
+}
+
 /* Main Bridge Layout */
 .bridge-main {
   flex: 1;
@@ -176,21 +200,26 @@ body {
   overflow: hidden;
 }
 
-/* Bridge Grid - LCARS Style */
+/* Bridge Grid - LCARS Style with TNG Holodeck Grid */
 .bridge-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(var(--grid-width), 1fr);
   grid-template-rows: repeat(var(--grid-height), 1fr);
-  gap: 4px;
-  background: #000000;
+  gap: 2px;
+  background-color: #0a0a0a;
   border: none;
   border-radius: 0;
   padding: 1rem;
   position: relative;
   min-height: 0;
+  background-image: 
+    linear-gradient(rgba(255, 204, 0, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 204, 0, 0.3) 1px, transparent 1px);
+  background-size: calc(100% / var(--grid-width)) calc(100% / var(--grid-height));
 }
 
+/* Holodeck Grid Styling */
 .bridge-grid::before {
   content: '';
   position: absolute;
@@ -198,8 +227,10 @@ body {
   left: 0;
   width: 30px;
   height: 100%;
-  background: #FFCC99;
+  background: linear-gradient(45deg, #FFCC99 25%, transparent 25%, transparent 75%, #FFCC99 75%);
+  background-size: 8px 8px;
   border-radius: 0 20px 20px 0;
+  z-index: 0;
 }
 
 .bridge-grid::after {
@@ -209,8 +240,10 @@ body {
   right: 0;
   width: 30px;
   height: 100%;
-  background: #CC99FF;
+  background: linear-gradient(-45deg, #CC99FF 25%, transparent 25%, transparent 75%, #CC99FF 75%);
+  background-size: 8px 8px;
   border-radius: 20px 0 0 20px;
+  z-index: 0;
 }
 
 /* Stations - LCARS Style */
@@ -272,7 +305,7 @@ body {
   z-index: 10;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   background: #99CCFF;
   border-radius: 50% 50% 20px 20px;
   padding: 8px;
@@ -316,6 +349,27 @@ body {
 
 .agent.moving {
   animation: agent-moving 0.5s infinite;
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+.agent.patrolling {
+  animation: agent-patrol 2s infinite;
+}
+
+.agent.approaching_command_station {
+  border: 2px solid #FF6B6B;
+  animation: agent-approaching 1s infinite;
+}
+
+.agent.approaching_science_station {
+  border: 2px solid #4ECDC4;
+  animation: agent-approaching 1s infinite;
+}
+
+.agent.approaching_engineering_station {
+  border: 2px solid #FFE66D;
+  animation: agent-approaching 1s infinite;
 }
 
 /* Sidebar - LCARS Style */
@@ -483,6 +537,26 @@ body {
   }
 }
 
+@keyframes agent-patrol {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
+}
+
+@keyframes agent-approaching {
+  0%, 100% { 
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% { 
+    box-shadow: 0 0 15px currentColor;
+  }
+}
+
 @keyframes loading-pulse {
   0%, 100% { 
     opacity: 1;
@@ -494,73 +568,6 @@ body {
   }
 }
 
-<<<<<<< HEAD
-/* Debug Mode Styles */
-.agent.debug {
-  position: relative;
-  border: 1px solid #ffff00;
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
-}
-
-.debug-info {
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-}
-
-.debug-tooltip {
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid #ffff00;
-  border-radius: 4px;
-  padding: 0.5rem;
-  font-size: 0.6rem;
-  color: #ffff00;
-  white-space: nowrap;
-  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
-  text-align: left;
-}
-
-.debug-tooltip div {
-  margin: 0.1rem 0;
-}
-
-.agent-trail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.trail-dot {
-  width: 4px;
-  height: 4px;
-  background: rgba(0, 255, 255, 0.8);
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: trail-fade 3s ease-out forwards;
-}
-
-@keyframes trail-fade {
-  0% {
-    opacity: 0.8;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-}
-
-||||||| parent of ec9375e (feat: Implement LCARS design system with containerized testing)
-=======
 /* LCARS-specific animations */
 @keyframes lcars-pulse {
   0%, 100% { 
@@ -620,8 +627,6 @@ body {
 .lcars-agent .status-communicating {
   animation: lcars-pulse 2s infinite;
 }
-
->>>>>>> ec9375e (feat: Implement LCARS design system with containerized testing)
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .bridge-sidebar {

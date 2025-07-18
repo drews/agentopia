@@ -33,6 +33,8 @@ class Database:
                 assigned_station TEXT,
                 status TEXT NOT NULL DEFAULT 'idle',
                 current_task TEXT,
+                intent TEXT DEFAULT 'idle',
+                target_position TEXT DEFAULT NULL,
                 avatar TEXT DEFAULT '🤖',
                 path_json TEXT DEFAULT '[]',
                 last_activity TEXT NOT NULL
@@ -287,6 +289,16 @@ class Database:
             """, (status, task, datetime.now().isoformat(), agent_id))
             await db.commit()
     
+    async def update_agent_intent(self, agent_id: str, intent: str, target_position: Optional[Dict[str, int]] = None):
+        """Update agent intent and target position (backend manages intent, frontend handles manifestation)"""
+        async with aiosqlite.connect(self.db_path) as db:
+            target_json = json.dumps(target_position) if target_position else None
+            await db.execute("""
+                UPDATE agents SET intent = ?, target_position = ?, last_activity = ?
+                WHERE id = ?
+            """, (intent, target_json, datetime.now().isoformat(), agent_id))
+            await db.commit()
+    
     # Station CRUD operations
     async def get_all_stations(self) -> List[Dict[str, Any]]:
         """Get all stations"""
@@ -306,9 +318,11 @@ class Database:
             "assigned_station": row[5],
             "status": row[6],
             "current_task": row[7],
-            "avatar": row[8],
-            "path": json.loads(row[9]) if row[9] else [],
-            "last_activity": row[10]
+            "intent": row[8],
+            "target_position": json.loads(row[9]) if row[9] else None,
+            "avatar": row[10],
+            "path": json.loads(row[11]) if row[11] else [],
+            "last_activity": row[12]
         }
     
     def _row_to_station_dict(self, row) -> Dict[str, Any]:
