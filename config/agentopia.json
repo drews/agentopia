@@ -247,6 +247,27 @@
         "mvp_development": "move_fast_hacker",
         "compliance_requirement": "security_paranoid"
       }
+    },
+    "bridge": {
+      "dimensions": {
+        "width": 24,
+        "height": 16
+      },
+      "station_positions": [
+        {"x": 5, "y": 8, "name": "command_station"},
+        {"x": 15, "y": 6, "name": "science_station"},
+        {"x": 18, "y": 12, "name": "engineering_station"}
+      ]
+    },
+    "movement": {
+      "agent_status_update_interval": 2.0,
+      "agent_coordinate_update_interval": 0.1,
+      "movement_interval": 1.0,
+      "nearby_move_probability": 0.7,
+      "station_move_probability": 0.3,
+      "status_change_probability": 0.1,
+      "movement_intention_probability": 0.05,
+      "max_movement_distance": 3
     }
   }
 }

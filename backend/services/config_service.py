@@ -30,7 +30,13 @@ class ConfigService:
             try:
                 with open(config_file, 'r') as f:
                     self.consolidated_config = json.load(f)
-                logger.info(f"Loaded consolidated configuration from {config_file}")
+                
+                # Validate configuration structure
+                if self.validate_consolidated_config(self.consolidated_config):
+                    logger.info(f"Loaded consolidated configuration from {config_file}")
+                else:
+                    logger.warning(f"Configuration validation failed for {config_file}")
+                    
             except FileNotFoundError:
                 logger.error(f"Consolidated config file not found: {config_file}")
                 self.consolidated_config = {"agents": {}, "personas": {}, "mcp_servers": {}, "defaults": {}}
@@ -39,6 +45,95 @@ class ConfigService:
                 self.consolidated_config = {"agents": {}, "personas": {}, "mcp_servers": {}, "defaults": {}}
         
         return self.consolidated_config
+    
+    def validate_consolidated_config(self, config: Dict[str, Any]) -> bool:
+        """Validate consolidated configuration structure"""
+        try:
+            # Check required top-level keys
+            required_keys = ['agents', 'personas', 'mcp_servers', 'defaults']
+            for key in required_keys:
+                if key not in config:
+                    logger.error(f"Missing required key in consolidated config: {key}")
+                    return False
+            
+            # Validate agents section
+            agents = config.get('agents', {})
+            if not isinstance(agents, dict):
+                logger.error("'agents' section must be a dictionary")
+                return False
+            
+            # Validate each agent configuration
+            for agent_id, agent_config in agents.items():
+                if not self._validate_agent_structure(agent_id, agent_config):
+                    return False
+            
+            # Validate personas section
+            personas = config.get('personas', {})
+            if not isinstance(personas, dict):
+                logger.error("'personas' section must be a dictionary")
+                return False
+            
+            # Validate MCP servers section
+            mcp_servers = config.get('mcp_servers', {})
+            if not isinstance(mcp_servers, dict):
+                logger.error("'mcp_servers' section must be a dictionary")
+                return False
+            
+            # Validate each MCP server configuration
+            for server_id, server_config in mcp_servers.items():
+                if not self._validate_mcp_server_structure(server_id, server_config):
+                    return False
+            
+            # Validate defaults section
+            defaults = config.get('defaults', {})
+            if not isinstance(defaults, dict):
+                logger.error("'defaults' section must be a dictionary")
+                return False
+            
+            logger.info("Consolidated configuration validation passed")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error validating consolidated configuration: {e}")
+            return False
+    
+    def _validate_agent_structure(self, agent_id: str, agent_config: Dict[str, Any]) -> bool:
+        """Validate individual agent configuration structure"""
+        required_fields = ['id', 'name', 'role', 'avatar']
+        for field in required_fields:
+            if field not in agent_config:
+                logger.error(f"Agent {agent_id} missing required field: {field}")
+                return False
+        
+        # Optional validations
+        if 'personality' in agent_config and not isinstance(agent_config['personality'], dict):
+            logger.error(f"Agent {agent_id} personality must be a dictionary")
+            return False
+        
+        if 'capabilities' in agent_config and not isinstance(agent_config['capabilities'], dict):
+            logger.error(f"Agent {agent_id} capabilities must be a dictionary")
+            return False
+        
+        return True
+    
+    def _validate_mcp_server_structure(self, server_id: str, server_config: Dict[str, Any]) -> bool:
+        """Validate individual MCP server configuration structure"""
+        required_fields = ['url']
+        for field in required_fields:
+            if field not in server_config:
+                logger.error(f"MCP server {server_id} missing required field: {field}")
+                return False
+        
+        # Optional validations
+        if 'capabilities' in server_config and not isinstance(server_config['capabilities'], list):
+            logger.error(f"MCP server {server_id} capabilities must be a list")
+            return False
+        
+        if 'timeout' in server_config and not isinstance(server_config['timeout'], (int, float)):
+            logger.error(f"MCP server {server_id} timeout must be a number")
+            return False
+        
+        return True
         
     def load_agent_config(self) -> Dict[str, Any]:
         """Load agent configuration from consolidated config"""

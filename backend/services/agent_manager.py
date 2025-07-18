@@ -27,13 +27,37 @@ class MovementOrchestrator:
     Orchestrates ambient agent movement on the bridge with slot-filling mechanics
     """
     
-    def __init__(self):
-        self.bridge_bounds = {"width": 24, "height": 16}  # Match bridge grid
-        self.station_positions = [
-            {"x": 5, "y": 8, "name": "command_station"},
-            {"x": 15, "y": 6, "name": "science_station"},
-            {"x": 18, "y": 12, "name": "engineering_station"}
-        ]
+    def __init__(self, config_service=None):
+        # Load configuration values
+        if config_service:
+            consolidated_config = config_service.load_consolidated_config()
+            bridge_config = consolidated_config.get("defaults", {}).get("bridge", {})
+            movement_config = consolidated_config.get("defaults", {}).get("movement", {})
+            
+            self.bridge_bounds = bridge_config.get("dimensions", {"width": 24, "height": 16})
+            self.station_positions = bridge_config.get("station_positions", [
+                {"x": 5, "y": 8, "name": "command_station"},
+                {"x": 15, "y": 6, "name": "science_station"},
+                {"x": 18, "y": 12, "name": "engineering_station"}
+            ])
+            
+            # Movement configuration
+            self.nearby_move_probability = movement_config.get("nearby_move_probability", 0.7)
+            self.station_move_probability = movement_config.get("station_move_probability", 0.3)
+            self.max_movement_distance = movement_config.get("max_movement_distance", 3)
+            
+        else:
+            # Fallback to hardcoded values if no config service
+            self.bridge_bounds = {"width": 24, "height": 16}
+            self.station_positions = [
+                {"x": 5, "y": 8, "name": "command_station"},
+                {"x": 15, "y": 6, "name": "science_station"},
+                {"x": 18, "y": 12, "name": "engineering_station"}
+            ]
+            self.nearby_move_probability = 0.7
+            self.station_move_probability = 0.3
+            self.max_movement_distance = 3
+            
         # Grid occupation tracking
         self.occupied_slots = set()  # Track occupied grid positions
         self.agent_positions = {}  # Track current agent positions
@@ -43,8 +67,8 @@ class MovementOrchestrator:
         # Update current position tracking
         current_slot = (current_position["x"], current_position["y"])
         
-        # 70% chance to move to a nearby position, 30% chance to move to a station
-        if random.random() < 0.7:
+        # Use configured probability to decide between nearby move or station move
+        if random.random() < self.nearby_move_probability:
             # Move to nearby position
             return self._generate_nearby_position(agent_id, current_position)
         else:
@@ -57,9 +81,9 @@ class MovementOrchestrator:
         max_attempts = 10
         
         while attempts < max_attempts:
-            # Move 1-3 spaces in a random direction
-            dx = random.randint(-3, 3)
-            dy = random.randint(-3, 3)
+            # Move up to max_movement_distance spaces in a random direction
+            dx = random.randint(-self.max_movement_distance, self.max_movement_distance)
+            dy = random.randint(-self.max_movement_distance, self.max_movement_distance)
             
             new_x = max(2, min(self.bridge_bounds["width"] - 2, current["x"] + dx))
             new_y = max(2, min(self.bridge_bounds["height"] - 2, current["y"] + dy))
@@ -127,6 +151,20 @@ class MovementOrchestrator:
     def update_agent_position(self, agent_id: str, new_position: Dict[str, int]):
         """Update agent position in the orchestrator's tracking"""
         self.agent_positions[agent_id] = new_position
+    
+    def cleanup_agent(self, agent_id: str):
+        """Clean up agent from orchestrator tracking"""
+        if agent_id in self.agent_positions:
+            del self.agent_positions[agent_id]
+            logger.info(f"Cleaned up agent {agent_id} from movement orchestrator")
+    
+    def get_agent_count(self) -> int:
+        """Get current number of tracked agents"""
+        return len(self.agent_positions)
+    
+    def get_all_agent_positions(self) -> Dict[str, Dict[str, int]]:
+        """Get all current agent positions"""
+        return self.agent_positions.copy()
 
 class AgentManager:
     """
@@ -139,7 +177,14 @@ class AgentManager:
         self.websocket_manager = websocket_manager
         self.agent_instances = {}  # Will store references to actual agent instances
         self.running = False
-        self.intent_update_interval = get_settings().agent_status_update_interval  # Renamed for clarity
+        
+        # Load configuration values
+        consolidated_config = config_service.load_consolidated_config()
+        movement_config = consolidated_config.get("defaults", {}).get("movement", {})
+        
+        self.intent_update_interval = movement_config.get("agent_status_update_interval", 2.0)
+        self.movement_interval = movement_config.get("movement_interval", 1.0)
+        
         self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
         # Direct MCP integration - consolidated from MCPServerManager
         self.mcp_client = MCPClient()
@@ -147,9 +192,12 @@ class AgentManager:
         self.mcp_server_configs: Dict[str, MCPServerConfig] = {}
         self.config_data = None
         
-        # Movement orchestration
-        self.movement_orchestrator = MovementOrchestrator()
-        self.movement_interval = 1.0  # Move agents every 1 second (reasonable for smooth movement)
+        # Movement orchestration with config service
+        self.movement_orchestrator = MovementOrchestrator(config_service)
+        
+        # Simulation probabilities from configuration
+        self.status_change_probability = movement_config.get("status_change_probability", 0.1)
+        self.movement_intention_probability = movement_config.get("movement_intention_probability", 0.05)
         
         # Agent capabilities and permissions (moved from AgentMCPBridge)
         self.agent_capabilities: Dict[AgentRole, List[str]] = {
@@ -336,15 +384,15 @@ class AgentManager:
         agent_id = agent["id"]
         current_status = agent["status"]
         
-        # Simulate random intention changes
-        if random.random() < 0.1:  # 10% chance of intention change
+        # Simulate random intention changes using configured probability
+        if random.random() < self.status_change_probability:
             new_status = random.choice(["active", "thinking", "working", "idle"])
             if new_status != current_status:
                 await self.spaceship_service.update_agent_status(agent_id, new_status)
                 logger.info(f"Agent {agent_id} intention changed to {new_status}")
         
-        # Simulate random movement intentions occasionally
-        if random.random() < 0.05:  # 5% chance of movement intention
+        # Simulate random movement intentions occasionally using configured probability
+        if random.random() < self.movement_intention_probability:
             await self._simulate_movement_intention(agent_id)
     
     async def _simulate_movement_intention(self, agent_id: str):

@@ -15,6 +15,7 @@ class Database:
         """Initialize the database with required tables"""
         async with aiosqlite.connect(self.db_path) as db:
             await self._create_tables(db)
+            await self._migrate_schema(db)
             await self._insert_default_data(db)
             await db.commit()
             logger.info("Database initialized successfully")
@@ -105,6 +106,35 @@ class Database:
         """)
         
         logger.info("Database tables created")
+    
+    async def _migrate_schema(self, db: aiosqlite.Connection):
+        """Handle database schema migrations safely"""
+        try:
+            # Get current schema for agents table
+            cursor = await db.execute("PRAGMA table_info(agents)")
+            columns = {row[1]: row[2] for row in await cursor.fetchall()}
+            
+            # Check and add new columns if they don't exist
+            migrations_applied = 0
+            
+            if 'intent' not in columns:
+                logger.info("Adding 'intent' column to agents table")
+                await db.execute("ALTER TABLE agents ADD COLUMN intent TEXT DEFAULT 'idle'")
+                migrations_applied += 1
+            
+            if 'target_position' not in columns:
+                logger.info("Adding 'target_position' column to agents table")
+                await db.execute("ALTER TABLE agents ADD COLUMN target_position TEXT DEFAULT NULL")
+                migrations_applied += 1
+            
+            if migrations_applied > 0:
+                logger.info(f"Applied {migrations_applied} schema migrations")
+            else:
+                logger.info("Database schema is up to date")
+                
+        except Exception as e:
+            logger.error(f"Error during schema migration: {e}")
+            raise
     
     async def _insert_default_data(self, db: aiosqlite.Connection):
         """Insert default spaceship configuration"""
