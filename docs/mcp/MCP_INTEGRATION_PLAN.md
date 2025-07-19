@@ -1,7 +1,7 @@
 # MCP Integration Architecture Plan
 
 ## Overview
-Implement Model Context Protocol (MCP) integration to connect Agentopia's virtual agents to real-world productivity tools and data sources.
+Implement Model Context Protocol (MCP) integration to connect Agentopia's virtual agents to real-world productivity tools and data sources. This plan details the Docker-orchestrated architecture for adding new MCP servers and integrating them with the spaceship bridge interface.
 
 ## Architecture Design
 
@@ -55,6 +55,125 @@ backend/models/mcp_models.py          # MCP-specific data models
 - Resource access permissions
 - Agent-to-MCP routing rules
 
+## Docker-Orchestrated MCP Architecture
+
+### Current Status
+Agentopia uses Docker containers for all MCP servers to ensure consistency and security:
+
+```bash
+# Available MCP commands
+npm run mcp:start      # Start all MCP server containers
+npm run mcp:stop       # Stop all MCP server containers
+npm run mcp:status     # Show status of all MCP servers
+npm run mcp:test       # Test MCP server connectivity
+```
+
+### Agent Capabilities Matrix
+| Agent Role | MCP Capabilities |
+|------------|------------------|
+| Executive Officer | calendar, tasks, planning |
+| Science Officer | files, research, analysis |
+| Operations Officer | tasks, workflow, automation |
+
+## Adding a New MCP Server
+
+### Step 1: Create Server Directory
+```bash
+mkdir -p mcp-servers/your-server-name
+cd mcp-servers/your-server-name
+```
+
+### Step 2: Implement MCP Server
+```python
+# server.py
+from mcp.server import Server
+import mcp.server.stdio
+import mcp.types as types
+
+server = Server("your-server-name")
+
+@server.list_tools()
+async def handle_list_tools() -> list[types.Tool]:
+    return [
+        types.Tool(
+            name="your_tool",
+            description="Tool description",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "param": {"type": "string"}
+                }
+            }
+        )
+    ]
+
+@server.call_tool()
+async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
+    if name == "your_tool":
+        # Implementation
+        return [types.TextContent(type="text", text="Result")]
+    
+    raise ValueError(f"Unknown tool: {name}")
+
+if __name__ == "__main__":
+    mcp.server.stdio.run_server(server)
+```
+
+### Step 3: Add to Docker Compose
+Edit `docker-compose.mcp.yml`:
+```yaml
+services:
+  mcp-your-server:
+    build: ./mcp-servers/your-server-name
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_CONFIG=/app/config.json
+    volumes:
+      - ./config/your-server-config.json:/app/config.json:ro
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+### Step 4: Configure Agent Access
+Edit `backend/services/agent_manager.py`:
+```python
+# Agent capability matrix
+AGENT_CAPABILITIES = {
+    AgentRole.EXECUTIVE_OFFICER: ["calendar", "tasks", "planning", "your_tool"],
+    AgentRole.SCIENCE_OFFICER: ["files", "research", "analysis", "your_tool"],
+    AgentRole.OPERATIONS_OFFICER: ["tasks", "workflow", "automation"]
+}
+```
+
+## Testing MCP Integration
+
+### Local Testing
+```bash
+# Start MCP servers
+npm run mcp:start
+
+# Test connectivity
+npm run mcp:test
+
+# Check logs
+npm run mcp:logs
+```
+
+### Integration Testing
+```bash
+# Full MCP integration test
+npm run test:mcp
+
+# E2E tests with MCP
+npm run test:e2e
+```
+
 ## Implementation Steps
 
 1. **MCP Client Infrastructure** - Core client and server management
@@ -62,3 +181,8 @@ backend/models/mcp_models.py          # MCP-specific data models
 3. **Resource Access** - Calendar, tasks, files
 4. **Testing** - Integration tests with real MCP servers
 5. **Documentation** - Usage examples and configuration guides
+
+For detailed implementation guidance, see:
+- [MCP Docker Orchestration](MCP_DOCKER_ORCHESTRATION.md)
+- [MCP Development Status](MCP_DEVELOPMENT_STATUS.md)
+- [Contributing Guide](../development/CONTRIBUTING.md)

@@ -15,6 +15,8 @@ See @README.md for project overview and @package.json for available npm commands
 ## Key Context
 - @docs/index.md - Documentation navigation
 - @docs/architecture/ - System design and technical decisions  
+- @docs/development/CONTRIBUTING.md - Development workflow and guidelines
+- @docs/design/ - Narrative roles, game mechanics, and user experience
 - @docs/mcp/ - MCP integration guides and setup
 - @backend/BACKLOG.md - Backend development priorities
 - @frontend/BACKLOG.md - Frontend development priorities

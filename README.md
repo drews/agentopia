@@ -184,15 +184,18 @@ npm test                  # Fallback basic health tests (use Docker commands ins
 
 ## Architecture
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system architecture and [SIMPLE_PLAN.md](SIMPLE_PLAN.md) for the current development roadmap.
+See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for detailed system architecture and [docs/planning/SIMPLE_PLAN.md](docs/planning/SIMPLE_PLAN.md) for the current development roadmap.
 
 ## Contributing
 
-We welcome contributions! The project uses:
+We welcome contributions! See [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md) for detailed guidelines.
+
+The project uses:
 - Conventional commits (`feat:`, `fix:`, `docs:`)
 - Docker for consistent development environment
 - Configuration-driven design for easy customization
 - BDD testing with Playwright
+- Narrative-driven, ADHD-friendly design patterns
 
 ## License
 
