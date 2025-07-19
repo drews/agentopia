@@ -217,7 +217,7 @@ function App() {
         {renderNavigation()}
         <header className="App-header">
           <h1>🚀 Loading USS Agentopia Bridge...</h1>
-          <p>Status: {connectionStatus}</p>
+          <p>Status: <span className={`connection ${connectionStatus.toLowerCase()}`}>WS: {connectionStatus}</span></p>
         </header>
       </div>
     );

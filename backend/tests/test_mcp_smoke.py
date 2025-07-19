@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 sys.path.append('/app')
 
-from services.mcp.mcp_server_manager import MCPServerManager
+from services.mcp.mcp_client import MCPClient
 from models.agent import AgentRole
 
 async def test_simplified_architecture():
@@ -80,7 +80,7 @@ async def test_mcp_integration():
     
     # Test configuration loading
     print("3. Testing configuration loading...")
-    config_path = "/workspace/config/mcp_config.json"
+    config_path = "/workspace/config/agentopia.json"
     
     # Check if config exists and is valid
     if not Path(config_path).exists():

@@ -25,7 +25,7 @@ app = FastAPI(title="MCP Gateway", description="Gateway for Model Context Protoc
 class MCPGateway:
     """Gateway that routes requests to appropriate MCP servers."""
     
-    def __init__(self, config_path: str = "/workspace/config/mcp_config.json"):
+    def __init__(self, config_path: str = "/workspace/config/agentopia.json"):
         self.servers: Dict[str, Dict] = {}
         self.http_client = httpx.AsyncClient(timeout=30.0)
         self.config_path = config_path
@@ -42,7 +42,7 @@ class MCPGateway:
             
             # Fallback to relative path if absolute doesn't exist
             if not config_file.exists():
-                config_file = Path("../../config/mcp_config.json")
+                config_file = Path("../../config/agentopia.json")
             
             if not config_file.exists():
                 logger.warning(f"Config file not found at {self.config_path}, using hardcoded defaults")
