@@ -1,174 +1,72 @@
-# Containerized Testing Guide
+# Docker Testing Patterns for Agentopia
 
-This project supports both hermetic (isolated service) and end-to-end (full stack) testing using Docker containers.
+## Core Philosophy
+🐳 **All testing is containerized for consistency and isolation**
 
-## Quick Start
-
+## Quick Commands
 ```bash
-# Run all tests (hermetic + e2e)
-npm run docker:test:all
+# Recommended daily testing
+npm run docker:smoke
 
-# Run only hermetic tests (FE-only and BE-only)
-npm run docker:test:hermetic
+# Full test suite (slower)
+npm run docker:test
 
-# Run only e2e tests (FE + BE integration)
-npm run docker:test:e2e
+# E2E tests (requires services running)
+npm run test:e2e
 
-# Start development environment
-npm run docker:dev
+# Clean up after tests
+npm run docker:test:clean
 ```
 
-## Testing Strategies
+## Testing Infrastructure
 
-### 🔬 Hermetic Testing (Isolated Services)
-
-Hermetic tests run each service in isolation without external dependencies:
-
-**Frontend Unit Tests:**
+### Health Check Pattern
 ```bash
-# Run React component and unit tests
-docker-compose -f docker-compose.test.yml run --rm frontend-unit-test
-```
+# Verify all services are healthy
+npm run docker:smoke
 
-**Backend Unit Tests:**
-```bash
-# Run Python unit tests with pytest
-docker-compose -f docker-compose.test.yml run --rm backend-unit-test
-```
-
-### 🚀 End-to-End Testing (Full Stack)
-
-E2E tests run against the complete system with frontend + backend + database:
-
-```bash
-# Full stack integration tests
-docker-compose -f docker-compose.test.yml run --rm e2e-test
-```
-
-## Architecture
-
-```
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ Frontend Tests  │  │ Backend Tests   │  │ E2E Tests       │
-│ (Hermetic)      │  │ (Hermetic)      │  │ (Integration)   │
-├─────────────────┤  ├─────────────────┤  ├─────────────────┤
-│ • React tests   │  │ • Python pytest │  │ • Playwright    │
-│ • Jest coverage │  │ • No external   │  │ • Full stack    │
-│ • No backend    │  │   dependencies  │  │ • Real browser  │
-│ • No database   │  │ • SQLite memory │  │ • API + UI      │
-└─────────────────┘  └─────────────────┘  └─────────────────┘
-```
-
-## Service Ports
-
-### Development (`docker-compose.yml`)
-- **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:8000
-
-### Testing (`docker-compose.test.yml`)
-- **Frontend**: http://localhost:3001
-- **Backend**: http://localhost:8001
-
-## Development Workflow
-
-### 1. Local Development
-```bash
-# Start all services for development
-npm run docker:dev
-
-# View logs
-npm run docker:dev:logs
-
-# Stop services
-docker-compose down
-```
-
-### 2. Testing Before Commit
-```bash
-# Quick hermetic tests (faster)
-npm run docker:test:hermetic
-
-# Full test suite before push
-npm run docker:test:all
-```
-
-### 3. Debugging Failed Tests
-```bash
-# Run tests with verbose output
-docker-compose -f docker-compose.test.yml run --rm frontend-unit-test npm test -- --verbose
-
-# Check service health
+# Check specific service health
 docker-compose -f docker-compose.test.yml ps
-
-# View service logs
-docker-compose -f docker-compose.test.yml logs backend-test
-docker-compose -f docker-compose.test.yml logs frontend-test
 ```
 
-## File Structure
+### Service Dependencies
+- **Backend**: FastAPI + SQLite database
+- **Frontend**: React development server
+- **MCP Servers**: Docker-orchestrated external services
+- **Test Runner**: Playwright in container
 
-```
-/
-├── docker-compose.yml          # Development environment
-├── docker-compose.test.yml     # Testing environment
-├── backend/
-│   ├── Dockerfile             # Development backend
-│   └── Dockerfile.test        # Testing backend
-├── frontend/spaceship-bridge/
-│   ├── Dockerfile             # Development frontend
-│   └── Dockerfile.test        # Testing frontend (production build)
-└── Dockerfile.e2e             # E2E test runner
-```
+## Testing Antipatterns (Avoid These)
 
-## Benefits
-
-### ✅ Hermetic Testing
-- **Fast**: No external dependencies
-- **Reliable**: Isolated from network/database issues  
-- **Parallel**: Frontend and backend tests run independently
-- **Coverage**: Precise unit test coverage
-
-### ✅ E2E Testing
-- **Realistic**: Tests real user workflows
-- **Integration**: Validates service communication
-- **Browser**: Tests actual UI interactions
-- **API**: Validates backend contracts
-
-### ✅ Containerized Benefits
-- **Consistent**: Same environment across machines
-- **Isolated**: No conflicts with local dependencies
-- **Portable**: Works on any Docker-enabled system
-- **CI/CD Ready**: Easy integration with build pipelines
-
-## Troubleshooting
-
-### Container Issues
+### ❌ Don't Do
 ```bash
-# Clean up containers and volumes
-docker-compose -f docker-compose.test.yml down -v
-docker system prune -f
-
-# Rebuild containers
-docker-compose -f docker-compose.test.yml build --no-cache
+# Local testing bypasses containerization
+pytest backend/tests/
+python -m pytest tests/
+npm test (in local environment)
 ```
 
-### Port Conflicts
+### ✅ Do Instead
 ```bash
-# Check what's using ports 3000/8000
-lsof -i :3000
-lsof -i :8000
-
-# Kill processes if needed
-kill -9 <PID>
+# Always use Docker orchestration
+npm run docker:smoke
+npm run docker:test
 ```
 
-### Health Check Failures
-```bash
-# Check service logs
-docker-compose -f docker-compose.test.yml logs frontend-test
-docker-compose -f docker-compose.test.yml logs backend-test
+## Performance Optimization
 
-# Test health endpoints manually
-curl http://localhost:3001  # Frontend
-curl http://localhost:8001/health  # Backend
+### Fast Feedback Loop
+1. **Smoke tests first**: `npm run docker:smoke` (30 seconds)
+2. **Targeted testing**: Run specific test suites  
+3. **Full suite**: `npm run docker:test` only when needed
+4. **Clean up**: `npm run docker:test:clean` to free resources
+
+## MCP Testing Integration
+
+### MCP Server Testing
+```bash
+# Test MCP connectivity
+npm run mcp:test
+
+# Combined MCP + application testing
+npm run test:mcp
 ```
