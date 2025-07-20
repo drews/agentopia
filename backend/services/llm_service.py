@@ -85,13 +85,18 @@ class LLMService:
             return self._create_mock_provider()
     
     def _create_mock_provider(self) -> BaseLLM:
-        """Create a mock provider for testing."""
+        """Create an intelligent mock provider for testing."""
         return FakeListLLM(responses=[
-            "This is a mock response from the AI assistant.",
-            "I understand your request and am processing it.",
-            "Based on the information provided, here is my analysis.",
-            "I'm ready to assist you with this task.",
-            "Let me help you with that request."
+            "Aye Captain, I've analyzed the situation and recommend we proceed with strategic planning. My tactical systems show optimal mission parameters.",
+            "Science Officer reporting: I've conducted a thorough analysis of the data. The patterns suggest we should examine the temporal fluctuations more closely.",
+            "Operations here - I've optimized our workflow efficiency by 23%. All systems are running at peak performance and ready for the next task.",
+            "Command acknowledged. I've reviewed our mission objectives and recommend prioritizing the high-impact items first. Setting course for maximum productivity.",
+            "Fascinating. The data indicates several interesting correlations. I recommend we gather additional research before proceeding with implementation.",
+            "All stations report ready, Captain. I've coordinated the task execution pipeline and we're operating at optimal efficiency levels.",
+            "Strategic analysis complete. Based on current mission parameters, I suggest we focus on the critical path items to ensure success.",
+            "Research protocols initiated. I'm detecting some anomalous patterns in the data that warrant further investigation using our analysis tools.",
+            "Workflow optimization engaged. I've streamlined the process and eliminated three bottlenecks. Ready to execute on your command.",
+            "Mission status: All systems nominal. I've prepared the tactical briefing and await your orders to proceed with the operation."
         ])
     
     async def generate_response(

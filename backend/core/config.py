@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     anthropic_api_key: Optional[str] = Field(None, env="ANTHROPIC_API_KEY")
     
     # Default LLM Provider Settings
-    default_llm_provider: str = Field("ollama", env="DEFAULT_LLM_PROVIDER")
+    default_llm_provider: str = Field("mock", env="DEFAULT_LLM_PROVIDER")
     default_llm_model: str = Field("gpt-3.5-turbo", env="DEFAULT_LLM_MODEL")
     default_llm_temperature: float = Field(0.7, env="DEFAULT_LLM_TEMPERATURE")
     default_llm_max_tokens: int = Field(150, env="DEFAULT_LLM_MAX_TOKENS")
