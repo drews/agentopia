@@ -356,9 +356,9 @@ class Database:
             "status": row[6],
             "current_task": row[7],
             "intent": row[8],
-            "target_position": json.loads(row[9]) if row[9] else None,
+            "target_position": json.loads(row[9]) if row[9] and row[9].strip() else None,
             "avatar": row[10],
-            "path": json.loads(row[11]) if row[11] else [],
+            "path": json.loads(row[11]) if row[11] and row[11].strip() else [],
             "last_activity": row[12]
         }
     
@@ -374,8 +374,8 @@ class Database:
             "required_role": row[8],
             "status": row[9],
             "description": row[10],
-            "mcp_tools": json.loads(row[11]) if row[11] else [],
-            "resource_usage": json.loads(row[12]) if row[12] else {},
+            "mcp_tools": json.loads(row[11]) if row[11] and row[11].strip() else [],
+            "resource_usage": json.loads(row[12]) if row[12] and row[12].strip() else {},
             "icon": row[13],
             "color": row[14],
             "last_updated": row[15]
