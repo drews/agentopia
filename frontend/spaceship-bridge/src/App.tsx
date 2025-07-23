@@ -46,11 +46,10 @@ function App() {
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
-  // Get API URL from environment or default to localhost
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-  const wsUrl = apiUrl.replace('http', 'ws');
-
   useEffect(() => {
+    // Get API URL from environment or default to localhost
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+    const wsUrl = apiUrl.replace('http', 'ws');
     // Always maintain WebSocket connection for real-time updates
     // Only fetch bridge state when actually showing ship view
     if (currentView === 'ship') {
@@ -91,8 +90,8 @@ function App() {
         
         if (message.type === 'initial_state') {
           setBridgeState(message.data);
-        } else if (message.type === 'agent_movement') {
-          // Update agent position in bridge state
+        } else if (message.type === 'agent_movement_intent') {
+          // Update agent position in bridge state based on movement intent
           setBridgeState(prevState => {
             if (!prevState) return prevState;
             
@@ -100,8 +99,8 @@ function App() {
               if (agent.id === message.data.agent_id) {
                 return {
                   ...agent,
-                  position: message.data.position,
-                  status: message.data.is_moving ? 'moving' : message.data.activity_hint
+                  position: message.data.target_position,
+                  status: message.data.activity_hint || 'moving'
                 };
               }
               return agent;

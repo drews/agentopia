@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 import sys
 import os
+from models import Position
 
 # Add the parent directory to sys.path to import from the existing agentopia system
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -448,7 +449,8 @@ class AgentManager:
                 
                 # Only move if the target is different from current position
                 if target_position != current_position:
-                    await self.spaceship_service.move_agent(agent_id, target_position)
+                    position_obj = Position(x=target_position["x"], y=target_position["y"])
+                    await self.spaceship_service.move_agent(agent_id, position_obj)
                     
                     # Update position tracking in orchestrator
                     self.movement_orchestrator.update_agent_position(agent_id, target_position)
@@ -507,8 +509,12 @@ class AgentManager:
             await self.spaceship_service.update_agent_status(agent_id, "moving")
             
             for position in path:
-                # Move agent to next position
-                await self.spaceship_service.move_agent(agent_id, position)
+                # Move agent to next position (convert dict to Position if needed)
+                if isinstance(position, dict):
+                    position_obj = Position(x=position["x"], y=position["y"])
+                else:
+                    position_obj = position
+                await self.spaceship_service.move_agent(agent_id, position_obj)
                 
                 # Broadcast position update
                 agent = await db.get_agent(agent_id)
