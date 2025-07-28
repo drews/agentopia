@@ -3,10 +3,10 @@
 AI agent development platform with longitudinal task performance optimization.
 
 ## Quick Commands
-- **Health Check**: `npm run docker:smoke`
-- **Start Dev**: `./dev.sh start`
-- **Stop All**: `./dev.sh stop`
-- **MCP Status**: `npm run mcp:status`
+- **Health Check**: `just smoke`
+- **Start Dev**: `just start`
+- **Stop All**: `just stop`
+- **MCP Status**: `just mcp-status`
 
 ## Context Triggers (Load When Needed)
 
@@ -44,13 +44,13 @@ AI agent development platform with longitudinal task performance optimization.
 ### Daily Workflow
 ```bash
 # Start development
-./dev.sh start
+just start
 
 # Health check
-npm run docker:smoke
+just smoke
 
 # Stop everything  
-./dev.sh stop
+just stop
 ```
 
 ### Context Loading Commands
@@ -92,7 +92,7 @@ cat ~/.claude/workflows/EXPLORE_PLAN_CODE_COMMIT.md
 - **E2E patterns** → `@e2e/` directory
 
 ### 🔗 MCP Integration
-- **MCP status** → `npm run mcp:status`
+- **MCP status** → `just mcp-status`
 - **MCP setup** → `@docs/mcp/MCP_INTEGRATION_PLAN.md`
 - **Server configs** → `@config/agentopia.json`
 
@@ -112,7 +112,7 @@ cat ~/.claude/workflows/EXPLORE_PLAN_CODE_COMMIT.md
 ```bash
 # Quick project state check
 git status
-npm run docker:smoke
+just smoke
 @docs/planning/ROADMAP.md (first 20 lines)
 ```
 

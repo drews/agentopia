@@ -60,7 +60,7 @@ cd agentopia
 
 2. **Start development environment**:
 ```bash
-./dev.sh start
+just start
 ```
 
 This will start both backend (port 8000) and frontend (port 3000) with hot reload.
@@ -68,13 +68,17 @@ This will start both backend (port 8000) and frontend (port 3000) with hot reloa
 ### Development Commands
 
 ```bash
-./dev.sh start      # Start all services
-./dev.sh backend    # Backend only
-./dev.sh frontend   # Frontend only
-./dev.sh stop       # Stop all services
-./dev.sh logs       # View logs
-./dev.sh shell      # Open shell in container
+just start          # Start all services
+just backend        # Backend only
+just frontend       # Frontend only
+just stop           # Stop all services
+just logs           # View logs
+just shell          # Open shell in container
+just test           # Run tests
+just clean          # Clean up Docker resources
 ```
+
+Run `just` to see all available commands organized by category.
 
 ### Manual Setup (Alternative)
 
