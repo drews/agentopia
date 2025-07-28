@@ -82,6 +82,21 @@ clean:
 dashboard:
     @bash scripts/compose-dashboard.sh
 
+# Run linting
+lint:
+    @echo "🔍 Running linting..."
+    docker-compose exec frontend npm run lint
+
+# Run type checking
+typecheck:
+    @echo "🔍 Running type checking..."
+    docker-compose exec frontend npm run typecheck
+
+# Build frontend
+build:
+    @echo "🔨 Building frontend..."
+    docker-compose exec frontend npm run build
+
 # ════════════════════════════════════════════════════════════════════════════
 # TESTING
 # ════════════════════════════════════════════════════════════════════════════
@@ -167,12 +182,16 @@ dev-full: mcp-start start-bg
 test-mcp: mcp-start smoke mcp-stop
     @echo "✅ MCP integration tests complete!"
 
+# Run all code quality checks (lint + typecheck + build)
+check: lint typecheck build
+    @echo "✅ All code quality checks passed!"
+
 # ════════════════════════════════════════════════════════════════════════════
 # CI/CD
 # ════════════════════════════════════════════════════════════════════════════
 
 # Run all CI checks
-ci: test-clean test smoke
+ci: test-clean check test smoke
     @echo "✅ All CI checks passed!"
 
 # ════════════════════════════════════════════════════════════════════════════
