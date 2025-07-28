@@ -41,12 +41,12 @@ start-bg:
 # Start backend only
 backend:
     @echo "🔧 Starting backend only..."
-    docker-compose --profile dev up --build backend
+    docker-compose up --build backend
 
 # Start frontend only
 frontend:
     @echo "🎨 Starting frontend only..."
-    docker-compose --profile dev up --build frontend
+    docker-compose up --build frontend
 
 # Stop all services
 stop:

@@ -8,8 +8,8 @@ RUN apk add --no-cache curl
 # Copy package files
 COPY frontend/spaceship-bridge/package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with cache optimization
+RUN npm ci --only=production=false --silent
 
 # Copy source code
 COPY frontend/spaceship-bridge/ ./

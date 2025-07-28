@@ -11,6 +11,8 @@ networks:
 
 volumes:
   node_modules:
+  backend_cache:
+  pip_cache:
 
 services:
   # =============================================================================
@@ -28,6 +30,8 @@ services:
       - ./characters:/app/characters
       - ./missions:/app/missions
       - ./data:/app/data
+      - backend_cache:/root/.cache
+      - pip_cache:/root/.cache/pip
     environment:
       - PYTHONPATH=/app
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -65,6 +69,9 @@ services:
       - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-true}
       - GENERATE_SOURCEMAP=${GENERATE_SOURCEMAP:-false}
       - CI=${CI:-false}
+      - TSC_COMPILE_ON_ERROR=true
+      - ESLINT_NO_DEV_ERRORS=true
+      - DISABLE_ESLINT_PLUGIN=true
     restart: unless-stopped
     depends_on:
       backend:

@@ -60,3 +60,11 @@ frontend/spaceship-bridge/.next/
 *.pkl
 *.model
 *.weights
+
+# Additional development optimizations
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+coverage/
+.nyc_output/

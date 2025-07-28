@@ -355,11 +355,11 @@ class Database:
             "assigned_station": row[5],
             "status": row[6],
             "current_task": row[7],
-            "avatar": row[8],
-            "path": self._safe_json_loads(row[9], default=[]),
-            "last_activity": row[10],
-            "intent": row[11],
-            "target_position": self._safe_json_loads(row[12])
+            "intent": row[8],
+            "target_position": self._safe_json_loads(row[9]),
+            "avatar": row[10],
+            "path": self._safe_json_loads(row[11], default=[]),
+            "last_activity": row[12]
         }
     
     def _row_to_station_dict(self, row) -> Dict[str, Any]:
@@ -392,4 +392,4 @@ class Database:
             return default
 
 # Global database instance
-db = Database()
+db = Database("data/spaceship_bridge.db")

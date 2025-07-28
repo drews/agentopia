@@ -7,6 +7,7 @@ import json
 import asyncio
 from typing import Dict, List, Optional
 import logging
+import os
 
 from core.config import get_settings, configure_logging
 from core.exceptions import (
@@ -513,8 +514,9 @@ async def websocket_endpoint(websocket: WebSocket):
             "data": {"message": "A client left the bridge"}
         })
 
-# Mount static files (for React frontend)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Mount static files (for React frontend) - optional for development
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
