@@ -652,3 +652,34 @@ body {
     min-height: 400px;
   }
 }
+
+/* Loading overlay for bridge grid */
+.bridge-loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #FFCC99;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-message {
+  color: #FFCC99;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: lcars-pulse 2s infinite;
+}
+
+.loading-crew {
+  color: #FFCC99;
+  font-style: italic;
+  padding: 0.5rem;
+  text-align: center;
+  animation: lcars-pulse 1.5s infinite;
+}

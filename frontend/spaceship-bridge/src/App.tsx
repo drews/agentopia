@@ -210,26 +210,37 @@ function App() {
     );
   }
 
-  if (!bridgeState) {
-    return (
-      <div className="App">
-        {renderNavigation()}
-        <header className="App-header">
-          <h1>🚀 Loading USS Agentopia Bridge...</h1>
-          <p>Status: <span className={`connection ${connectionStatus.toLowerCase()}`}>WS: {connectionStatus}</span></p>
-        </header>
-      </div>
-    );
-  }
+  // Ship View - Always render bridge grid with default configuration
+  // Default bridge configuration for consistent grid structure
+  const defaultLayout = { width: 20, height: 12 };
+  const defaultStations = [
+    { id: 'command', name: 'Command', position: { x: 9, y: 6 }, dimensions: { width: 2, height: 1 }, icon: '⭐', color: '#FFD700' },
+    { id: 'helm', name: 'Helm', position: { x: 7, y: 8 }, dimensions: { width: 2, height: 1 }, icon: '🚀', color: '#4169E1' },
+    { id: 'ops', name: 'Operations', position: { x: 11, y: 8 }, dimensions: { width: 2, height: 1 }, icon: '📊', color: '#32CD32' },
+    { id: 'science', name: 'Science', position: { x: 4, y: 4 }, dimensions: { width: 2, height: 1 }, icon: '🔬', color: '#9932CC' },
+    { id: 'engineering', name: 'Engineering', position: { x: 14, y: 4 }, dimensions: { width: 2, height: 1 }, icon: '⚙️', color: '#FF6347' }
+  ];
+  const defaultAgents = [
+    { id: 'red_agent', name: 'Commander', position: { x: 9, y: 6 }, status: 'active', avatar: '👨‍✈️' },
+    { id: 'blue_agent', name: 'Science Officer', position: { x: 4, y: 4 }, status: 'thinking', avatar: '👩‍🔬' },
+    { id: 'yellow_agent', name: 'Operations', position: { x: 11, y: 8 }, status: 'working', avatar: '👨‍💼' }
+  ];
+  
+  // Use backend data if available, otherwise use defaults
+  const layout = bridgeState?.layout || defaultLayout;
+  const stations = bridgeState?.stations || defaultStations;
+  const agents = bridgeState?.agents || defaultAgents;
+  const bridgeId = bridgeState?.bridge_id || 'Agentopia';
+  const status = bridgeState?.status || 'Initializing';
 
   return (
     <div className="App">
       {renderNavigation()}
       <header className="bridge-header">
-        <h1>🚀 {bridgeState.bridge_id.toUpperCase()} Bridge</h1>
+        <h1>🚀 {bridgeId.toUpperCase()} Bridge</h1>
         <div className="status-indicators">
-          <span className={`status ${bridgeState.status}`}>
-            {bridgeState.status.toUpperCase()}
+          <span className={`status ${status.toLowerCase()}`}>
+            {status.toUpperCase()}
           </span>
           <span className={`connection ${connectionStatus.toLowerCase()}`}>
             WS: {connectionStatus}
@@ -241,12 +252,12 @@ function App() {
         <div 
           className="bridge-grid"
           style={{
-            '--grid-width': bridgeState.layout.width,
-            '--grid-height': bridgeState.layout.height
+            '--grid-width': layout.width,
+            '--grid-height': layout.height
           } as React.CSSProperties}
         >
-          {/* Render stations */}
-          {bridgeState.stations.map(station => (
+          {/* Always render stations */}
+          {stations.map(station => (
             <div
               key={station.id}
               className="station"
@@ -264,8 +275,8 @@ function App() {
             </div>
           ))}
           
-          {/* Render agents */}
-          {bridgeState.agents.map(agent => (
+          {/* Render agents if available */}
+          {agents.map(agent => (
             <div
               key={agent.id}
               className={`agent ${agent.status}`}
@@ -279,25 +290,40 @@ function App() {
               <span className="agent-name">{agent.name}</span>
             </div>
           ))}
+          
+          {/* Loading state indicator when no backend data */}
+          {!bridgeState && (
+            <div className="bridge-loading-overlay">
+              <div className="loading-message">
+                🚀 Establishing Connection...
+              </div>
+            </div>
+          )}
         </div>
         
         <aside className="bridge-sidebar">
           <div className="panel">
             <h3>Crew Status</h3>
-            {bridgeState.agents.map(agent => (
-              <div key={agent.id} className="crew-item">
-                <span>{agent.avatar} {agent.name}</span>
-                <span className={`status ${agent.status}`}>{agent.status}</span>
-              </div>
-            ))}
+            {agents.length > 0 ? (
+              agents.map(agent => (
+                <div key={agent.id} className="crew-item">
+                  <span>{agent.avatar} {agent.name}</span>
+                  <span className={`status ${agent.status}`}>{agent.status}</span>
+                </div>
+              ))
+            ) : (
+              <div className="loading-crew">📡 Scanning for crew...</div>
+            )}
           </div>
           
           <div className="panel">
             <h3>Bridge Systems</h3>
-            {bridgeState.stations.map(station => (
+            {stations.map(station => (
               <div key={station.id} className="system-item">
                 <span>{station.icon} {station.name}</span>
-                <span className="status operational">ONLINE</span>
+                <span className="status operational">
+                  {bridgeState ? 'ONLINE' : 'STANDBY'}
+                </span>
               </div>
             ))}
           </div>
