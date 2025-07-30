@@ -48,7 +48,8 @@
   "homepage": "https://github.com/drews/agentopia#readme",
   "devDependencies": {
     "@playwright/test": "^1.53.2",
-    "playwright-bdd": "^8.3.1"
+    "playwright-bdd": "^8.3.1",
+    "vite": "^7.0.6"
   },
   "dependencies": {
     "puppeteer": "^24.12.1"
