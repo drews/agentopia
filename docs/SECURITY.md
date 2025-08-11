@@ -91,7 +91,7 @@ This document establishes comprehensive security policies and guidelines for Age
 - Request signing and validation
 
 #### Agent Authentication
-- Cryptographic agent identity verification
+- Cryptographic agent identity verification using mutual TLS certificates
 - Inter-agent communication authentication
 - Agent capability-based access controls
 - Regular agent credential rotation
@@ -105,13 +105,13 @@ This document establishes comprehensive security policies and guidelines for Age
 - **Backups**: Encrypted backup storage with key management
 
 #### Key Management
-- Hardware Security Module (HSM) for key storage
+- Hardware Security Module (HSM) or cloud KMS with HSM-backed keys for key storage
 - Regular key rotation schedules
 - Secure key distribution mechanisms
 - Key escrow and recovery procedures
 
 #### Data Classification
-- **Public**: No encryption required
+- **Public**: Stored in systems that use default encryption at rest; access controls reflect public designation (no authentication required for public artifacts)
 - **Internal**: Standard encryption protocols
 - **Confidential**: Enhanced encryption and access controls
 - **Restricted**: Maximum security measures and audit logging
@@ -298,7 +298,7 @@ This document establishes comprehensive security policies and guidelines for Age
 - **NIST Cybersecurity Framework**: Comprehensive security controls
 - **OWASP Top 10**: Web application security focus
 - **ISO 27001/27002**: Information security management
-- **SOC 2 Type II**: Trust services criteria compliance
+- **SOC 2 Type II**: Controls aligned with the Trust Services Criteria (attestation in progress)
 
 #### AI/ML Specific Standards
 - **NIST AI Risk Management Framework**: AI system security
@@ -383,9 +383,9 @@ This document establishes comprehensive security policies and guidelines for Age
 ## Contact Information
 
 ### Security Team
-- **Security Officer**: security@agentopia.dev
-- **Incident Response**: incident-response@agentopia.dev
-- **Vulnerability Reports**: security-reports@agentopia.dev
+- **Security Officer**: drews@users.noreply.github.com
+- **Incident Response**: drews@users.noreply.github.com
+- **Vulnerability Reports**: drews@users.noreply.github.com
 
 ### Reporting Security Issues
 
@@ -399,7 +399,7 @@ This document establishes comprehensive security policies and guidelines for Age
 - Encrypted email communication
 - Secure messaging platforms
 - Anonymous reporting options
-- 24/7 security incident hotline
+- Dedicated security incident hotline (if available)
 
 ## Policy Maintenance
 
@@ -415,7 +415,7 @@ This document establishes comprehensive security policies and guidelines for Age
 - Stakeholder notification of updates
 - Training updates for policy changes
 
-**Last Updated**: [Current Date]  
-**Next Review**: [Quarterly Review Date]  
+**Last Updated**: 2025-08-11  
+**Next Review**: 2025-11-11  
 **Version**: 1.0  
-**Approved By**: [Security Officer]
+**Approved By**: drews

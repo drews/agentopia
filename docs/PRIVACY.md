@@ -62,7 +62,7 @@ This document establishes privacy policies and guidelines for Agentopia, an AI-p
 - Configure automatic backups with encryption
 - Establish data retention schedules based on data type:
   - User session data: 30 days
-  - Chat histories: 90 days (user configurable)
+  - Agentopia chat histories (first-party): 90 days (user configurable)
   - Account information: Until account deletion
   - Audit logs: 1 year
 
@@ -74,10 +74,10 @@ This document establishes privacy policies and guidelines for Agentopia, an AI-p
 - Regular review of third-party privacy policies
 - Provide users with control over external integrations
 
-#### MCP Integrations
+#### MCP (Model Context Protocol) Integrations
 - Calendar data: Access only during active user sessions
 - File systems: Read-only access with explicit user consent
-- Communication platforms: Message processing only, no storage
+- Communication platforms (third-party): Process messages transiently; do not persist third-party message content beyond ephemeral processing unless the user explicitly opts in to retention
 - Task management: Sync only user-approved data
 
 ### AI Agent Data Access
@@ -98,7 +98,9 @@ This document establishes privacy policies and guidelines for Agentopia, an AI-p
 - View all stored personal data
 - Download data in portable formats
 - Request data corrections or updates
-- Delete account and associated data
+- Delete account and associated data (certain security and audit logs may be retained for up to 1 year as permitted by law and necessary for security, fraud prevention, and compliance; where feasible, such logs are pseudonymized and decoupled from account identifiers)
+
+To exercise these rights, submit a request to drews@users.noreply.github.com. We will verify your identity and respond within applicable statutory timelines (e.g., 30–45 days).
 
 ### Privacy Settings
 - Control agent memory retention
@@ -176,7 +178,8 @@ This document establishes privacy policies and guidelines for Agentopia, an AI-p
 
 2. **Notification**
    - Internal team notification within 1 hour
-   - User notification within 72 hours
+   - Supervisory authority notification within 72 hours when required by GDPR (Art. 33)
+   - User notification without undue delay when the breach is likely to result in a high risk to the rights and freedoms of natural persons (Art. 34)
    - Regulatory notification as required
 
 3. **Remediation**
@@ -222,6 +225,6 @@ This document establishes privacy policies and guidelines for Agentopia, an AI-p
 
 This privacy policy is reviewed quarterly and updated as needed. Major changes will be communicated to users with appropriate notice periods. Version history and change logs are maintained for transparency.
 
-**Last Updated**: [Current Date]  
-**Next Review**: [Quarterly Review Date]  
+**Last Updated**: 2025-08-11  
+**Next Review**: 2025-11-11  
 **Version**: 1.0
