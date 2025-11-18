@@ -85,131 +85,35 @@ function App() {
     };
   }, [currentView]);
 
-  // LCARS Navigation component
+  // Simplified LCARS Navigation
   const renderNavigation = () => (
-    <div style={{
-      position: 'relative',
-      height: '60px',
-      backgroundColor: '#000000',
-      display: 'flex',
-      alignItems: 'stretch'
-    }}>
-      {/* Left LCARS Panel */}
-      <div style={{
-        width: '320px',
-        height: '100%',
-        background: 'linear-gradient(90deg, #CC6699 0%, #CC6699 280px, #000000 320px)',
-        borderRadius: '0 30px 0 0',
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '20px'
-      }}>
-        <div style={{
-          fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
-          fontSize: '16px',
-          fontWeight: 'bold',
-          color: '#000000',
-          textTransform: 'uppercase',
-          letterSpacing: '1px'
-        }}>
-          AGENTOPIA BRIDGE
-        </div>
+    <div className="lcars-nav">
+      <div className="lcars-nav-left">
+        <span className="lcars-title">AGENTOPIA</span>
       </div>
-
-      {/* Center Navigation Buttons */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '2px',
-        paddingLeft: '20px'
-      }}>
+      
+      <div className="lcars-nav-center">
         {[
-          { id: 'ship', label: 'SHIP OPERATIONS', color: '#99CCFF' },
-          { id: 'roster', label: 'PERSONNEL', color: '#FFCC99' },
-          { id: 'mechanics', label: 'SYSTEMS', color: '#CCFF99' }
-        ].map((view, index) => (
-          <div key={view.id} style={{ display: 'flex' }}>
-            <button 
-              onClick={() => setCurrentView(view.id as any)}
-              style={{
-                height: '30px',
-                minWidth: '120px',
-                border: 'none',
-                borderRadius: index === 0 ? '15px 0 0 15px' : index === 2 ? '0 15px 15px 0' : '0',
-                backgroundColor: currentView === view.id ? view.color : '#333366',
-                color: currentView === view.id ? '#000000' : '#FFCC99',
-                cursor: 'pointer',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
-                transition: 'all 0.2s ease',
-                padding: '0 12px',
-                position: 'relative'
-              }}
-            >
-              {view.label}
-            </button>
-            {index < 2 && (
-              <div style={{
-                width: '2px',
-                height: '30px',
-                backgroundColor: '#000000'
-              }} />
-            )}
-          </div>
+          { id: 'ship', label: 'BRIDGE', icon: '🚀' },
+          { id: 'roster', label: 'CREW', icon: '👥' },
+          { id: 'mechanics', label: 'SYSTEMS', icon: '⚙️' }
+        ].map((view) => (
+          <button 
+            key={view.id}
+            onClick={() => setCurrentView(view.id as any)}
+            className={`lcars-nav-btn ${currentView === view.id ? 'active' : ''}`}
+          >
+            <span className="nav-icon">{view.icon}</span>
+            <span className="nav-label">{view.label}</span>
+          </button>
         ))}
       </div>
-
-      {/* Right LCARS Panel */}
-      <div style={{
-        width: '200px',
-        height: '100%',
-        background: 'linear-gradient(270deg, #99CCFF 0%, #99CCFF 150px, #000000 200px)',
-        borderRadius: '30px 0 0 0',
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        paddingRight: '20px'
-      }}>
-        <div style={{
-          fontFamily: "'Arial Narrow', 'Helvetica Condensed', sans-serif",
-          fontSize: '11px',
-          fontWeight: 'bold',
-          color: '#000000',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          textAlign: 'right'
-        }}>
-          STATUS: {connectionStatus}
-        </div>
-      </div>
-
-      {/* Corner curves */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-8px',
-        left: '312px',
-        width: '16px',
-        height: '8px',
-        backgroundColor: '#CC6699',
-        borderRadius: '0 0 16px 0'
-      }} />
       
-      <div style={{
-        position: 'absolute',
-        bottom: '-8px',
-        right: '192px',
-        width: '16px',
-        height: '8px',
-        backgroundColor: '#99CCFF',
-        borderRadius: '0 0 0 16px'
-      }} />
+      <div className="lcars-nav-right">
+        <span className={`lcars-status ${connectionStatus.toLowerCase()}`}>
+          {connectionStatus}
+        </span>
+      </div>
     </div>
   );
 

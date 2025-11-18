@@ -67,8 +67,6 @@ See @README.md for project overview and @package.json for available npm commands
 - Include context in commit messages
 - Tag significant milestones
 
-## Current MCP Servers
-- **mcp-obsidian**: Connected to local Obsidian vault for knowledge management
 
 ## Project Structure
 - `/frontend/spaceship-bridge/` - React/TypeScript ship operations interface
