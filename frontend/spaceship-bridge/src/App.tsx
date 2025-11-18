@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AgentShowcase from './AgentShowcase';
 import CharacterShowcase from './components/CharacterShowcase';
+import TheaterDemo from './TheaterDemo';
 import './App.css';
 
 interface Position {
@@ -42,7 +43,7 @@ interface BridgeState {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics'>('mechanics');
+  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics' | 'theater'>('mechanics');
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
@@ -161,7 +162,8 @@ function App() {
         {[
           { id: 'mechanics', label: 'Screen' },
           { id: 'ship', label: 'Ship' },
-          { id: 'roster', label: 'Manifest' }
+          { id: 'roster', label: 'Manifest' },
+          { id: 'theater', label: '🎭 Theater' }
         ].map(view => (
           <button 
             key={view.id}
@@ -206,6 +208,15 @@ function App() {
       <div className="App" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         {renderNavigation()}
         <CharacterShowcase />
+      </div>
+    );
+  }
+
+  // Show theater demo (stagecraft system)
+  if (currentView === 'theater') {
+    return (
+      <div className="App">
+        <TheaterDemo />
       </div>
     );
   }

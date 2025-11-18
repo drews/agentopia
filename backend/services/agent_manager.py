@@ -200,7 +200,7 @@ class AgentManager:
         self.status_change_probability = movement_config.get("status_change_probability", 0.1)
         self.movement_intention_probability = movement_config.get("movement_intention_probability", 0.05)
         
-        # Agent capabilities and permissions (moved from AgentMCPBridge)
+        # Agent capabilities and permissions
         self.agent_capabilities: Dict[AgentRole, List[str]] = {
             AgentRole.EXECUTIVE_OFFICER: [
                 "calendar", "tasks", "planning", "scheduling", "reporting", "datetime", "holidays"

@@ -109,61 +109,6 @@ async def health_check() -> HealthResponse:
             detail="Service temporarily unavailable"
         )
 
-@app.get("/test/architecture")
-async def test_architecture():
-    """Test endpoint to validate simplified MCP architecture"""
-    try:
-        # Test component imports
-        from services.mcp.mcp_server_manager import MCPServerManager
-        from services.agent_manager import AgentManager
-        from models.agent import AgentRole
-        
-        # Verify removed components are gone
-        try:
-            from services.agent_mcp_bridge import AgentMCPBridge
-            return {"architecture_valid": False, "error": "AgentMCPBridge still exists"}
-        except ImportError:
-            pass  # Good, it's been removed
-        
-        # Test agent capabilities logic
-        agent_capabilities = {
-            AgentRole.EXECUTIVE_OFFICER: ["calendar", "tasks", "planning"],
-            AgentRole.SCIENCE_OFFICER: ["files", "research", "analysis"], 
-            AgentRole.OPERATIONS_OFFICER: ["tasks", "workflow", "automation"]
-        }
-        
-        # Test authorization function
-        def agent_can_execute(agent_role, command):
-            command_map = {"get_calendar": "calendar", "list_files": "files", "get_tasks": "tasks"}
-            required_cap = command_map.get(command)
-            if not required_cap:
-                return True
-            return required_cap in agent_capabilities.get(agent_role, [])
-        
-        # Run basic authorization tests
-        tests = [
-            (AgentRole.EXECUTIVE_OFFICER, "get_calendar", True),
-            (AgentRole.SCIENCE_OFFICER, "get_calendar", False),
-            (AgentRole.SCIENCE_OFFICER, "list_files", True),
-        ]
-        
-        for role, command, expected in tests:
-            result = agent_can_execute(role, command)
-            if result != expected:
-                return {
-                    "architecture_valid": False,
-                    "error": f"Authorization test failed: {role} + {command} = {result}, expected {expected}"
-                }
-        
-        return {
-            "architecture_valid": True,
-            "message": "Simplified MCP architecture working correctly",
-            "layers": 2,  # AgentManager -> MCPServerManager
-            "eliminated_components": ["AgentMCPBridge", "MCPResourceManager"]
-        }
-        
-    except Exception as e:
-        return {"architecture_valid": False, "error": str(e)}
 
 @app.get("/api/llm/status")
 async def get_llm_status():

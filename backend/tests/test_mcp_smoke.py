@@ -26,7 +26,7 @@ async def test_simplified_architecture():
         # Test that removed components are actually gone
         try:
             from services.agent_mcp_bridge import AgentMCPBridge
-            print("❌ AgentMCPBridge still exists - refactoring incomplete")
+            print("❌ AgentMCPBridge still exists - cleanup incomplete")
             return False
         except ImportError:
             print("✅ AgentMCPBridge successfully removed")

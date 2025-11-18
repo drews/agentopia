@@ -19,7 +19,6 @@ COPY backend/ ./
 COPY config/ ./config/
 COPY characters/ ./characters/
 COPY missions/ ./missions/
-COPY test_architecture.py ./
 
 # Set Python path to include the app directory
 ENV PYTHONPATH=/app
