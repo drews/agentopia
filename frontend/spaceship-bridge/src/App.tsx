@@ -3,6 +3,8 @@ import AgentShowcase from './AgentShowcase';
 import TheaterDemo from './TheaterDemo';
 import ManifestView from './components/ManifestView';
 import CommanderDashboard from './components/CommanderDashboard';
+import AccessView from './components/AccessView';
+import { useSystemMetrics } from './hooks/useSystemMetrics';
 import './App.css';
 
 interface Position {
@@ -44,9 +46,34 @@ interface BridgeState {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics' | 'theater'>('mechanics');
+  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics' | 'theater' | 'access'>('mechanics');
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+
+  // Get API URL from environment or default to localhost
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const wsUrl = apiUrl.replace('http', 'ws');
+
+  // Convert bridge agents to the Agent type for AccessView
+  const accessAgents = bridgeState?.agents.map(agent => ({
+    id: agent.id,
+    name: agent.name,
+    type: 'operations' as any, // Default type, could be enhanced
+    position: agent.position,
+    status: {
+      state: agent.status as any,
+      lastActivity: new Date(),
+      efficiency: Math.floor(Math.random() * 40) + 60 // Mock efficiency 60-100%
+    },
+    capabilities: {
+      primary: 'operations',
+      secondary: ['monitoring', 'analysis'],
+      level: 'competent'
+    }
+  })) || [];
+
+  // Use system metrics hook
+  const { systemHealth, detectAnomalies } = useSystemMetrics(wsUrl, accessAgents);
 
   useEffect(() => {
     // Get API URL from environment or default to localhost
@@ -164,6 +191,7 @@ function App() {
           { id: 'mechanics', label: 'Screen' },
           { id: 'ship', label: 'Ship' },
           { id: 'roster', label: 'Manifest' },
+          { id: 'access', label: 'Access' },
           { id: 'theater', label: '🎭 Theater' }
         ].map(view => (
           <button 
@@ -199,6 +227,23 @@ function App() {
       <div className="App">
         {renderNavigation()}
         <AgentShowcase />
+      </div>
+    );
+  }
+
+  // Show access view (micro-scale data and metrics)
+  if (currentView === 'access') {
+    return (
+      <div className="App">
+        {renderNavigation()}
+        <AccessView 
+          agents={accessAgents}
+          systemHealth={systemHealth}
+          onAgentInteraction={(agentId, action) => {
+            console.log(`Agent interaction: ${agentId} - ${action}`);
+            // Could trigger agent detail modal or actions
+          }}
+        />
       </div>
     );
   }
