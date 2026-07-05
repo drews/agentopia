@@ -184,7 +184,8 @@ const AgentShowcase: React.FC = () => {
       color: selectedTheme === 'retro' ? '#00ff41' : selectedTheme === 'lcars' ? '#FFCC99' : '#1e293b',
       minHeight: '100vh',
       textTransform: selectedTheme === 'lcars' ? 'uppercase' : 'none',
-      letterSpacing: selectedTheme === 'lcars' ? '0.5px' : 'normal'
+      letterSpacing: selectedTheme === 'lcars' ? '0.5px' : 'normal',
+      fontWeight: selectedTheme === 'lcars' ? 'bold' : 'normal'
     }}>
       <div style={{ marginBottom: '30px' }}>
         <h1 style={{ marginBottom: '10px' }}>🚀 Agent Representation Showcase</h1>
@@ -203,12 +204,14 @@ const AgentShowcase: React.FC = () => {
                 margin: '0 5px',
                 padding: '8px 16px',
                 border: selectedTheme === theme ? '2px solid currentColor' : '1px solid',
-                borderRadius: '6px',
+                borderRadius: selectedTheme === 'lcars' ? '20px' : '6px',
                 backgroundColor: selectedTheme === theme ? 'currentColor' : 'transparent',
                 color: selectedTheme === theme ? (selectedTheme === 'retro' ? '#0a0f0a' : selectedTheme === 'lcars' ? '#000000' : '#ffffff') : 'currentColor',
                 cursor: 'pointer',
-                textTransform: 'capitalize',
-                fontWeight: selectedTheme === theme ? 'bold' : 'normal'
+                textTransform: selectedTheme === 'lcars' ? 'uppercase' : 'capitalize',
+                fontWeight: selectedTheme === theme ? 'bold' : 'normal',
+                letterSpacing: selectedTheme === 'lcars' ? '0.5px' : 'normal',
+                fontFamily: selectedTheme === 'lcars' ? "'Arial Narrow', 'Helvetica Condensed', sans-serif" : 'inherit'
               }}
             >
               {theme}

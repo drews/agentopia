@@ -51,6 +51,10 @@ case "$1" in
     "dashboard")
         ./scripts/compose-dashboard.sh
         ;;
+    "watch")
+        echo "👀🔄 Starting file watcher with auto-reload magic..."
+        exec ./dev-watch.sh watch
+        ;;
     *)
         echo "Agentopia Development Script"
         echo ""
@@ -67,8 +71,10 @@ case "$1" in
         echo "  test      - Run tests"
         echo "  clean     - Clean up Docker resources"
         echo "  dashboard - Show all running branch stacks with URLs"
+        echo "  watch     - 👀🔄 File watcher with auto-reload (smooth dev flow!)"
         echo ""
         echo "Examples:"
+        echo "  $0 watch           # 🎯 Recommended for development"
         echo "  $0 start"
         echo "  $0 logs backend"
         echo "  $0 shell frontend"

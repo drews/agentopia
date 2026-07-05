@@ -194,15 +194,30 @@ const CharacterShowcase: React.FC = () => {
           display: flex;
           flex-direction: column;
           height: 100%;
-          background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
-          color: #e0e6ed;
+          background: #000000;
+          color: #FFCC99;
           font-family: 'Arial Narrow', 'Helvetica Condensed', sans-serif;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         
         .showcase-header {
           padding: 16px 20px;
-          background: rgba(0, 0, 0, 0.3);
-          border-bottom: 1px solid #333;
+          background: #CC6699;
+          border-bottom: none;
+          position: relative;
+        }
+        
+        .showcase-header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 8px;
+          background: #FFCC99;
+          border-radius: 0 0 20px 20px;
         }
         
         .showcase-title {
@@ -211,13 +226,15 @@ const CharacterShowcase: React.FC = () => {
           text-transform: uppercase;
           letter-spacing: 0.5px;
           margin-bottom: 8px;
-          color: #e0e6ed;
+          color: #000000;
         }
         
         .showcase-subtitle {
           font-size: 12px;
-          color: #78909c;
+          color: #000000;
           margin-bottom: 16px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
         
         .scene-selector {
@@ -226,45 +243,50 @@ const CharacterShowcase: React.FC = () => {
         }
         
         .scene-button {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid #444;
-          border-radius: 4px;
-          color: #e0e6ed;
+          background: transparent;
+          border: 1px solid #FFCC99;
+          border-radius: 20px;
+          color: #FFCC99;
           font-size: 11px;
-          font-weight: 500;
+          font-weight: bold;
           padding: 6px 12px;
           cursor: pointer;
           transition: all 0.2s ease;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.5px;
+          font-family: 'Arial Narrow', 'Helvetica Condensed', sans-serif;
         }
         
         .scene-button:hover {
-          background: rgba(255, 255, 255, 0.2);
-          border-color: #666;
+          background: rgba(255, 204, 153, 0.2);
+          border-color: #FFCC99;
         }
         
         .scene-button.active {
-          background: #42a5f5;
-          border-color: #42a5f5;
-          color: #000;
-          font-weight: 600;
+          background: #FFCC99;
+          border-color: #FFCC99;
+          color: #000000;
+          font-weight: bold;
         }
         
         .showcase-content {
           flex: 1;
           padding: 20px;
           overflow: hidden;
+          background: #000000;
         }
         
         .showcase-info {
           margin-top: 16px;
           padding: 12px;
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 6px;
+          background: #333366;
+          border-radius: 20px;
           font-size: 11px;
-          color: #78909c;
+          color: #FFCC99;
           text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: bold;
         }
       `}</style>
 

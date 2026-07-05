@@ -176,49 +176,38 @@ function App() {
     };
   }, [currentView]);
 
-  // Navigation component
+  // Simplified LCARS Navigation
   const renderNavigation = () => (
-    <nav style={{ 
-      padding: '10px 20px', 
-      borderBottom: '1px solid #333',
-      backgroundColor: '#1a2332',
-      display: 'flex',
-      gap: '10px',
-      alignItems: 'center'
-    }}>
-      <div style={{ display: 'flex', gap: '8px' }}>
+    <div className="lcars-nav">
+      <div className="lcars-nav-left">
+        <span className="lcars-title">AGENTOPIA</span>
+      </div>
+      
+      <div className="lcars-nav-center">
         {[
-          { id: 'mechanics', label: 'Screen' },
-          { id: 'ship', label: 'Ship' },
-          { id: 'roster', label: 'Manifest' },
-          { id: 'access', label: 'Access' },
-          { id: 'theater', label: '🎭 Theater' }
-        ].map(view => (
+          { id: 'ship', label: 'BRIDGE', icon: '🚀' },
+          { id: 'roster', label: 'CREW', icon: '👥' },
+          { id: 'access', label: 'ACCESS', icon: '📊' },
+          { id: 'mechanics', label: 'SYSTEMS', icon: '⚙️' },
+          { id: 'theater', label: 'THEATER', icon: '🎭' }
+        ].map((view) => (
           <button 
             key={view.id}
             onClick={() => setCurrentView(view.id as any)}
-            style={{
-              padding: '8px 16px',
-              border: currentView === view.id ? '2px solid #42a5f5' : '1px solid #555',
-              borderRadius: '4px',
-              backgroundColor: currentView === view.id ? '#42a5f5' : 'transparent',
-              color: currentView === view.id ? '#000' : '#e0e6ed',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: currentView === view.id ? '600' : '400',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3px',
-              transition: 'all 0.2s ease'
-            }}
+            className={`lcars-nav-btn ${currentView === view.id ? 'active' : ''}`}
           >
-            {view.label}
+            <span className="nav-icon">{view.icon}</span>
+            <span className="nav-label">{view.label}</span>
           </button>
         ))}
       </div>
-      <div style={{ marginLeft: 'auto', fontSize: '12px', color: '#78909c' }}>
-        Agentopia Bridge • {connectionStatus}
+      
+      <div className="lcars-nav-right">
+        <span className={`lcars-status ${connectionStatus.toLowerCase()}`}>
+          {connectionStatus}
+        </span>
       </div>
-    </nav>
+    </div>
   );
 
   // Show game mechanics (formerly agent showcase)
