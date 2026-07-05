@@ -6,16 +6,16 @@ WORKDIR /app
 RUN apk add --no-cache curl
 
 # Copy package files
-COPY frontend/spaceship-bridge/package*.json ./
+COPY frontend/package*.json ./
 
 # Install dependencies with cache optimization
-RUN npm ci --only=production=false --silent
+RUN npm ci --silent
 
 # Copy source code
-COPY frontend/spaceship-bridge/ ./
+COPY frontend/ ./
 
 # Expose port
 EXPOSE 3000
 
-# Start development server with hot reload
-CMD ["npm", "start"]
+# Start development server with hot reload (Vite)
+CMD ["npx", "vite", "--host", "0.0.0.0"]

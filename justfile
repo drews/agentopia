@@ -104,7 +104,9 @@ build:
 # Run smoke tests (quick health check)
 smoke:
     @echo "🧪 Running smoke tests..."
-    BACKEND_PORT=8001 FRONTEND_PORT=3001 DEBUG=true CI=true docker-compose --profile test up --abort-on-container-exit tests
+    @echo "🧹 Cleaning up orphan containers..."
+    docker-compose down --remove-orphans
+    BACKEND_PORT=8001 FRONTEND_PORT=3001 DEBUG=true CI=true docker-compose --profile test up --abort-on-container-exit --remove-orphans tests
 
 # Run all tests in Docker
 test:

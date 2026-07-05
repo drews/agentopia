@@ -60,8 +60,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     volumes:
-      - ./frontend/spaceship-bridge/src:/app/src
-      - ./frontend/spaceship-bridge/public:/app/public
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
       - node_modules:/app/node_modules
     environment:
       - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000}
@@ -78,10 +78,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 45s
     networks:
       - agentopia-dev
       - agentopia-test
