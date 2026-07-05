@@ -14,7 +14,6 @@ services:
       - ./config:/app/config
       - ./characters:/app/characters
       - ./missions:/app/missions
-      - ./backend/spaceship_bridge.db:/app/spaceship_bridge.db
     environment:
       - PYTHONPATH=/app
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
