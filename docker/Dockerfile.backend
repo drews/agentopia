@@ -20,6 +20,12 @@ COPY config/ ./config/
 COPY characters/ ./characters/
 COPY missions/ ./missions/
 
+# Create static directory for StaticFiles mount
+RUN mkdir -p static
+
+# Initialize the database
+RUN python init_db.py
+
 # Set Python path to include the app directory
 ENV PYTHONPATH=/app
 

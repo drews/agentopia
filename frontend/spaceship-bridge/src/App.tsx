@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AgentShowcase from './AgentShowcase';
-import CharacterShowcase from './components/CharacterShowcase';
 import TheaterDemo from './TheaterDemo';
+import ManifestView from './components/ManifestView';
 import './App.css';
 
 interface Position {
@@ -207,7 +207,7 @@ function App() {
     return (
       <div className="App" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         {renderNavigation()}
-        <CharacterShowcase />
+        <ManifestView />
       </div>
     );
   }
