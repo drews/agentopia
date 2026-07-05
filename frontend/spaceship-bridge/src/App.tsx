@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import AgentShowcase from './AgentShowcase';
 import CharacterShowcase from './components/CharacterShowcase';
+import AccessView from './components/AccessView';
+import { useSystemMetrics } from './hooks/useSystemMetrics';
 import './App.css';
 
 interface Position {
@@ -42,13 +44,34 @@ interface BridgeState {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics'>('mechanics');
+  const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'access'>('access');
   const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
   // Get API URL from environment or default to localhost
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
   const wsUrl = apiUrl.replace('http', 'ws');
+
+  // Convert bridge agents to the Agent type for AccessView
+  const accessAgents = bridgeState?.agents.map(agent => ({
+    id: agent.id,
+    name: agent.name,
+    type: 'operations' as any, // Default type, could be enhanced
+    position: agent.position,
+    status: {
+      state: agent.status as any,
+      lastActivity: new Date(),
+      efficiency: Math.floor(Math.random() * 40) + 60 // Mock efficiency 60-100%
+    },
+    capabilities: {
+      primary: 'operations',
+      secondary: ['monitoring', 'analysis'],
+      level: 'competent'
+    }
+  })) || [];
+
+  // Use system metrics hook
+  const { systemHealth, detectAnomalies } = useSystemMetrics(wsUrl, accessAgents);
 
   useEffect(() => {
     // Always maintain WebSocket connection for real-time updates
@@ -160,7 +183,7 @@ function App() {
     }}>
       <div style={{ display: 'flex', gap: '8px' }}>
         {[
-          { id: 'mechanics', label: 'Screen' },
+          { id: 'access', label: 'Access' },
           { id: 'ship', label: 'Ship' },
           { id: 'roster', label: 'Manifest' }
         ].map(view => (
@@ -191,12 +214,19 @@ function App() {
     </nav>
   );
 
-  // Show game mechanics (formerly agent showcase)
-  if (currentView === 'mechanics') {
+  // Show access view (micro-scale data and metrics)
+  if (currentView === 'access') {
     return (
       <div className="App">
         {renderNavigation()}
-        <AgentShowcase />
+        <AccessView 
+          agents={accessAgents}
+          systemHealth={systemHealth}
+          onAgentInteraction={(agentId, action) => {
+            console.log(`Agent interaction: ${agentId} - ${action}`);
+            // Could trigger agent detail modal or actions
+          }}
+        />
       </div>
     );
   }
