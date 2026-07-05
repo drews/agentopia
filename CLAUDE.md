@@ -82,6 +82,8 @@ cat ~/.claude/workflows/EXPLORE_PLAN_CODE_COMMIT.md
 ## Workflow Triggers
 
 ### 🏗️ Architecture Work
+- **System diagram (START HERE)** → `@docs/architecture/SYSTEM_DIAGRAM.md` — living map of services/views; update it in the same PR as any structural change
+- **Active change proposals** → `openspec list` and `openspec/changes/`
 - **System design** → `@docs/architecture/ARCHITECTURE.md`
 - **Strange Loop development** → `@docs/development/STRANGE_LOOP.md`
 - **Game mechanics** → `@docs/design/GAME_MECHANICS.md`

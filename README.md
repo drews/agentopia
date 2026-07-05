@@ -184,7 +184,7 @@ npm test                  # Fallback basic health tests (use Docker commands ins
 
 ## Architecture
 
-See [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for detailed system architecture and [docs/planning/SIMPLE_PLAN.md](docs/planning/SIMPLE_PLAN.md) for the current development roadmap.
+See [docs/architecture/SYSTEM_DIAGRAM.md](docs/architecture/SYSTEM_DIAGRAM.md) for the living system diagram (current + target state), [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for detailed system architecture, and [docs/planning/SIMPLE_PLAN.md](docs/planning/SIMPLE_PLAN.md) for the current development roadmap. Architectural changes are proposed and tracked as [OpenSpec](openspec/) changes.
 
 ## Contributing
 

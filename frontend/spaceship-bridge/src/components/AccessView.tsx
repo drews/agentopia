@@ -46,7 +46,7 @@ const AccessView: React.FC<AccessViewProps> = ({
     const errorCount = agents.filter(a => a.status.state === 'error').length;
     
     const recentActivity = agents.filter(a => {
-      const timeDiff = Date.now() - new Date(a.status.lastActivity).getTime();
+      const timeDiff = Date.now() - new Date(a.status.lastActivity ?? 0).getTime();
       return timeDiff < 30000; // last 30 seconds
     }).length;
 
@@ -353,7 +353,7 @@ const AccessView: React.FC<AccessViewProps> = ({
           gap: '8px'
         }}>
           {agents.map((agent) => {
-            const timeSinceActivity = Date.now() - new Date(agent.status.lastActivity).getTime();
+            const timeSinceActivity = Date.now() - new Date(agent.status.lastActivity ?? 0).getTime();
             const isRecent = timeSinceActivity < 30000;
             
             return (

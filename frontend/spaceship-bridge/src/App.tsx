@@ -4,6 +4,7 @@ import TheaterDemo from './TheaterDemo';
 import ManifestView from './components/ManifestView';
 import CommanderDashboard from './components/CommanderDashboard';
 import AccessView from './components/AccessView';
+import { Agent as AccessAgent } from './agents/types';
 import { useSystemMetrics } from './hooks/useSystemMetrics';
 import './App.css';
 
@@ -55,7 +56,7 @@ function App() {
   const wsUrl = apiUrl.replace('http', 'ws');
 
   // Convert bridge agents to the Agent type for AccessView
-  const accessAgents = bridgeState?.agents.map(agent => ({
+  const accessAgents: AccessAgent[] = bridgeState?.agents.map(agent => ({
     id: agent.id,
     name: agent.name,
     type: 'operations' as any, // Default type, could be enhanced
@@ -68,7 +69,7 @@ function App() {
     capabilities: {
       primary: 'operations',
       secondary: ['monitoring', 'analysis'],
-      level: 'competent'
+      level: 'competent' as const
     }
   })) || [];
 
