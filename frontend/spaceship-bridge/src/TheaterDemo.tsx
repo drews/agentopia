@@ -144,7 +144,7 @@ const TheaterDemo: React.FC = () => {
     production_id: 'Operation Stardust',
     currentAct: 'Act 2: Discovery',
     currentScene: 'Scene 3: Crisis Response',
-    status: isLive ? 'performance' : 'rehearsal' as const,
+    status: (isLive ? 'performance' : 'rehearsal') as 'performance' | 'rehearsal',
     cast: performers,
     sets: [
       {
@@ -224,7 +224,7 @@ const TheaterDemo: React.FC = () => {
               ...perf.performance,
               state: matchingChar.mood.state,
               energy: matchingChar.mood.energy,
-              intensity: perf.performance.intensity + (Math.random() - 0.5) * 15
+              intensity: (perf.performance.intensity ?? 50) + (Math.random() - 0.5) * 15
             }
           };
         }

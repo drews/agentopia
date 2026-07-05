@@ -198,10 +198,9 @@ const Character: React.FC<CharacterProps> = ({
       {character.costume.accessories.length > 0 && (
         <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
           {character.costume.accessories.slice(0, 3).map((accessory, index) => (
-            <span key={index} style={{ 
-              fontSize: '0.8em', 
-              opacity: 0.7,
-              title: accessory 
+            <span key={index} title={accessory} style={{
+              fontSize: '0.8em',
+              opacity: 0.7
             }}>
               🎭
             </span>
