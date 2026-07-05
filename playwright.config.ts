@@ -47,6 +47,12 @@ export default defineConfig({
     toHaveScreenshot: {
       // Allow some pixel differences for cross-browser compatibility
       maxDiffPixels: 100,
+      // Threshold for considering pixels different (0-1)
+      threshold: 0.2,
+      // Animation handling for consistent screenshots
+      animations: 'disabled',
+      // Screenshot mode
+      mode: 'local',
     },
   },
   
