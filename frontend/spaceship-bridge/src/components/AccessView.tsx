@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Agent, AgentStatus } from '../agents/types';
+import { Agent } from '../agents/types';
 import MetricDetailModal from './MetricDetailModal';
 
 interface MicroMetric {

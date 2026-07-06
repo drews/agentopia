@@ -74,7 +74,7 @@ function App() {
   })) || [];
 
   // Use system metrics hook
-  const { systemHealth, detectAnomalies } = useSystemMetrics(wsUrl, accessAgents);
+  const { systemHealth } = useSystemMetrics(wsUrl, accessAgents);
 
   useEffect(() => {
     // Get API URL from environment or default to localhost

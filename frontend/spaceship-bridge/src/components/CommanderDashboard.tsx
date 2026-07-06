@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './CommanderDashboard.css';
 
 interface FleetMetrics {
@@ -39,7 +39,7 @@ interface CommanderDashboardProps {
 }
 
 const CommanderDashboard: React.FC<CommanderDashboardProps> = ({ connectionStatus }) => {
-  const [fleetMetrics, setFleetMetrics] = useState<FleetMetrics>({
+  const [fleetMetrics] = useState<FleetMetrics>({
     total_ships: 3,
     operational_ships: 3,
     ships_in_mission: 1,
@@ -48,7 +48,7 @@ const CommanderDashboard: React.FC<CommanderDashboardProps> = ({ connectionStatu
     resource_allocation_efficiency: 92.3
   });
 
-  const [missions, setMissions] = useState<MissionData[]>([
+  const [missions] = useState<MissionData[]>([
     {
       id: 'mission-001',
       title: 'Deep Space Exploration Protocol',
@@ -59,7 +59,7 @@ const CommanderDashboard: React.FC<CommanderDashboardProps> = ({ connectionStatu
       assigned_ships: ['USS Agentopia', 'USS Discovery']
     },
     {
-      id: 'mission-002', 
+      id: 'mission-002',
       title: 'Resource Optimization Analysis',
       status: 'active',
       priority: 'medium',
@@ -69,7 +69,7 @@ const CommanderDashboard: React.FC<CommanderDashboardProps> = ({ connectionStatu
     }
   ]);
 
-  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
+  const [performanceMetrics] = useState<PerformanceMetrics>({
     power_efficiency: 94.2,
     crew_productivity: 89.7,
     response_time_average: 1.23,
@@ -83,7 +83,7 @@ const CommanderDashboard: React.FC<CommanderDashboardProps> = ({ connectionStatu
     }
   });
 
-  const [trendData] = useState<Record<string, TrendData[]>>({
+  useState<Record<string, TrendData[]>>({
     efficiency: [
       { timestamp: '06:00', value: 85.2 },
       { timestamp: '08:00', value: 87.1 },

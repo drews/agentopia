@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CharacterShowcase from './CharacterShowcase';
 
 interface AgentMetrics {
   id: string;
@@ -48,9 +49,9 @@ interface TaskFlow {
 }
 
 const ManifestView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'agents' | 'system' | 'tasks'>('agents');
+  const [activeTab, setActiveTab] = useState<'agents' | 'system' | 'tasks' | 'characters'>('agents');
   const [agentMetrics, setAgentMetrics] = useState<AgentMetrics[]>([]);
-  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
+  const [systemHealth] = useState<SystemHealth>({
     overall: 'healthy',
     components: {
       backend: 'online',
@@ -704,7 +705,8 @@ const ManifestView: React.FC = () => {
         {[
           { id: 'agents', label: 'Agent Performance' },
           { id: 'system', label: 'System Health' },
-          { id: 'tasks', label: 'Task Flow' }
+          { id: 'tasks', label: 'Task Flow' },
+          { id: 'characters', label: 'Characters' }
         ].map(tab => (
           <button
             key={tab.id}
@@ -720,6 +722,7 @@ const ManifestView: React.FC = () => {
         {activeTab === 'agents' && renderAgentsTab()}
         {activeTab === 'system' && renderSystemTab()}
         {activeTab === 'tasks' && renderTasksTab()}
+        {activeTab === 'characters' && <CharacterShowcase />}
       </div>
     </div>
   );

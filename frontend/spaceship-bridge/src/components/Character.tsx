@@ -2,7 +2,7 @@ import React from 'react';
 
 // Stagecraft-inspired Character component
 // Characters are the AI performers in our digital theater
-export interface Character {
+export interface CharacterData {
   id: string;
   name: string;
   role: 'lead' | 'supporting' | 'ensemble' | 'understudy';
@@ -23,8 +23,8 @@ export interface Character {
 }
 
 interface CharacterProps {
-  character: Character;
-  onSelect?: (character: Character) => void;
+  character: CharacterData;
+  onSelect?: (character: CharacterData) => void;
   size?: 'compact' | 'standard' | 'featured';
   showDetails?: boolean;
   lighting?: 'bright' | 'dim' | 'spotlight' | 'ambient';
