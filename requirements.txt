@@ -1,21 +1,18 @@
 # Backend API dependencies  
 fastapi==0.115.12
-uvicorn[standard]==0.32.1
-websockets==14.1
+uvicorn[standard]>=0.35
+websockets>=15.0.1
 python-multipart==0.0.19
 aiosqlite==0.20.0
 pydantic
 pydantic-settings
 
-# LLM integration (only core dependencies)
-langchain-core
-langchain-openai
-langchain-anthropic
-langchain-ollama
-langchain-community
+# LLM integration
+pydantic-ai
 
 # MCP integration
 mcp
+fastmcp>=2.14,<3
 httpx
 
 # Testing dependencies

@@ -22,7 +22,7 @@ flowchart LR
         API["REST API<br/>/api/agents /api/bridge/state /api/llm/test"]
         WSM["websocket_manager<br/>broadcasts state + chat"]
         AM["agent_manager<br/>personas · ambient movement loop · monitoring"]
-        LLM["llm_service (LangChain)<br/>providers: ollama* | openai | anthropic | mock"]
+        LLM["llm_service (PydanticAI)<br/>one Agent per persona · ollama* | mock"]
         SS["spaceship_service<br/>grid positions, stations"]
         CFG["config_service<br/>config/agentopia.json"]
         DB[("SQLite<br/>spaceship_bridge.db")]

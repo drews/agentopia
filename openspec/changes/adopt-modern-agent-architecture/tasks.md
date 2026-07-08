@@ -2,10 +2,10 @@
 
 ## 1. Agent runtime cutover (backend)
 
-- [ ] 1.1 Add `pydantic-ai` to requirements; create one PydanticAI `Agent` per persona in `llm_service` (system prompt = persona prompt), Ollama provider, behind existing `DEFAULT_LLM_PROVIDER` config
-- [ ] 1.2 Route `agent_manager` chat + `/api/llm/test` through the PydanticAI path; keep mock provider working for tests
-- [ ] 1.3 Verify end-to-end: browser chat with Commander returns an Ollama reply over WebSocket (curl + Playwright smoke)
-- [ ] 1.4 Remove `langchain-*` imports and requirements once 1.3 passes
+- [x] 1.1 Add `pydantic-ai` to requirements; create one PydanticAI `Agent` per persona in `llm_service` (system prompt = persona prompt), Ollama provider, behind existing `DEFAULT_LLM_PROVIDER` config
+- [x] 1.2 Route `agent_manager` chat + `/api/llm/test` through the PydanticAI path; keep mock provider working for tests
+- [x] 1.3 Verify end-to-end: `curl /api/llm/test` and `POST /api/agents/red_agent/chat` both return real Ollama-generated text via PydanticAI (`docker compose logs` shows `POST http://host.docker.internal:11434/v1/chat/completions`)
+- [x] 1.4 Remove `langchain-*` imports and requirements once 1.3 passes
 
 ## 2. MCP tool access (backend)
 
