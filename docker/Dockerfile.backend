@@ -2,10 +2,13 @@ FROM python:3.13-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies. nodejs/npm are needed to run stdio MCP
+# servers distributed as npm packages (e.g. @modelcontextprotocol/server-filesystem via npx).
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching

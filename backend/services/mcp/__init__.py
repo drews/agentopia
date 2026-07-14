@@ -6,5 +6,6 @@ and external MCP servers for real-world data access.
 """
 
 from .mcp_client import MCPClient, MCPServerConfig
+from .fastmcp_manager import MCPToolRegistry
 
-__all__ = ['MCPClient', 'MCPServerConfig']
+__all__ = ['MCPClient', 'MCPServerConfig', 'MCPToolRegistry']

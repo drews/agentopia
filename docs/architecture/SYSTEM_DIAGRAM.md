@@ -26,22 +26,28 @@ flowchart LR
         SS["spaceship_service<br/>grid positions, stations"]
         CFG["config_service<br/>config/agentopia.json"]
         DB[("SQLite<br/>spaceship_bridge.db")]
-        MCPC["mcp_client<br/>(configs only — no live servers)"]
+        MCPC["mcp_client<br/>(legacy gateway stub, unused — no live gateway)"]
+        REG["MCPToolRegistry (fastmcp_manager)<br/>namespaced, allowlisted ≤10 tools<br/>lifespan-owned, per-server graceful degrade"]
         API --> AM
         WSM <--> AM
         AM --> LLM & SS & MCPC
         AM --> DB
         CFG --> AM
+        API --> REG
     end
 
     OLLAMA["Ollama on host (:11434)<br/>llama3.2 (default) · qwen3"]
-    MCPS["MCP servers (stubs)<br/>calendar :3001 · tasks :3002<br/>files :3003 · datetime :3004"]
+    MCPS["MCP servers (stubs, unreachable)<br/>calendar :3001 · tasks :3002<br/>files :3003 · datetime :3004"]
+    FSSRV["@modelcontextprotocol/server-filesystem<br/>(stdio, npx, scoped to /app/missions)<br/>5 tools: read/list/search/tree"]
 
     WSC <-->|"ws://:8000/ws<br/>positions ~1Hz, chat, state"| WSM
     Browser -->|REST| API
     LLM -->|"OpenAI-compat API<br/>host.docker.internal"| OLLAMA
-    MCPC -.->|planned| MCPS
+    MCPC -.->|planned, dead code| MCPS
+    REG -->|"stdio, live"| FSSRV
 ```
+
+`GET /api/mcp/status` reports connected/failed servers + exposed tool names; `GET /api/mcp/tools` lists the registry; `POST /api/mcp/tools/{name}/call` dispatches a tool directly (test hook — model-driven tool calling is not wired yet, see Target architecture below).
 
 `*` ollama is the default provider (`DEFAULT_LLM_PROVIDER`, docker-compose.yml).
 

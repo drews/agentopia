@@ -9,8 +9,8 @@
 
 ## 2. MCP tool access (backend)
 
-- [ ] 2.1 Add FastMCP 2.x client to FastAPI lifespan; multi-server config in `config/agentopia.json`; namespaced tool registry with an allowlist filter (≤10 tools)
-- [ ] 2.2 Wire `@modelcontextprotocol/server-filesystem` (scoped dir) as the first server; agent can list/read a file on request
+- [x] 2.1 Add FastMCP 2.x client to FastAPI lifespan; multi-server config in `config/agentopia.json`; namespaced tool registry with an allowlist filter (≤10 tools)
+- [x] 2.2 Wire `@modelcontextprotocol/server-filesystem` (scoped dir) as the first server; agent can list/read a file on request
 - [ ] 2.3 Add Apple EventKit server (try minimal PyObjC one first); Commander can read today's calendar + reminders
 - [ ] 2.4 Implement validate/retry tool-call loop: structured decoding, JSON-schema arg validation, ≤2 self-correction retries; log failure rates
 - [ ] 2.5 Implement two-tier router: planner model decomposes intent → executor makes single tool calls; persona voice applied at rendering

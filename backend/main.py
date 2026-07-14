@@ -5,10 +5,12 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import asyncio
+from pathlib import Path
 from typing import Dict, List, Optional
 import logging
 
 from core.config import get_settings, configure_logging
+from services.mcp.fastmcp_manager import MCPToolRegistry
 from core.exceptions import (
     AgentopiaException, AgentNotFoundException, ConfigurationError,
     agentopia_exception_handler, general_exception_handler, http_exception_handler
@@ -27,32 +29,59 @@ logger = logging.getLogger(__name__)
 
 # Global service instances - will be initialized in lifespan
 websocket_manager: WebSocketManager
-spaceship_service: SpaceshipService  
+spaceship_service: SpaceshipService
 agent_manager: AgentManager
+mcp_tool_registry: MCPToolRegistry
+
+
+def _load_mcp_config() -> dict:
+    """Load the FastMCP server config (the "mcp" section of agentopia.json).
+
+    `settings.agent_config_path` is computed relative to `core/config.py`'s own
+    location, which resolves to the wrong path under the container layout
+    (Dockerfile flattens `backend/` into `/app`, collapsing one directory
+    level). Fall back to a path relative to this file, which is copied to
+    `/app/main.py` and therefore sits next to `/app/config/` in both Docker
+    and local-dev layouts where `backend/` is the CWD.
+    """
+    candidates = [Path(settings.agent_config_path), Path(__file__).resolve().parent / "config" / "agentopia.json"]
+    for path in candidates:
+        if path.exists():
+            try:
+                with open(path, 'r') as f:
+                    config_data = json.load(f)
+                return config_data.get("mcp", {})
+            except Exception as e:
+                logger.warning(f"Could not parse MCP config at {path}: {e}")
+                return {}
+    logger.warning(f"Could not find MCP config in any of: {candidates}")
+    return {}
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - handles startup and shutdown"""
     # Startup
-    global websocket_manager, spaceship_service, agent_manager
-    
+    global websocket_manager, spaceship_service, agent_manager, mcp_tool_registry
+
     logger.info("Initializing AI Spaceship Bridge services...")
-    
+
     try:
         # Initialize services
         websocket_manager = WebSocketManager()
         spaceship_service = SpaceshipService()
         agent_manager = AgentManager(spaceship_service, websocket_manager)
-        
+        mcp_tool_registry = MCPToolRegistry(_load_mcp_config())
+
         await spaceship_service.initialize()
         await agent_manager.initialize()
         await agent_manager.start_monitoring()
-        
+        await mcp_tool_registry.initialize()
+
         logger.info("AI Spaceship Bridge started successfully")
-        
+
         yield  # Application runs here
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}")
         raise
@@ -61,6 +90,7 @@ async def lifespan(app: FastAPI):
         logger.info("Shutting down AI Spaceship Bridge...")
         try:
             await agent_manager.stop_monitoring()
+            await mcp_tool_registry.shutdown()
             logger.info("AI Spaceship Bridge shut down successfully")
         except Exception as e:
             logger.error(f"Error during shutdown: {e}")
@@ -360,12 +390,30 @@ async def assign_mission_with_persona(agent_id: str, mission_data: MissionReques
         logger.error(f"Error assigning persona mission to {agent_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/mcp/tools")
+async def list_mcp_tools():
+    """List the namespaced, allowlisted tools in the FastMCP tool registry."""
+    return {"tools": mcp_tool_registry.list_tools()}
+
+
+@app.post("/api/mcp/tools/{tool_name}/call")
+async def call_mcp_tool(tool_name: str, arguments: Optional[Dict] = None):
+    """Directly invoke a tool in the registry (bypasses model tool-calling; for testing)."""
+    try:
+        result = await mcp_tool_registry.call_tool(tool_name, arguments or {})
+        return {"success": True, "result": str(result)}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error calling MCP tool {tool_name}: {e}")
+        raise HTTPException(status_code=500, detail=f"Tool call failed: {str(e)}")
+
+
 @app.get("/api/mcp/status")
 async def get_mcp_status():
-    """Get MCP server connection status"""
+    """Get FastMCP tool registry status: connected/failed servers and exposed tools."""
     try:
-        status = await agent_manager.mcp_bridge.get_mcp_status()
-        return status
+        return mcp_tool_registry.get_status()
     except Exception as e:
         logger.error(f"Error getting MCP status: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get MCP status: {str(e)}")

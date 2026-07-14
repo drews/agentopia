@@ -223,6 +223,19 @@
       "description": "DateTime MCP server for time/date operations"
     }
   },
+  "mcp": {
+    "max_exposed_tools": 10,
+    "servers": {
+      "filesystem": {
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/app/missions"],
+        "enabled": true,
+        "allowed_tools": ["list_directory", "read_file", "read_text_file", "search_files", "directory_tree"],
+        "description": "Official filesystem MCP server, scoped to /app/missions"
+      }
+    }
+  },
   "defaults": {
     "agents": {
       "initial_position": {"x": 10, "y": 8},
