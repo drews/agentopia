@@ -11,7 +11,7 @@
 
 - [x] 2.1 Add FastMCP 2.x client to FastAPI lifespan; multi-server config in `config/agentopia.json`; namespaced tool registry with an allowlist filter (≤10 tools)
 - [x] 2.2 Wire `@modelcontextprotocol/server-filesystem` (scoped dir) as the first server; agent can list/read a file on request
-- [ ] 2.3 Add Apple EventKit server (try minimal PyObjC one first); Commander can read today's calendar + reminders
+- [x] 2.3 Add Apple EventKit server (built minimal PyObjC one, host-side over streamable-http); registry-level calendar/reminders reads verified with real data — model-driven reads land with 2.4/2.5
 - [ ] 2.4 Implement validate/retry tool-call loop: structured decoding, JSON-schema arg validation, ≤2 self-correction retries; log failure rates
 - [ ] 2.5 Implement two-tier router: planner model decomposes intent → executor makes single tool calls; persona voice applied at rendering
 - [ ] 2.6 Milestone: "Plan my day" — Commander reads real calendar + reminders and returns a prioritized brief (the SIMPLE_PLAN.md canonical flow)
