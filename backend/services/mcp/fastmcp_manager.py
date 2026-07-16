@@ -64,9 +64,13 @@ class MCPToolRegistry:
             logger.warning(f"MCP servers that failed to connect: {self._failed_servers}")
 
     async def _connect_server(self, name: str, cfg: Dict[str, Any]):
-        """Connect to a single MCP server; failures are logged and never propagate to startup."""
-        client = Client({"mcpServers": {name: {"command": cfg["command"], "args": cfg.get("args", [])}}})
+        """Connect to a single MCP server; failures (bad config, unreachable, refused, ...)
+        are logged and never propagate to startup or to other servers."""
         try:
+            if cfg.get("transport") == "http" or "url" in cfg:
+                client = Client(cfg["url"])  # http(s) URL -> streamable-http/SSE, auto-inferred
+            else:
+                client = Client({"mcpServers": {name: {"command": cfg["command"], "args": cfg.get("args", [])}}})
             await client.__aenter__()
             tools = await client.list_tools()
         except Exception as e:

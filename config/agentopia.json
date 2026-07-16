@@ -231,8 +231,15 @@
         "command": "npx",
         "args": ["-y", "@modelcontextprotocol/server-filesystem", "/app/missions"],
         "enabled": true,
-        "allowed_tools": ["list_directory", "read_file", "read_text_file", "search_files", "directory_tree"],
+        "allowed_tools": ["list_directory", "read_text_file", "search_files", "directory_tree"],
         "description": "Official filesystem MCP server, scoped to /app/missions"
+      },
+      "eventkit": {
+        "transport": "http",
+        "url": "http://host.docker.internal:3010/mcp",
+        "enabled": true,
+        "allowed_tools": ["list_todays_events", "list_upcoming_events", "list_reminders", "create_reminder", "complete_reminder", "create_event"],
+        "description": "Host-side Apple EventKit server (calendar + reminders); only up when mcp-servers/eventkit/run.sh is running on the host — optional, must not block startup if down"
       }
     }
   },
