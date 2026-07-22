@@ -17,5 +17,7 @@ COPY frontend/spaceship-bridge/ ./
 # Expose port
 EXPOSE 3000
 
-# Start development server with hot reload
-CMD ["npm", "start"]
+# Re-run npm install on start: the compose node_modules volume can be
+# empty/stale (e.g. after a fresh volume or a dependency bump) and would
+# otherwise shadow the deps installed at image build time.
+CMD ["sh", "-c", "npm install && npm start"]

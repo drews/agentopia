@@ -39,10 +39,7 @@ services:
       - ./frontend/spaceship-bridge/public:/app/public
       - node_modules:/app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
-      - FAST_REFRESH=true
-      - CHOKIDAR_USEPOLLING=true
-      - GENERATE_SOURCEMAP=false
+      - VITE_API_URL=http://localhost:8000
     depends_on:
       backend:
         condition: service_healthy

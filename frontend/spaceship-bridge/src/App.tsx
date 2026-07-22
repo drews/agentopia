@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AgentShowcase from './AgentShowcase';
 import TheaterDemo from './TheaterDemo';
 import ManifestView from './components/ManifestView';
@@ -52,11 +52,14 @@ function App() {
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
 
   // Get API URL from environment or default to localhost
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const wsUrl = apiUrl.replace('http', 'ws');
 
   // Convert bridge agents to the Agent type for AccessView
-  const accessAgents: AccessAgent[] = bridgeState?.agents.map(agent => ({
+  // Memoized so identity is stable across renders when bridgeState hasn't
+  // changed - otherwise a fresh array every render destabilizes the
+  // useCallback/useEffect deps inside useSystemMetrics and loops forever.
+  const accessAgents: AccessAgent[] = useMemo(() => bridgeState?.agents.map(agent => ({
     id: agent.id,
     name: agent.name,
     type: 'operations' as any, // Default type, could be enhanced
@@ -71,14 +74,14 @@ function App() {
       secondary: ['monitoring', 'analysis'],
       level: 'competent' as const
     }
-  })) || [];
+  })) || [], [bridgeState]);
 
   // Use system metrics hook
   const { systemHealth } = useSystemMetrics(wsUrl, accessAgents);
 
   useEffect(() => {
     // Get API URL from environment or default to localhost
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const wsUrl = apiUrl.replace('http', 'ws');
     // Always maintain WebSocket connection for real-time updates
     // Only fetch bridge state when actually showing ship view

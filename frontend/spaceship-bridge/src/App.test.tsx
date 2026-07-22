@@ -1,26 +1,21 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, test, expect } from 'vitest';
 import App from './App';
 
-test('renders loading state initially', () => {
-  render(<App />);
-  const loadingElement = screen.getByText(/Loading USS Agentopia Bridge/i);
-  expect(loadingElement).toBeInTheDocument();
-});
+describe('App', () => {
+  test('shows the LCARS navigation with all five views', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /BRIDGE/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CREW/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ACCESS/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /SYSTEMS/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /THEATER/i })).toBeInTheDocument();
+  });
 
-test('shows navigation with ship, manifest, and screen buttons', () => {
-  render(<App />);
-  const shipButton = screen.getByText(/Ship/i);
-  const manifestButton = screen.getByText(/Manifest/i);
-  const screenButton = screen.getByText(/Screen/i);
-  
-  expect(shipButton).toBeInTheDocument();
-  expect(manifestButton).toBeInTheDocument();
-  expect(screenButton).toBeInTheDocument();
-});
-
-test('shows screen selected by default', () => {
-  render(<App />);
-  const screenButton = screen.getByRole('button', { name: /screen/i });
-  expect(screenButton).toHaveStyle('font-weight: 600');
+  test('defaults to the SYSTEMS view', () => {
+    render(<App />);
+    const systemsButton = screen.getByRole('button', { name: /SYSTEMS/i });
+    expect(systemsButton).toHaveClass('active');
+  });
 });

@@ -36,7 +36,7 @@ services:
     # Use `docker compose port frontend 3000` to discover
     environment:
       # Use internal service discovery for API calls
-      - REACT_APP_API_URL=http://backend:8000
+      - VITE_API_URL=http://backend:8000
       - BRANCH_NAME=${BRANCH_NAME:-main}
     depends_on:
       backend:

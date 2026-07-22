@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Agent } from '../agents/types';
 import MetricDetailModal from './MetricDetailModal';
 
@@ -97,7 +97,10 @@ const AccessView: React.FC<AccessViewProps> = ({
     ];
   };
 
-  const microMetrics = calculateMicroMetrics();
+  // Memoized on [agents, systemHealth] - otherwise a fresh array every
+  // render destabilizes the celebration useEffect's dep below and loops
+  // forever (setCelebrationQueue -> re-render -> new microMetrics -> ...).
+  const microMetrics = useMemo(calculateMicroMetrics, [agents, systemHealth]);
 
   // Micro-celebration system
   useEffect(() => {
