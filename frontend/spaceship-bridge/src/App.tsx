@@ -6,50 +6,14 @@ import CommanderDashboard from './components/CommanderDashboard';
 import AccessView from './components/AccessView';
 import { Agent as AccessAgent } from './agents/types';
 import { useSystemMetrics } from './hooks/useSystemMetrics';
+import { useBridgeStore, connectBridgeWebSocket } from './stores/bridgeStore';
 import './App.css';
-
-interface Position {
-  x: number;
-  y: number;
-}
-
-interface Dimensions {
-  width: number;
-  height: number;
-}
-
-interface Agent {
-  id: string;
-  name: string;
-  position: Position;
-  status: string;
-  avatar: string;
-}
-
-interface Station {
-  id: string;
-  name: string;
-  position: Position;
-  dimensions: Dimensions;
-  icon: string;
-  color: string;
-}
-
-interface BridgeState {
-  bridge_id: string;
-  status: string;
-  agents: Agent[];
-  stations: Station[];
-  layout: {
-    width: number;
-    height: number;
-  };
-}
 
 function App() {
   const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics' | 'theater' | 'access'>('mechanics');
-  const [bridgeState, setBridgeState] = useState<BridgeState | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  const bridgeState = useBridgeStore((state) => state.bridgeState);
+  const connectionStatus = useBridgeStore((state) => state.connectionStatus);
+  const setInitialState = useBridgeStore((state) => state.setInitialState);
 
   // Get API URL from environment or default to localhost
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -79,106 +43,20 @@ function App() {
   // Use system metrics hook
   const { systemHealth } = useSystemMetrics(wsUrl, accessAgents);
 
+  // Only fetch bridge state via REST when actually showing the ship view;
+  // the WebSocket connection below (mount-once) covers real-time updates.
   useEffect(() => {
-    // Get API URL from environment or default to localhost
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const wsUrl = apiUrl.replace('http', 'ws');
-    // Always maintain WebSocket connection for real-time updates
-    // Only fetch bridge state when actually showing ship view
-    if (currentView === 'ship') {
-      // Fetch initial bridge state
-      fetch(`${apiUrl}/api/bridge/state`)
-        .then(res => res.json())
-        .then(data => setBridgeState(data))
-        .catch(err => console.error('Failed to fetch bridge state:', err));
-    }
+    if (currentView !== 'ship') return;
+    fetch(`${apiUrl}/api/bridge/state`)
+      .then(res => res.json())
+      .then(data => setInitialState(data))
+      .catch(err => console.error('Failed to fetch bridge state:', err));
+  }, [currentView, apiUrl, setInitialState]);
 
-    // Setup WebSocket connection with reconnection
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: NodeJS.Timeout | null = null;
-    let mounted = true;
-    
-    const connectWebSocket = () => {
-      if (!mounted || ws) return; // Don't connect if already have a connection or unmounted
-      
-      setConnectionStatus('Connecting');
-      
-      ws = new WebSocket(`${wsUrl}/ws`);
-      
-      ws.onopen = () => {
-        if (!mounted) return;
-        setConnectionStatus('Connected');
-        // Clear any pending reconnection
-        if (reconnectTimeout) {
-          clearTimeout(reconnectTimeout);
-          reconnectTimeout = null;
-        }
-      };
-      
-      ws.onmessage = (event) => {
-        if (!mounted) return;
-        
-        const message = JSON.parse(event.data);
-        console.log('WebSocket message:', message);
-        
-        if (message.type === 'initial_state') {
-          setBridgeState(message.data);
-        } else if (message.type === 'agent_movement_intent') {
-          // Update agent position in bridge state based on movement intent
-          setBridgeState(prevState => {
-            if (!prevState) return prevState;
-            
-            const updatedAgents = prevState.agents.map(agent => {
-              if (agent.id === message.data.agent_id) {
-                return {
-                  ...agent,
-                  position: message.data.target_position,
-                  status: message.data.activity_hint || 'moving'
-                };
-              }
-              return agent;
-            });
-            
-            return { ...prevState, agents: updatedAgents };
-          });
-        }
-      };
-      
-      ws.onclose = (event) => {
-        ws = null; // Clear reference
-        if (!mounted) return;
-        
-        setConnectionStatus('Disconnected');
-        // Attempt to reconnect after 2 seconds
-        reconnectTimeout = setTimeout(() => {
-          if (mounted) {
-            console.log('Attempting to reconnect WebSocket...');
-            connectWebSocket();
-          }
-        }, 2000);
-      };
-      
-      ws.onerror = (error) => {
-        if (!mounted) return;
-        console.log('WebSocket connection error, will retry...');
-        setConnectionStatus('Reconnecting');
-      };
-    };
-    
-    // Connect immediately
-    connectWebSocket();
-
-    return () => {
-      mounted = false;
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-      }
-      if (ws) {
-        ws.close();
-        ws = null;
-      }
-    };
-  }, [currentView]);
+  // The single WebSocket connection lives in the bridge store (agent
+  // positions/status), owned for the lifetime of the app rather than
+  // reconnecting on every view change.
+  useEffect(() => connectBridgeWebSocket(wsUrl), [wsUrl]);
 
   // Simplified LCARS Navigation
   const renderNavigation = () => (
