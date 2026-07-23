@@ -18,7 +18,7 @@
 
 ## 3. Frontend modernization (independent; can trail backend)
 
-- [ ] 3.1 Migrate CRA → Vite (swap react-scripts, move index.html, env vars → `import.meta.env`, jest → vitest); Docker dev server + smoke tests green
+- [x] 3.1 Migrate CRA → Vite (swap react-scripts, move index.html, env vars → `import.meta.env`, jest → vitest); Docker dev server + smoke tests green
 - [ ] 3.2 Add zustand store fed by the existing WebSocket client (transient updates for positions)
 - [ ] 3.3 Add PixiJS v8 + @pixi/react stage view behind the existing SHIP tab; sprites read positions from store in ticker
 - [ ] 3.4 Add snapshot interpolation buffer (~150ms render delay, lerp per frame); verify smooth motion at 1Hz server ticks
