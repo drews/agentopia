@@ -3,6 +3,7 @@ import AgentShowcase from './AgentShowcase';
 import TheaterDemo from './TheaterDemo';
 import ManifestView from './components/ManifestView';
 import CommanderDashboard from './components/CommanderDashboard';
+import BridgeStage from './components/BridgeStage';
 import AccessView from './components/AccessView';
 import { Agent as AccessAgent } from './agents/types';
 import { useSystemMetrics } from './hooks/useSystemMetrics';
@@ -11,6 +12,7 @@ import './App.css';
 
 function App() {
   const [currentView, setCurrentView] = useState<'ship' | 'roster' | 'mechanics' | 'theater' | 'access'>('mechanics');
+  const [showStage, setShowStage] = useState(false);
   const bridgeState = useBridgeStore((state) => state.bridgeState);
   const connectionStatus = useBridgeStore((state) => state.connectionStatus);
   const setInitialState = useBridgeStore((state) => state.setInitialState);
@@ -153,7 +155,21 @@ function App() {
   return (
     <div className="App">
       {renderNavigation()}
-      <CommanderDashboard connectionStatus={connectionStatus} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 16px' }}>
+        <button
+          className="lcars-nav-btn"
+          onClick={() => setShowStage((prev) => !prev)}
+        >
+          {showStage ? 'DASHBOARD VIEW' : 'STAGE VIEW'}
+        </button>
+      </div>
+      {showStage ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '16px' }}>
+          <BridgeStage />
+        </div>
+      ) : (
+        <CommanderDashboard connectionStatus={connectionStatus} />
+      )}
     </div>
   );
 }
