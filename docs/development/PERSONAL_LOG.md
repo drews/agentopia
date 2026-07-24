@@ -471,3 +471,34 @@ The user's influence toward documentation and organization has been transformati
 **Demo Readiness: 9/10** (Professional presentation materials and working system)
 
 We've built something genuinely valuable - an AI agent system that makes abstract productivity concepts concrete through engaging spaceship metaphors. The infrastructure supports serious development, the interfaces work reliably, and the documentation tells a coherent story. Time to show the world what's possible.
+---
+
+## Entry 8 - The Fable Session: Revival, Reconciliation & Real Brains
+*Timestamp: July 23, 2026 - Retrospective on the July 2026 multi-agent development arc*
+
+**Mood: Astonished at the compression of a year's stalled intentions into three weeks**
+
+**The Revival:**
+This project sat dormant for nearly a year — five worktrees drifting, frontend not even compiling, crew speaking hardcoded strings. The session opened with a simple ask ("soft launch my local mindship into the semantoverse") and the launch turned out to be one flipped switch: the Ollama support in llm_service had been fully built and never enabled. DEFAULT_LLM_PROVIDER=ollama, three TypeScript fixes, and the crew was thinking with llama3.2. A lesson in how close "abandoned" can be to "alive."
+
+**The Reconciliation:**
+The multi-worktree practice (Entry 6's pride) had rotted into the problem: ship-screen, manifest-screen, access-screen, and improve-worldbuilding-ux each held finished, uncommitted work nobody remembered. All four merged into main — the five-view LCARS bridge (BRIDGE/CREW/ACCESS/SYSTEMS/THEATER) existed in pieces for a year and just needed assembling. Worktrees are now ephemeral by policy; the parent dir holds only main/.
+
+**Architecture, Governed:**
+Intent now lives in an OpenSpec change (adopt-modern-agent-architecture) grounded in a four-agent research sweep of the 2026 landscape, plus a living system diagram (docs/architecture/SYSTEM_DIAGRAM.md) wired into both human and agent context. Landed since:
+- PydanticAI runtime cutover — LangChain dropped entirely; one Agent per persona; the validate/retry loop chosen specifically for 8B-class local models
+- FastMCP tool registry — namespaced, ≤10-tool allowlist, graceful degradation verified live (a downed server costs its tools, nothing else)
+- Host-side EventKit MCP server — 6 flat-schema tools over streamable-http; real calendar events verified flowing across the Docker→host TCC boundary. The "Plan my day" flow (SIMPLE_PLAN's canonical demo) is now two tasks away instead of aspirational
+- CRA→Vite migration + zustand WS store; Pixi stage in progress; CHARACTERS tab surfaced the orphaned worldbuilding work
+
+**The Strange Loop, Accidentally:**
+Entry 6 dreamed of agents developing Agentopia. This session did it: ~11 subagents across file-disjoint lanes (backend runtime, MCP, EventKit, Vite/Pixi, e2e, housekeeping), each committing incrementally with explicit staging. Mid-arc, an auth expiry killed the entire fleet at once — and nothing was lost, because every lane had committed or left salvageable work in the tree. Relaunched agents finished their predecessors' work from written instructions. The discipline (small commits, disjoint ownership, verification gates, stop-on-accept) turned a fleet wipe into a minutes-long hiccup. The project about multi-agent collaboration is now genuinely built by it.
+
+**What Remains:**
+- 2.4 validate/retry loop → 2.5 two-tier router → 2.6 "Plan my day" milestone (the moment this becomes a real EF tool)
+- Pixi stage interpolation (3.3–3.5), rituals (4.x — morning briefing), e2e suite repair
+- Known small debts: config_service.py path bug (safe fallback masks it), dead mcp_bridge endpoints, characters/ legacy dir
+
+**Current Energy Level: 9/10** (a year of intentions became running, verified systems)
+**Confidence in Direction: 9/10** (spec-governed, research-grounded, locally-sovereign)
+**Distance to Genuine Usefulness: 2 tasks** (the router, then the briefing)
