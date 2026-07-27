@@ -67,6 +67,21 @@ A persistent slim ribbon SHALL show the user's current focus (Now), the next rea
 - **WHEN** the EventKit host server is not running
 - **THEN** the Next slot is hidden or marked unavailable rather than showing stale or invented content
 
+
+### Requirement: First boarding offers character creation
+
+On first run (no saved player profile), the app SHALL present a character creation overlay — callsign, avatar customization, and a small set of executive-function preference prompts — before entering the scene. The resulting profile SHALL persist, be reflected in the player avatar and greetings, and be editable later from the player's dossier.
+
+#### Scenario: New captain creates their character
+
+- **WHEN** the app runs with no saved player profile
+- **THEN** the creation overlay appears first, and completing it lands in the scene with the chosen avatar and a greeting by callsign
+
+#### Scenario: Returning captain skips creation
+
+- **WHEN** a saved profile exists
+- **THEN** the app boots directly into the scene with the saved avatar, and creation is reachable only by choice via the player dossier
+
 ## REMOVED Requirements
 
 ### Requirement: Conversational UI stays in the DOM

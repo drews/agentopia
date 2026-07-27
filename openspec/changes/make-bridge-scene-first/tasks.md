@@ -31,3 +31,9 @@
 - [ ] 5.1 Bottom ribbon: Now (user-set focus), Next (real calendar via eventkit when host server up, hidden otherwise), breadcrumb (last interaction + age)
 - [ ] 5.2 One-click summon of the responsible agent's dossier from the breadcrumb
 - [ ] 5.3 Verify: with EventKit running, Next shows a real upcoming event; without, ribbon degrades gracefully; screenshot
+
+## 6. Character creation (first-boarding hook)
+
+- [ ] 6.1 First-run detection (no saved player profile in localStorage) boots into a character creation overlay before the scene: name/callsign, avatar customization (palette swap + a few sprite options over the player spritesheet), and 2–3 warm EF-preference prompts (e.g. "when should the crew nudge you?", "morning briefing: yes/no") — creation doubles as preference capture that feeds crew behavior
+- [ ] 6.2 Persist profile (localStorage first pass); scene greets the new captain by callsign; profile editable later via the dossier overlay on the player avatar
+- [ ] 6.3 Verify: fresh-profile boot shows creation, choices visibly reflected in-scene (sprite + greeting), returning boot skips straight to the scene
