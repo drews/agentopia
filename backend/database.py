@@ -250,15 +250,15 @@ class Database:
         agents = [
             {
                 "id": "red_agent",
-                "name": "Commander",
+                "name": "Commander Nova",
                 "role": "executive_officer",
                 "position_x": 12, "position_y": 7,
                 "assigned_station": "command_station",
                 "avatar": "👨‍✈️"
             },
             {
-                "id": "blue_agent", 
-                "name": "Science Officer",
+                "id": "blue_agent",
+                "name": "Dr. Chen",
                 "role": "science_officer",
                 "position_x": 19, "position_y": 5,
                 "assigned_station": "science_station",
@@ -266,7 +266,7 @@ class Database:
             },
             {
                 "id": "yellow_agent",
-                "name": "Operations Officer", 
+                "name": "Torres",
                 "role": "operations_officer",
                 "position_x": 4, "position_y": 11,
                 "assigned_station": "engineering_station",
