@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Application, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
-import { useBridgeStore } from '../stores/bridgeStore';
+import { Application, Container, Graphics, Rectangle, Sprite, Text, Texture } from 'pixi.js';
+import { useBridgeStore, Position } from '../stores/bridgeStore';
 
 // Deviation from the OpenSpec design doc: @pixi/react 8.0.5 has a packaging
 // bug (an internal import of 'react-reconciler/constants' missing its .js
@@ -96,6 +96,51 @@ function buildCharacterTextures(app: Application, primary: number): CharacterTex
   return result;
 }
 
+// The player's own avatar (Drew's mindship: the player is the captain the
+// crew serves). Client-side only - lives in bridgeStore.playerPosition,
+// no backend entity. Deliberately not a department color: a captain's
+// coat + gold trim/cap, distinct silhouette from the crew's flat jumpsuit
+// palette (see characters/player.md).
+const PLAYER_ID = '__player__';
+
+function buildPlayerTextures(app: Application): CharacterTextures {
+  const coat = 0x2c3e50;
+  const trim = 0xf6c945;
+  const skin = 0xf1c27d;
+  const dark = 0x1c2733;
+
+  const result = {} as CharacterTextures;
+  for (const dir of DIRECTIONS) {
+    result[dir] = {} as Record<WalkFrame, Texture>;
+    for (const frame of WALK_FRAMES) {
+      const g = new Graphics();
+
+      // Coat - a longer silhouette than the crew's jumpsuits.
+      g.roundRect(2, 7, 12, 14, 3).fill({ color: coat });
+      // Gold trim band, constant regardless of facing - a rank marker, not a walk frame.
+      g.rect(2, 12, 12, 2).fill({ color: trim });
+      // Head + captain's cap brim.
+      g.circle(SPRITE_W / 2, 6, 5).fill({ color: skin });
+      g.roundRect(SPRITE_W / 2 - 5, 1, 10, 4, 2).fill({ color: coat });
+      g.rect(SPRITE_W / 2 - 5, 4, 10, 1).fill({ color: trim });
+
+      // Facing notch on the cap brim.
+      if (dir === 'down') g.rect(SPRITE_W / 2 - 2, 5, 4, 1).fill({ color: dark });
+      else if (dir === 'up') g.rect(SPRITE_W / 2 - 3, 1, 6, 1).fill({ color: dark });
+      else if (dir === 'left') g.rect(SPRITE_W / 2 - 5, 3, 2, 2).fill({ color: dark });
+      else g.rect(SPRITE_W / 2 + 3, 3, 2, 2).fill({ color: dark });
+
+      const legOffset = frame === 'walkA' ? 2 : frame === 'walkB' ? -2 : 0;
+      g.rect(4, 20, 3, 4 + legOffset).fill({ color: dark });
+      g.rect(9, 20, 3, 4 - legOffset).fill({ color: dark });
+
+      result[dir][frame] = app.renderer.generateTexture(g);
+      g.destroy();
+    }
+  }
+  return result;
+}
+
 // Ship interior tilemap: rooms mapped onto the existing backend station
 // grid (design.md D1 - "rooms are stations, stations are tool surfaces").
 // Coordinates for command/science/engineering match the real station
@@ -150,6 +195,22 @@ function drawTilemap(g: Graphics) {
   g.rect(1, 1, STAGE_WIDTH - 2, STAGE_HEIGHT - 2).stroke({ width: 2, color: 0x334155 });
 }
 
+// A tile is unwalkable only where a room's console block sits (mirrors
+// the backend's own station-blocks-movement rule in spaceship_service.py,
+// applied here client-side for the player's click-to-move).
+function isWalkableTile(x: number, y: number): boolean {
+  if (x < 0 || y < 0 || x >= GRID_WIDTH || y >= GRID_HEIGHT) return false;
+  for (const room of ROOMS) {
+    const consoleSize = Math.min(room.w, room.h) * 0.35;
+    const cx0 = room.x + room.w / 2 - consoleSize / 2;
+    const cy0 = room.y + room.h / 2 - consoleSize / 2;
+    if (x >= cx0 && x < cx0 + consoleSize && y >= cy0 && y < cy0 + consoleSize) return false;
+  }
+  return true;
+}
+
+const PLAYER_SPEED_CELLS_PER_SEC = 5;
+
 const BridgeStage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   // Select the stable `agents` array reference (it only changes identity
@@ -197,6 +258,20 @@ const BridgeStage: React.FC = () => {
         drawTilemap(tilemap);
         stage.addChild(tilemap);
 
+        // Click-to-move for the player avatar: click a walkable tile, the
+        // captain paths there (straight-line lerp, same feel as the crew's
+        // movement). Hit area covers the full stage so clicks land
+        // anywhere, including over room floors and the corridor.
+        tilemap.eventMode = 'static';
+        tilemap.hitArea = new Rectangle(0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+        tilemap.on('pointertap', (event) => {
+          const gridX = Math.floor(event.global.x / CELL);
+          const gridY = Math.floor(event.global.y / CELL);
+          if (isWalkableTile(gridX, gridY)) {
+            useBridgeStore.getState().setPlayerTarget({ x: gridX, y: gridY });
+          }
+        });
+
         // Room name plates - legible beats beautiful (design.md non-goal:
         // pixel-perfect art).
         for (const room of ROOMS) {
@@ -223,15 +298,52 @@ const BridgeStage: React.FC = () => {
           animState.set(id, { facing: 'down', lastPos: { ...start }, lastMoveAt: 0 });
         }
 
+        // Player avatar - same sprite/animation machinery as the crew,
+        // just with its own texture set and a store-driven position that
+        // this component itself lerps (see the ticker below) instead of
+        // one driven by WS updates.
+        {
+          const playerTextures = buildPlayerTextures(app);
+          textures.set(PLAYER_ID, playerTextures);
+
+          const sprite = new Sprite(playerTextures.down.idle);
+          sprite.anchor.set(0.5, 0.75);
+          stage.addChild(sprite);
+          sprites.set(PLAYER_ID, sprite);
+
+          const start = useBridgeStore.getState().playerPosition;
+          animState.set(PLAYER_ID, { facing: 'down', lastPos: { ...start }, lastMoveAt: 0 });
+        }
+
         // Read positions straight from the store's vanilla API on every
         // Pixi tick - not the useBridgeStore() hook - so a WS position
         // update never triggers a React re-render, only this draw call
         // moves the sprite.
         app.ticker.add(() => {
-          const { agentPositions } = useBridgeStore.getState();
+          const { agentPositions, playerPosition, playerTarget } = useBridgeStore.getState();
+
+          // Client-side straight-line lerp toward the last clicked tile -
+          // the player has no backend intent to follow, so this component
+          // owns the interpolation instead of just mirroring a WS position.
+          let nextPlayerPosition = playerPosition;
+          if (playerTarget) {
+            const dx = playerTarget.x - playerPosition.x;
+            const dy = playerTarget.y - playerPosition.y;
+            const distance = Math.hypot(dx, dy);
+            const step = PLAYER_SPEED_CELLS_PER_SEC * (app.ticker.deltaMS / 1000);
+            nextPlayerPosition =
+              distance <= step
+                ? { x: playerTarget.x, y: playerTarget.y }
+                : { x: playerPosition.x + (dx / distance) * step, y: playerPosition.y + (dy / distance) * step };
+            if (nextPlayerPosition.x !== playerPosition.x || nextPlayerPosition.y !== playerPosition.y) {
+              useBridgeStore.setState({ playerPosition: nextPlayerPosition });
+            }
+          }
+
+          const positions: Record<string, Position> = { ...agentPositions, [PLAYER_ID]: nextPlayerPosition };
           const now = Date.now();
           sprites.forEach((sprite, id) => {
-            const position = agentPositions[id];
+            const position = positions[id];
             const state = animState.get(id);
             const charTextures = textures.get(id);
             if (!position || !state || !charTextures) return;

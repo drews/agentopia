@@ -48,15 +48,32 @@ interface BridgeStore {
   // Pixi ticker) for per-frame interpolation without subscribing React to
   // every position tick - see bridgeStore.getState() usage note below.
   agentPositions: Record<string, Position>;
+  // The player's own avatar - client-side only, no backend entity. Spawns
+  // at the command center (this is the captain's ship; the crew organizes
+  // *their* day). `playerPosition` is the continuously-interpolated float
+  // position the Pixi ticker lerps toward `playerTarget` each frame -
+  // mirrors the crew's agentPositions shape so BridgeStage can render both
+  // the same way.
+  playerPosition: Position;
+  playerTarget: Position | null;
   setConnectionStatus: (status: ConnectionStatus) => void;
   setInitialState: (state: BridgeState) => void;
   applyMovementIntent: (agentId: string, targetPosition: Position, activityHint?: string) => void;
+  setPlayerTarget: (target: Position) => void;
 }
+
+// Command center is at (10,6) 4x3 (backend/database.py) - spawn the player
+// just inside its near corner, clear of the console block at its center.
+const PLAYER_HOME: Position = { x: 10, y: 6 };
 
 export const useBridgeStore = create<BridgeStore>((set) => ({
   connectionStatus: 'Disconnected',
   bridgeState: null,
   agentPositions: {},
+  playerPosition: { ...PLAYER_HOME },
+  playerTarget: null,
+
+  setPlayerTarget: (target) => set({ playerTarget: target }),
 
   setConnectionStatus: (status) => set({ connectionStatus: status }),
 
