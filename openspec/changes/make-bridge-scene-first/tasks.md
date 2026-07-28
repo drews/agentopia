@@ -14,9 +14,9 @@
 
 ## 3. Pixel-art scene
 
-- [ ] 3.1 Ship interior tilemap (4–6 rooms mapped to existing station grid; consoles per MCP namespace) in the Pixi stage
-- [ ] 3.2 Character spritesheets (adapt ai-town MIT assets, recolor per agent): 4-dir walk + idle frames; wire into interpolated movement
-- [ ] 3.3 Verify: agents visibly walk room-to-room with correct facing; idle animations at stations; screenshot
+- [x] 3.1 Ship interior tilemap (4–6 rooms mapped to existing station grid; consoles per MCP namespace) in the Pixi stage
+- [x] 3.2 Character spritesheets (adapt ai-town MIT assets, recolor per agent): 4-dir walk + idle frames; wire into interpolated movement
+- [x] 3.3 Verify: agents visibly walk room-to-room with correct facing; idle animations at stations; screenshot
 
 ## 4. Overlays
 
