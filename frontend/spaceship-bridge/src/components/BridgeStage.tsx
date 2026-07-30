@@ -103,9 +103,9 @@ function buildCharacterTextures(app: Application, primary: number): CharacterTex
 // palette (see characters/player.md).
 const PLAYER_ID = '__player__';
 
-function buildPlayerTextures(app: Application): CharacterTextures {
-  const coat = 0x2c3e50;
-  const trim = 0xf6c945;
+function buildPlayerTextures(app: Application, tint?: { coat: number; trim: number }): CharacterTextures {
+  const coat = tint?.coat ?? 0x2c3e50;
+  const trim = tint?.trim ?? 0xf6c945;
   const skin = 0xf1c27d;
   const dark = 0x1c2733;
 
@@ -211,7 +211,28 @@ function isWalkableTile(x: number, y: number): boolean {
 
 const PLAYER_SPEED_CELLS_PER_SEC = 5;
 
-const BridgeStage: React.FC = () => {
+// D3 activity choreography (design.md D3 / tasks.md 2.2): map
+// agent_activity / tool_activity / chat_message onto scene responses.
+const THOUGHT_GLYPH = '\u{1F4AD}'; // 💭
+const SPEECH_GLYPH = '\u{1F4AC}'; // 💬
+const TOOL_PULSE_TTL_MS = 8000; // TEMP-VERIFY-BUMP
+const SPEECH_BUBBLE_TTL_MS = 5000;
+const SPEECH_BUBBLE_FADE_MS = 900;
+
+// MCP tool namespace -> the room whose console pulses (design.md D1: rooms
+// are stations, stations are tool surfaces).
+const SERVER_ROOM: Record<string, string> = {
+  eventkit: 'comms',
+  filesystem: 'vault',
+};
+
+interface BridgeStageProps {
+  // Recolors the captain's coat/trim per the creation overlay's palette
+  // choice (tasks.md 6.1). Undefined keeps the default gold captain.
+  playerTint?: { coat: number; trim: number };
+}
+
+const BridgeStage: React.FC<BridgeStageProps> = ({ playerTint }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   // Select the stable `agents` array reference (it only changes identity
   // when the store actually replaces it) and derive ids locally - mapping
@@ -228,6 +249,11 @@ const BridgeStage: React.FC = () => {
     const app = new Application();
     const sprites = new Map<string, Sprite>();
     const textures = new Map<string, CharacterTextures>();
+    // D3 choreography display objects, keyed by agent id (player excluded -
+    // it has no backend activity feed).
+    const glyphLabels = new Map<string, Text>();
+    const bubbleLabels = new Map<string, Text>();
+    const bubbleBgs = new Map<string, Graphics>();
     // Per-agent animation state, derived from tick-to-tick position deltas
     // (the store snaps straight to the latest WS-reported position - see
     // bridgeStore.applyMovementIntent - so "moving" here means "position
@@ -284,6 +310,19 @@ const BridgeStage: React.FC = () => {
           stage.addChild(label);
         }
 
+        // Console glow per room, driven by tool_activity pulses. Drawn
+        // white once and tinted per-frame (room color normally, red on
+        // fail) rather than redrawn - tint is cheap on a Graphics view.
+        const roomGlows = new Map<string, Graphics>();
+        for (const room of ROOMS) {
+          const glow = new Graphics();
+          glow.rect(room.x * CELL, room.y * CELL, room.w * CELL, room.h * CELL).fill({ color: 0xffffff });
+          glow.tint = room.wall;
+          glow.alpha = 0;
+          stage.addChild(glow);
+          roomGlows.set(room.id, glow);
+        }
+
         const initialPositions = useBridgeStore.getState().agentPositions;
         for (const id of agentIds) {
           const charTextures = buildCharacterTextures(app, characterColor(id));
@@ -296,6 +335,40 @@ const BridgeStage: React.FC = () => {
 
           const start = initialPositions[id] ?? { x: 0, y: 0 };
           animState.set(id, { facing: 'down', lastPos: { ...start }, lastMoveAt: 0 });
+
+          // Thought/speech glyph - small, pulsing, hovers above the head.
+          const glyph = new Text({
+            text: '',
+            style: { fontFamily: 'monospace', fontSize: 14 },
+          });
+          glyph.anchor.set(0.5, 1);
+          glyph.visible = false;
+          stage.addChild(glyph);
+          glyphLabels.set(id, glyph);
+
+          // Speech bubble excerpt (chat_message reply) - background drawn
+          // fresh each frame it's active, sized to the text; simpler than
+          // a DOM-positioned label since we're already in the Pixi stage.
+          const bubbleBg = new Graphics();
+          bubbleBg.visible = false;
+          stage.addChild(bubbleBg);
+          bubbleBgs.set(id, bubbleBg);
+
+          const bubble = new Text({
+            text: '',
+            style: {
+              fontFamily: 'monospace',
+              fontSize: 10,
+              fill: 0xe6edf3,
+              wordWrap: true,
+              wordWrapWidth: 150,
+              align: 'left',
+            },
+          });
+          bubble.anchor.set(0.5, 1);
+          bubble.visible = false;
+          stage.addChild(bubble);
+          bubbleLabels.set(id, bubble);
         }
 
         // Player avatar - same sprite/animation machinery as the crew,
@@ -303,7 +376,7 @@ const BridgeStage: React.FC = () => {
         // this component itself lerps (see the ticker below) instead of
         // one driven by WS updates.
         {
-          const playerTextures = buildPlayerTextures(app);
+          const playerTextures = buildPlayerTextures(app, playerTint);
           textures.set(PLAYER_ID, playerTextures);
 
           const sprite = new Sprite(playerTextures.down.idle);
@@ -370,6 +443,86 @@ const BridgeStage: React.FC = () => {
             sprite.x = position.x * CELL + CELL / 2;
             sprite.y = position.y * CELL + CELL / 2;
           });
+
+          // Thought/speech glyphs + fading speech bubbles (design.md D3).
+          const { agentActivity, speechBubbles } = useBridgeStore.getState();
+          for (const id of agentIds) {
+            const sprite = sprites.get(id);
+            const glyph = glyphLabels.get(id);
+            const bubble = bubbleLabels.get(id);
+            const bubbleBg = bubbleBgs.get(id);
+            if (!sprite || !glyph || !bubble || !bubbleBg) continue;
+
+            const speech = speechBubbles[id];
+            const bubbleAge = speech ? now - speech.createdAt : Infinity;
+            const bubbleActive = bubbleAge < SPEECH_BUBBLE_TTL_MS;
+
+            if (bubbleActive && speech) {
+              glyph.visible = false;
+
+              const remaining = SPEECH_BUBBLE_TTL_MS - bubbleAge;
+              bubble.alpha = remaining < SPEECH_BUBBLE_FADE_MS ? remaining / SPEECH_BUBBLE_FADE_MS : 1;
+              bubble.text = speech.text;
+              bubble.visible = true;
+              bubble.x = sprite.x;
+              bubble.y = sprite.y - SPRITE_H - 16;
+
+              bubbleBg.visible = true;
+              bubbleBg.alpha = bubble.alpha;
+              bubbleBg.clear();
+              bubbleBg
+                .roundRect(
+                  bubble.x - bubble.width / 2 - 6,
+                  bubble.y - bubble.height - 6,
+                  bubble.width + 12,
+                  bubble.height + 10,
+                  4
+                )
+                .fill({ color: 0x0a0d16, alpha: 0.85 })
+                .stroke({ width: 1, color: 0x334155, alpha: 0.9 });
+            } else {
+              bubble.visible = false;
+              bubbleBg.visible = false;
+
+              const activity = agentActivity[id] ?? 'idle';
+              if (activity === 'idle') {
+                glyph.visible = false;
+              } else {
+                glyph.visible = true;
+                glyph.text = activity === 'thinking' ? THOUGHT_GLYPH : SPEECH_GLYPH;
+                glyph.alpha = 0.55 + 0.45 * Math.sin(now / (activity === 'thinking' ? 220 : 160));
+                glyph.x = sprite.x;
+                glyph.y = sprite.y - SPRITE_H - 14;
+              }
+            }
+          }
+
+          // Console pulses: owning room's console glows on tool_activity,
+          // blinking red when ok=false (design.md D3).
+          const { toolPulses } = useBridgeStore.getState();
+          for (const room of ROOMS) {
+            const glow = roomGlows.get(room.id);
+            if (!glow) continue;
+
+            const active = toolPulses.filter(
+              (p) => SERVER_ROOM[p.server] === room.id && now - p.createdAt < TOOL_PULSE_TTL_MS
+            );
+            if (!active.length) {
+              glow.alpha = 0;
+              continue;
+            }
+
+            const latest = active.reduce((a, b) => (a.createdAt > b.createdAt ? a : b));
+            const life = Math.max(0, 1 - (now - latest.createdAt) / TOOL_PULSE_TTL_MS);
+            if (latest.ok) {
+              glow.tint = room.wall;
+              glow.alpha = life * 0.6;
+            } else {
+              const blink = Math.floor(now / 120) % 2 === 0;
+              glow.tint = 0xff3b3b;
+              glow.alpha = blink ? life * 0.85 : life * 0.15;
+            }
+          }
         });
       });
 
@@ -382,11 +535,16 @@ const BridgeStage: React.FC = () => {
       );
       if (app.renderer) app.destroy(true, { children: true });
     };
-    // agentIds intentionally not a dep: sprite set is built once from the
-    // ids known at mount. Rebuilding the whole Pixi app on every roster
-    // change is unnecessary for this view.
+    // Depend on "roster known yet?" (not agentIds itself, and not the
+    // agents array): on a cold load the WS initial_state round-trip lands
+    // after this effect's first commit, so agentIds is empty at mount and
+    // the crew never got sprites - the only WS-driven avatar was the
+    // player. This boolean flips at most once (empty -> populated), so it
+    // rebuilds the Pixi app once when the roster arrives instead of on
+    // every per-tick position update (agentIds/agents would both change
+    // identity on every movement broadcast - see agentPositions above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [agentIds.length > 0]);
 
   return (
     <div
