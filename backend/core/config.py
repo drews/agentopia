@@ -47,6 +47,24 @@ class Settings(BaseSettings):
     ollama_base_url: str = Field("http://host.docker.internal:11434", env="OLLAMA_BASE_URL")
     ollama_model: str = Field("qwen3:latest", env="OLLAMA_MODEL")
     ollama_timeout: float = Field(30.0, env="OLLAMA_TIMEOUT")
+
+    # Two-tier planner/executor tool router (adopt-modern-agent-architecture 2.5)
+    router_enabled: bool = Field(True, env="ROUTER_ENABLED")
+    router_planner_model: str = Field("qwen3:8b", env="ROUTER_PLANNER_MODEL")
+    router_executor_model: str = Field("llama3.2", env="ROUTER_EXECUTOR_MODEL")
+    router_max_retries: int = Field(2, env="ROUTER_MAX_RETRIES")
+    router_trigger_keywords: List[str] = Field(
+        ["calendar", "reminder", "reminders", "file", "files", "plan"],
+        env="ROUTER_TRIGGER_KEYWORDS"
+    )
+
+    @field_validator("router_trigger_keywords", mode="before")
+    @classmethod
+    def parse_router_trigger_keywords(cls, v):
+        """Parse trigger keywords from string or list"""
+        if isinstance(v, str):
+            return [kw.strip().lower() for kw in v.split(",")]
+        return v
     
     # Legacy compatibility (will be deprecated)
     llm_model: str = Field("gpt-3.5-turbo", env="LLM_MODEL")

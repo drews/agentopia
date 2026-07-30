@@ -40,12 +40,27 @@ class FakeListLLM:
 class LLMService:
     """Service for generating LLM responses via PydanticAI (Ollama) or mock."""
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, websocket_manager: Optional[Any] = None):
         self.settings = settings
+        # Optional WebSocketManager, used to broadcast `agent_activity` events
+        # (thinking/responding) around PydanticAI calls. None in tests/mock-only use.
+        self.websocket_manager = websocket_manager
         # One PydanticAI Agent per distinct system prompt (i.e. per persona) -
         # created lazily and cached so each persona gets exactly one Agent.
         self._ollama_agents: Dict[str, Agent] = {}
         self._mock_provider: Optional[FakeListLLM] = None
+
+    async def _broadcast_activity(self, agent_id: Optional[str], state: str) -> None:
+        """Broadcast an `agent_activity` WS event. Best-effort: never breaks a chat response."""
+        if not self.websocket_manager or not agent_id:
+            return
+        try:
+            await self.websocket_manager.broadcast({
+                "type": "agent_activity",
+                "data": {"agent_id": agent_id, "state": state},
+            })
+        except Exception as e:
+            logger.warning(f"Failed to broadcast agent_activity({state}) for {agent_id}: {e}")
 
     def _get_ollama_agent(self, system_prompt: Optional[str]) -> Agent:
         """Get (or create) the PydanticAI Agent for a given persona system prompt."""
@@ -94,6 +109,7 @@ class LLMService:
         prompt: str,
         system_prompt: Optional[str] = None,
         provider_name: Optional[str] = None,
+        agent_id: Optional[str] = None,
         **kwargs
     ) -> str:
         """
@@ -103,6 +119,7 @@ class LLMService:
             prompt: User prompt
             system_prompt: Optional system prompt (selects/creates the persona's PydanticAI Agent)
             provider_name: Specific provider to use
+            agent_id: Optional agent id, used to broadcast `agent_activity` WS events
 
         Returns:
             str: Generated response
@@ -110,7 +127,7 @@ class LLMService:
         provider_name = (provider_name or self.settings.default_llm_provider).lower()
 
         try:
-            response = await self._try_generate_response(prompt, system_prompt, provider_name)
+            response = await self._try_generate_response(prompt, system_prompt, provider_name, agent_id)
             if response and not response.startswith("I apologize"):
                 return response
         except Exception as e:
@@ -120,7 +137,7 @@ class LLMService:
         if provider_name != "mock":
             try:
                 logger.info("Trying fallback provider: mock")
-                return await self._try_generate_response(prompt, system_prompt, "mock")
+                return await self._try_generate_response(prompt, system_prompt, "mock", agent_id)
             except Exception as e:
                 logger.warning(f"Fallback provider mock failed: {e}")
 
@@ -130,12 +147,18 @@ class LLMService:
         self,
         prompt: str,
         system_prompt: Optional[str] = None,
-        provider_name: str = "mock"
+        provider_name: str = "mock",
+        agent_id: Optional[str] = None,
     ) -> str:
         """Try to generate a response from a specific provider."""
         if provider_name == "ollama":
             agent = self._get_ollama_agent(system_prompt)
-            result = await agent.run(prompt)
+            await self._broadcast_activity(agent_id, "thinking")
+            try:
+                result = await agent.run(prompt)
+            finally:
+                # Always clear "thinking" even on failure, so the UI doesn't get stuck.
+                await self._broadcast_activity(agent_id, "responding")
             return result.output
 
         # mock (and any other/unsupported provider name) falls through to mock.

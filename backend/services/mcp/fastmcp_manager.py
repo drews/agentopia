@@ -30,13 +30,26 @@ DEFAULT_MAX_EXPOSED_TOOLS = 10
 class MCPToolRegistry:
     """Aggregates tools from configured stdio MCP servers, one FastMCP client per server."""
 
-    def __init__(self, mcp_config: Optional[Dict[str, Any]] = None):
+    def __init__(self, mcp_config: Optional[Dict[str, Any]] = None, websocket_manager: Optional[Any] = None):
         mcp_config = mcp_config or {}
         self._server_configs: Dict[str, Dict[str, Any]] = mcp_config.get("servers", {})
         self._max_exposed_tools = mcp_config.get("max_exposed_tools", DEFAULT_MAX_EXPOSED_TOOLS)
         self._clients: Dict[str, Client] = {}  # server name -> connected client
         self._tools: Dict[str, Dict[str, Any]] = {}  # namespaced tool name -> metadata
         self._failed_servers: Dict[str, str] = {}  # server name -> error message
+        # Optional WebSocketManager, used to broadcast `tool_activity` events on call_tool completion.
+        self._websocket_manager = websocket_manager
+
+    async def _broadcast_tool_activity(self, tool: str, server: str, ok: bool) -> None:
+        if not self._websocket_manager:
+            return
+        try:
+            await self._websocket_manager.broadcast({
+                "type": "tool_activity",
+                "data": {"tool": tool, "server": server, "ok": ok},
+            })
+        except Exception as e:
+            logger.warning(f"Failed to broadcast tool_activity for '{tool}': {e}")
 
     @property
     def enabled_servers(self) -> Dict[str, Dict[str, Any]]:
@@ -120,7 +133,13 @@ class MCPToolRegistry:
         if not client:
             raise RuntimeError(f"MCP server '{info['server']}' is not connected")
 
-        result = await client.call_tool(info["tool_name"], arguments or {})
+        try:
+            result = await client.call_tool(info["tool_name"], arguments or {})
+        except Exception:
+            await self._broadcast_tool_activity(tool_name, info["server"], ok=False)
+            raise
+
+        await self._broadcast_tool_activity(tool_name, info["server"], ok=True)
         return result
 
     async def shutdown(self):

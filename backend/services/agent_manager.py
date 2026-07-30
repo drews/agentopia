@@ -17,6 +17,7 @@ from services.spaceship_service import SpaceshipService
 from services.websocket_manager import WebSocketManager
 from services.llm_service import LLMService
 from services.mcp.mcp_client import MCPClient, MCPServerConfig
+from services.tool_router import ToolRouter
 from backend.core.config import get_settings
 from models.agent import AgentRole
 from services.config_service import config_service
@@ -186,12 +187,16 @@ class AgentManager:
         self.intent_update_interval = movement_config.get("agent_status_update_interval", 2.0)
         self.movement_interval = movement_config.get("movement_interval", 1.0)
         
-        self.llm_service = LLMService(get_settings())  # Add LangChain-based LLM service
+        self.llm_service = LLMService(get_settings(), websocket_manager=websocket_manager)
         # Direct MCP integration - consolidated from MCPServerManager
         self.mcp_client = MCPClient()
         self.config_path = "config/agentopia.json"
         self.mcp_server_configs: Dict[str, MCPServerConfig] = {}
         self.config_data = None
+        # FastMCP tool registry (namespaced tools + validate/retry router). Set by main.py's
+        # lifespan after both are constructed; None until then (e.g. in unit tests).
+        self.mcp_tool_registry = None
+        self._tool_router: Optional["ToolRouter"] = None
         
         # Movement orchestration with config service
         self.movement_orchestrator = MovementOrchestrator(config_service)
@@ -549,25 +554,34 @@ class AgentManager:
             except ValueError:
                 agent_role = AgentRole.BRIDGE_CREW
             
+            # Persona system prompt: prefer the agent's configured persona prompt,
+            # fall back to a generic one (also used to render the router's final reply).
+            system_prompt = config_service.get_agent_system_prompt(agent_id)
+            if not system_prompt:
+                system_prompt = f"You are {agent_name}, an AI agent on a starship bridge. You have access to real-world data through MCP integrations. Respond professionally and helpfully to missions and requests."
+
             # Check if this is an MCP command
             mcp_result = await self._try_mcp_command(agent_id, agent_role, mission)
-            
+
             if mcp_result["is_mcp_command"]:
                 response = mcp_result["response"]
             else:
-                # Create system prompt based on agent role
-                system_prompt = f"You are {agent_name}, an AI agent on a starship bridge. You have access to real-world data through MCP integrations. Respond professionally and helpfully to missions and requests."
-                
-                # Get LLM response using LangChain
-                response = await self.llm_service.generate_response(
-                    prompt=mission,
-                    system_prompt=system_prompt
-                )
-            
+                # Try the model-driven tool router first (planner decomposes intent into
+                # single-tool steps, executor fills+validates args); falls through to
+                # plain persona chat if the router is disabled, not tool-shaped, or the
+                # planner found nothing relevant to call.
+                response = await self._try_router(agent_id, system_prompt, mission)
+                if response is None:
+                    response = await self.llm_service.generate_response(
+                        prompt=mission,
+                        system_prompt=system_prompt,
+                        agent_id=agent_id
+                    )
+
             if response and not response.startswith("I apologize"):
                 # Update agent status to active
                 await self.spaceship_service.update_agent_status(agent_id, "active", response)
-                
+
                 # Also send a chat message
                 await self.websocket_manager.broadcast_chat_message({
                     "from": agent_id,
@@ -575,24 +589,81 @@ class AgentManager:
                     "message": response,
                     "timestamp": datetime.now().isoformat()
                 })
-                
+                await self.websocket_manager.broadcast({
+                    "type": "agent_activity",
+                    "data": {"agent_id": agent_id, "state": "idle"}
+                })
+
                 logger.info(f"Agent {agent_id} responded: {response[:50]}...")
             else:
                 # Handle error
                 await self.spaceship_service.update_agent_status(agent_id, "idle", "Error processing mission")
                 logger.error(f"Agent {agent_id} failed to process mission: {response}")
-            
+
             # Broadcast agent update
             agent = await db.get_agent(agent_id)
             if agent:
                 await self.websocket_manager.broadcast_agent_update(agent)
-            
+
             return True
             
         except Exception as e:
             logger.error(f"Error sending mission to agent {agent_id}: {e}")
             return False
-    
+
+    def _get_tool_router(self) -> ToolRouter:
+        """Lazily build the planner/executor router against the current MCP tool registry
+        (set by main.py's lifespan after both AgentManager and MCPToolRegistry exist)."""
+        if self._tool_router is None:
+            self._tool_router = ToolRouter(get_settings(), self.mcp_tool_registry)
+        return self._tool_router
+
+    async def _try_router(self, agent_id: str, persona_system_prompt: str, mission: str) -> Optional[str]:
+        """Route tool-shaped requests through the planner/executor (2.5). Returns None
+        (caller falls back to plain persona chat) if the router is disabled, the
+        registry isn't wired up, the message isn't tool-shaped, or the planner found
+        nothing relevant to call. Otherwise returns the final persona-voiced reply,
+        built from the real tool results (graceful in-persona message if all steps
+        failed - 2.4)."""
+        if not self.mcp_tool_registry:
+            return None
+
+        router = self._get_tool_router()
+        if not router.looks_tool_shaped(mission):
+            return None
+
+        try:
+            plan = await router.plan(mission)
+        except Exception as e:
+            logger.warning(f"[router] planning failed for '{mission}': {e}")
+            return None
+
+        if not plan.steps:
+            return None
+
+        results = await router.execute_plan(plan)
+        logger.info(
+            f"[router] executed {len(results)} step(s) for agent {agent_id}; "
+            f"cumulative failure rate {router.failure_rate:.0%} "
+            f"({router.call_failures}/{router.call_attempts})"
+        )
+
+        summary_lines = [
+            f"{step.tool} -> {res.result}" if res.ok else f"{step.tool} FAILED -> {res.error}"
+            for step, res in zip(plan.steps, results)
+        ]
+        render_prompt = (
+            f"The crew asked: {mission}\n\n"
+            f"Tool results:\n" + "\n".join(summary_lines) + "\n\n"
+            "Summarize this for the crew in your voice: prioritized, concise, and "
+            "honest about any failures. Only state facts present in the tool results above."
+        )
+        return await self.llm_service.generate_response(
+            prompt=render_prompt,
+            system_prompt=persona_system_prompt,
+            agent_id=agent_id
+        )
+
     async def _try_mcp_command(self, agent_id: str, agent_role: AgentRole, mission: str) -> Dict[str, Any]:
         """Try to process the mission as an MCP command."""
         try:

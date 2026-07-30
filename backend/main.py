@@ -71,7 +71,9 @@ async def lifespan(app: FastAPI):
         websocket_manager = WebSocketManager()
         spaceship_service = SpaceshipService()
         agent_manager = AgentManager(spaceship_service, websocket_manager)
-        mcp_tool_registry = MCPToolRegistry(_load_mcp_config())
+        mcp_tool_registry = MCPToolRegistry(_load_mcp_config(), websocket_manager=websocket_manager)
+        # Give the agent runtime access to the tool registry (model-driven tool routing, 2.5).
+        agent_manager.mcp_tool_registry = mcp_tool_registry
 
         await spaceship_service.initialize()
         await agent_manager.initialize()
