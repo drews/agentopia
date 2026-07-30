@@ -2,7 +2,7 @@
 
 ## 1. Shell inversion & purge
 
-- [ ] 1.1 Make the Pixi scene the root view: remove the five-tab nav; App renders scene + overlay host + attention HUD dock; delete THEATER route
+- [x] 1.1 Make the Pixi scene the root view: remove the five-tab nav; App renders scene + overlay host + attention HUD dock; delete THEATER route
 - [ ] 1.2 Purge fabricated data: remove CommanderDashboard's mock fleet/mission/performance content and AccessView's mock efficiency numbers; keep only real-signal tiles for reuse in the ops overlay
 - [ ] 1.3 Verify: app boots into the scene full-bleed; no tab bar; screenshot
 
@@ -34,6 +34,6 @@
 
 ## 6. Character creation (first-boarding hook)
 
-- [ ] 6.1 First-run detection (no saved player profile in localStorage) boots into a character creation overlay before the scene: name/callsign, avatar customization (palette swap + a few sprite options over the player spritesheet), and 2–3 warm EF-preference prompts (e.g. "when should the crew nudge you?", "morning briefing: yes/no") — creation doubles as preference capture that feeds crew behavior
-- [ ] 6.2 Persist profile (localStorage first pass); scene greets the new captain by callsign; profile editable later via the dossier overlay on the player avatar
-- [ ] 6.3 Verify: fresh-profile boot shows creation, choices visibly reflected in-scene (sprite + greeting), returning boot skips straight to the scene
+- [x] 6.1 First-run detection (no saved player profile in localStorage) boots into a character creation overlay before the scene: name/callsign, avatar customization (palette swap + a few sprite options over the player spritesheet), and 2–3 warm EF-preference prompts (e.g. "when should the crew nudge you?", "morning briefing: yes/no") — creation doubles as preference capture that feeds crew behavior
+- [x] 6.2 Persist profile (localStorage first pass); scene greets the new captain by callsign; profile editable later via the dossier overlay on the player avatar
+- [x] 6.3 Verify: fresh-profile boot shows creation, choices visibly reflected in-scene (sprite + greeting), returning boot skips straight to the scene

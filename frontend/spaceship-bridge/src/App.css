@@ -542,6 +542,76 @@ body {
   }
 }
 
+/* Scene-first shell (make-bridge-scene-first task 1.1) */
+.scene-root {
+  min-height: 100vh;
+  width: 100vw;
+  background: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.scene-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+/* Tiny, unobtrusive WS status - replaces the old LCARS nav bar's status pill. */
+.ws-indicator {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+}
+
+.ws-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+  display: block;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.ws-indicator.connected .ws-dot {
+  background: #4ade80;
+}
+
+.ws-indicator.connecting .ws-dot,
+.ws-indicator.reconnecting .ws-dot {
+  background: #facc15;
+  animation: pulse 1s infinite;
+}
+
+.ws-indicator.disconnected .ws-dot {
+  background: #ef4444;
+}
+
+/* Callsign greeting toast (task 6.2) */
+.greeting-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(246, 201, 69, 0.35);
+  color: #f8fafc;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
 /* Print styles */
 @media print {
   .lcars-nav,

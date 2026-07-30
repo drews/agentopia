@@ -1,0 +1,154 @@
+.creation-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 30%, #142033 0%, #05070d 70%);
+  z-index: 100;
+  padding: 24px;
+}
+
+.creation-panel {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(246, 201, 69, 0.35);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 0 40px rgba(246, 201, 69, 0.08);
+  color: #e2e8f0;
+  font-family: 'Arial', sans-serif;
+}
+
+.creation-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #f6c945;
+  margin-bottom: 8px;
+}
+
+.creation-title {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #f8fafc;
+}
+
+.creation-copy {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.creation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.creation-label {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.creation-input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.creation-input:focus {
+  outline: none;
+  border-color: #f6c945;
+}
+
+.palette-row {
+  display: flex;
+  gap: 12px;
+}
+
+.palette-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.palette-swatch:hover {
+  transform: scale(1.08);
+}
+
+.palette-swatch.selected {
+  box-shadow: 0 0 0 2px #f8fafc;
+}
+
+.palette-trim {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.option-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.option-pill {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 8px 16px;
+  color: #cbd5e1;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.option-pill:hover {
+  border-color: #f6c945;
+}
+
+.option-pill.selected {
+  background: #f6c945;
+  border-color: #f6c945;
+  color: #1c2733;
+  font-weight: bold;
+}
+
+.creation-submit {
+  width: 100%;
+  margin-top: 8px;
+  background: #f6c945;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #1c2733;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: opacity 0.15s ease;
+}
+
+.creation-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.creation-submit:not(:disabled):hover {
+  opacity: 0.9;
+}
