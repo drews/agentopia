@@ -1,0 +1,277 @@
+- generic [ref=f7e3]:
+  - generic [ref=f7e4]:
+    - generic [ref=f7e5]: AGENTOPIA
+    - generic [ref=f7e7]:
+      - button "🚀 BRIDGE" [ref=f7e8] [cursor=pointer]:
+        - generic [ref=f7e9]: 🚀
+        - generic [ref=f7e10]: BRIDGE
+      - button "👥 CREW" [ref=f7e11] [cursor=pointer]:
+        - generic [ref=f7e12]: 👥
+        - generic [ref=f7e13]: CREW
+      - button "📊 ACCESS" [ref=f7e14] [cursor=pointer]:
+        - generic [ref=f7e15]: 📊
+        - generic [ref=f7e16]: ACCESS
+      - button "⚙️ SYSTEMS" [ref=f7e17] [cursor=pointer]:
+        - generic [ref=f7e18]: ⚙️
+        - generic [ref=f7e19]: SYSTEMS
+      - button "🎭 THEATER" [ref=f7e20] [cursor=pointer]:
+        - generic [ref=f7e21]: 🎭
+        - generic [ref=f7e22]: THEATER
+    - generic [ref=f7e23]: Connected
+  - generic [ref=f7e25]:
+    - generic [ref=f7e26]:
+      - heading "🚀 Agent Representation Showcase" [level=1] [ref=f7e27]
+      - paragraph [ref=f7e28]: Interactive demonstration of themable agent representations using the Strategy pattern
+      - generic [ref=f7e29]:
+        - text: "Theme:"
+        - button "retro" [ref=f7e30] [cursor=pointer]
+        - button "modern" [ref=f7e31] [cursor=pointer]
+        - button "minimal" [ref=f7e32] [cursor=pointer]
+        - button "lcars" [ref=f7e33] [cursor=pointer]
+      - generic [ref=f7e34]:
+        - text: "Animation Speed:"
+        - slider [ref=f7e35]: "1"
+        - generic [ref=f7e36]: 1x
+      - generic [ref=f7e37]:
+        - heading "Fleet Status Summary:" [level=3] [ref=f7e38]
+        - generic [ref=f7e39]:
+          - generic [ref=f7e40]:
+            - generic [ref=f7e41]: "idle:"
+            - strong [ref=f7e42]: "1"
+          - generic [ref=f7e43]:
+            - generic [ref=f7e44]: "thinking:"
+            - strong [ref=f7e45]: "1"
+          - generic [ref=f7e46]:
+            - generic [ref=f7e47]: "working:"
+            - strong [ref=f7e48]: "2"
+          - generic [ref=f7e49]:
+            - generic [ref=f7e50]: "moving:"
+            - strong [ref=f7e51]: "1"
+          - generic [ref=f7e52]:
+            - generic [ref=f7e53]: "communicating:"
+            - strong [ref=f7e54]: "1"
+          - generic [ref=f7e55]:
+            - generic [ref=f7e56]: "error:"
+            - strong [ref=f7e57]: "1"
+          - generic [ref=f7e58]:
+            - generic [ref=f7e59]: "offline:"
+            - strong [ref=f7e60]: "1"
+    - generic [ref=f7e61]:
+      - 'button "Commander Nova, commander agent, status: idle" [ref=f7e63]':
+        - generic [ref=f7e64] [cursor=pointer]:
+          - generic [ref=f7e65]: IDLE
+          - generic [ref=f7e67]:
+            - generic [ref=f7e68]: 👨‍✈️
+            - generic [ref=f7e69]: ●
+          - generic [ref=f7e75]: COMMANDER NOVA
+        - generic [ref=f7e78]: "Commander Nova is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 95%."
+      - 'button "Dr. Chen, scientist agent, status: thinking" [ref=f7e80]':
+        - generic [ref=f7e81] [cursor=pointer]:
+          - generic [ref=f7e82]: THINKING
+          - generic [ref=f7e84]:
+            - generic [ref=f7e85]: 👩‍🔬
+            - generic [ref=f7e86]: ◉
+          - generic [ref=f7e92]: DR. CHEN
+        - generic [ref=f7e95]: "Dr. Chen is a scientist agent currently thinking. Primary capability: research. Experience level: expert. Current efficiency: 88%."
+      - 'button "Chief O''Brien, engineer agent, status: working" [ref=f7e97]':
+        - generic [ref=f7e98] [cursor=pointer]:
+          - generic [ref=f7e99]: WORKING
+          - generic [ref=f7e101]:
+            - generic [ref=f7e102]: 👨‍🔧
+            - generic [ref=f7e103]: ◈
+          - generic [ref=f7e109]: CHIEF O'BRIEN
+        - generic [ref=f7e112]: "Chief O'Brien is a engineer agent currently working. Primary capability: engineering. Experience level: expert. Current efficiency: 92%. Task progress: 67%."
+      - 'button "Lt. Torres, navigator agent, status: moving" [ref=f7e114]':
+        - generic [ref=f7e115] [cursor=pointer]:
+          - generic [ref=f7e116]: MOVING
+          - generic [ref=f7e118]:
+            - generic [ref=f7e119]: 🧭
+            - generic [ref=f7e120]: →
+          - generic [ref=f7e126]: LT. TORRES
+        - generic [ref=f7e129]: "Lt. Torres is a navigator agent currently moving. Primary capability: navigation. Experience level: competent. Current efficiency: 85%."
+      - 'button "Uhura-9, communications agent, status: communicating" [ref=f7e131]':
+        - generic [ref=f7e132] [cursor=pointer]:
+          - generic [ref=f7e133]: COMMUNICATING
+          - generic [ref=f7e135]:
+            - generic [ref=f7e136]: 📡
+            - generic [ref=f7e137]: ◊
+          - generic [ref=f7e143]: UHURA-9
+        - generic [ref=f7e146]: "Uhura-9 is a communications agent currently communicating. Primary capability: communications. Experience level: expert. Current efficiency: 94%."
+      - 'button "Agent Smith, security agent, status: error" [ref=f7e148]':
+        - generic [ref=f7e149] [cursor=pointer]:
+          - generic [ref=f7e150]: ERROR
+          - generic [ref=f7e152]:
+            - generic [ref=f7e153]: 🛡️
+            - generic [ref=f7e154]: ⚠
+          - generic [ref=f7e160]: AGENT SMITH
+        - generic [ref=f7e163]: "Agent Smith is a security agent currently error. Primary capability: security. Experience level: competent. Current efficiency: 45%."
+      - 'button "Dr. Crusher, medical agent, status: offline" [ref=f7e165]':
+        - generic [ref=f7e166] [cursor=pointer]:
+          - generic [ref=f7e167]: OFFLINE
+          - generic [ref=f7e169]:
+            - generic [ref=f7e170]: ⚕️
+            - generic [ref=f7e171]: ○
+          - generic [ref=f7e172]: DR. CRUSHER
+        - generic [ref=f7e175]: "Dr. Crusher is a medical agent currently offline. Primary capability: medical. Experience level: master. Current efficiency: 0%."
+      - 'button "Data-7, operations agent, status: working" [ref=f7e177]':
+        - generic [ref=f7e178] [cursor=pointer]:
+          - generic [ref=f7e179]: WORKING
+          - generic [ref=f7e181]:
+            - generic [ref=f7e182]: ⚙️
+            - generic [ref=f7e183]: ◈
+          - generic [ref=f7e189]: DATA-7
+        - generic [ref=f7e192]: "Data-7 is a operations agent currently working. Primary capability: operations. Experience level: expert. Current efficiency: 97%. Task progress: 23%."
+    - generic [ref=f7e193]:
+      - heading "Theme Comparison" [level=2] [ref=f7e194]
+      - paragraph [ref=f7e195]: "Same agent (Commander Nova) rendered in all three themes:"
+      - generic [ref=f7e196]:
+        - generic [ref=f7e197]:
+          - heading "retro Theme" [level=4] [ref=f7e198]
+          - 'img "Commander Nova, commander agent, status: idle" [ref=f7e199]':
+            - generic [ref=f7e200]:
+              - generic [ref=f7e201]:
+                - generic [ref=f7e202]: 👨‍✈️
+                - generic [ref=f7e203]:
+                  - generic [ref=f7e204]: ●
+                  - generic [ref=f7e205]: 95%
+              - generic [ref=f7e206]: Commander Nova
+              - generic [ref=f7e207]:
+                - generic [ref=f7e208]: LEADERSHIP
+                - generic [ref=f7e209]: ★★★★
+              - generic [ref=f7e210]: 15:38:56
+            - generic [ref=f7e211]: "Commander Nova is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 95%."
+        - generic [ref=f7e212]:
+          - heading "modern Theme" [level=4] [ref=f7e213]
+          - 'img "Commander Nova, commander agent, status: idle" [ref=f7e214]':
+            - generic [ref=f7e215]:
+              - generic [ref=f7e217]:
+                - generic [ref=f7e218]: 👨‍✈️
+                - generic [ref=f7e219]: Commander Nova
+              - generic [ref=f7e220]:
+                - generic [ref=f7e221]:
+                  - generic [ref=f7e223]: idle
+                  - generic [ref=f7e224]: 95%
+                - generic [ref=f7e225]:
+                  - generic [ref=f7e226]: leadership
+                  - generic [ref=f7e227]: ★★★★
+            - generic [ref=f7e228]: "Commander Nova is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 95%."
+        - generic [ref=f7e229]:
+          - heading "minimal Theme" [level=4] [ref=f7e230]
+          - 'img "Commander Nova, commander agent, status: idle" [ref=f7e231]':
+            - generic [ref=f7e232]:
+              - generic [ref=f7e233]: 👨‍✈️
+              - generic [ref=f7e234]: Commander Nova
+              - generic [ref=f7e235]: idle
+              - generic [ref=f7e238]: master
+            - generic [ref=f7e239]: "Commander Nova is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 95%."
+        - generic [ref=f7e240]:
+          - heading "lcars Theme" [level=4] [ref=f7e241]
+          - 'img "Commander Nova, commander agent, status: idle" [ref=f7e242]':
+            - generic [ref=f7e243]:
+              - generic [ref=f7e244]: IDLE
+              - generic [ref=f7e246]:
+                - generic [ref=f7e247]: 👨‍✈️
+                - generic [ref=f7e248]: ●
+              - generic [ref=f7e254]: COMMANDER NOVA
+            - generic [ref=f7e257]: "Commander Nova is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 95%."
+    - generic [ref=f7e258]:
+      - heading "Status States" [level=2] [ref=f7e259]
+      - paragraph [ref=f7e260]: "Different status states using the lcars theme:"
+      - generic [ref=f7e261]:
+        - generic [ref=f7e262]:
+          - heading "idle" [level=5] [ref=f7e263]
+          - 'img "Agent idle, commander agent, status: idle" [ref=f7e264]':
+            - generic [ref=f7e265]:
+              - generic [ref=f7e266]: IDLE
+              - generic [ref=f7e268]:
+                - generic [ref=f7e269]: 👨‍✈️
+                - generic [ref=f7e270]: ●
+              - generic [ref=f7e276]: AGENT IDLE
+            - generic [ref=f7e279]: "Agent idle is a commander agent currently idle. Primary capability: leadership. Experience level: master. Current efficiency: 85%."
+        - generic [ref=f7e280]:
+          - heading "thinking" [level=5] [ref=f7e281]
+          - 'img "Agent thinking, commander agent, status: thinking" [ref=f7e282]':
+            - generic [ref=f7e283]:
+              - generic [ref=f7e284]: THINKING
+              - generic [ref=f7e286]:
+                - generic [ref=f7e287]: 👨‍✈️
+                - generic [ref=f7e288]: ◉
+              - generic [ref=f7e294]: AGENT THINKING
+            - generic [ref=f7e297]: "Agent thinking is a commander agent currently thinking. Primary capability: leadership. Experience level: master. Current efficiency: 85%."
+        - generic [ref=f7e298]:
+          - heading "working" [level=5] [ref=f7e299]
+          - 'img "Agent working, commander agent, status: working" [ref=f7e300]':
+            - generic [ref=f7e301]:
+              - generic [ref=f7e302]: WORKING
+              - generic [ref=f7e304]:
+                - generic [ref=f7e305]: 👨‍✈️
+                - generic [ref=f7e306]: ◈
+              - generic [ref=f7e312]: AGENT WORKING
+            - generic [ref=f7e315]: "Agent working is a commander agent currently working. Primary capability: leadership. Experience level: master. Current efficiency: 85%. Task progress: 75%."
+        - generic [ref=f7e316]:
+          - heading "moving" [level=5] [ref=f7e317]
+          - 'img "Agent moving, commander agent, status: moving" [ref=f7e318]':
+            - generic [ref=f7e319]:
+              - generic [ref=f7e320]: MOVING
+              - generic [ref=f7e322]:
+                - generic [ref=f7e323]: 👨‍✈️
+                - generic [ref=f7e324]: →
+              - generic [ref=f7e330]: AGENT MOVING
+            - generic [ref=f7e333]: "Agent moving is a commander agent currently moving. Primary capability: leadership. Experience level: master. Current efficiency: 85%."
+        - generic [ref=f7e334]:
+          - heading "communicating" [level=5] [ref=f7e335]
+          - 'img "Agent communicating, commander agent, status: communicating" [ref=f7e336]':
+            - generic [ref=f7e337]:
+              - generic [ref=f7e338]: COMMUNICATING
+              - generic [ref=f7e340]:
+                - generic [ref=f7e341]: 👨‍✈️
+                - generic [ref=f7e342]: ◊
+              - generic [ref=f7e348]: AGENT COMMUNICATING
+            - generic [ref=f7e351]: "Agent communicating is a commander agent currently communicating. Primary capability: leadership. Experience level: master. Current efficiency: 85%."
+        - generic [ref=f7e352]:
+          - heading "error" [level=5] [ref=f7e353]
+          - 'img "Agent error, commander agent, status: error" [ref=f7e354]':
+            - generic [ref=f7e355]:
+              - generic [ref=f7e356]: ERROR
+              - generic [ref=f7e358]:
+                - generic [ref=f7e359]: 👨‍✈️
+                - generic [ref=f7e360]: ⚠
+              - generic [ref=f7e366]: AGENT ERROR
+            - generic [ref=f7e369]: "Agent error is a commander agent currently error. Primary capability: leadership. Experience level: master. Current efficiency: 30%."
+        - generic [ref=f7e370]:
+          - heading "offline" [level=5] [ref=f7e371]
+          - 'img "Agent offline, commander agent, status: offline" [ref=f7e372]':
+            - generic [ref=f7e373]:
+              - generic [ref=f7e374]: OFFLINE
+              - generic [ref=f7e376]:
+                - generic [ref=f7e377]: 👨‍✈️
+                - generic [ref=f7e378]: ○
+              - generic [ref=f7e379]: AGENT OFFLINE
+            - generic [ref=f7e382]: "Agent offline is a commander agent currently offline. Primary capability: leadership. Experience level: master. Current efficiency: 0%."
+    - generic [ref=f7e383]:
+      - heading "Implementation Features" [level=3] [ref=f7e384]
+      - list [ref=f7e385]:
+        - listitem [ref=f7e386]:
+          - strong [ref=f7e387]: "Strategy Pattern:"
+          - text: Pluggable rendering strategies for different themes
+        - listitem [ref=f7e388]:
+          - strong [ref=f7e389]: "Responsive Design:"
+          - text: Adapts to different screen sizes and compact modes
+        - listitem [ref=f7e390]:
+          - strong [ref=f7e391]: "Accessibility:"
+          - text: Full keyboard navigation, screen reader support, reduced motion respect
+        - listitem [ref=f7e392]:
+          - strong [ref=f7e393]: "Interactive States:"
+          - text: Hover, selection, focus, and context menu support
+        - listitem [ref=f7e394]:
+          - strong [ref=f7e395]: "Status Animations:"
+          - text: Visual feedback for different operational states
+        - listitem [ref=f7e396]:
+          - strong [ref=f7e397]: "Theme Consistency:"
+          - text: Color schemes, typography, and spacing maintained across themes
+        - listitem [ref=f7e398]:
+          - strong [ref=f7e399]: "Performance:"
+          - text: Efficient rendering with minimal re-renders
+        - listitem [ref=f7e400]:
+          - strong [ref=f7e401]: "Extensible:"
+          - text: Easy to add new themes and agent types

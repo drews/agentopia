@@ -1,0 +1,28 @@
+- dialog "Welcome aboard" [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - paragraph [ref=f1e3]: USS AGENTOPIA · BOARDING
+    - heading "Welcome aboard, Captain." [level=1] [ref=f1e4]
+    - paragraph [ref=f1e5]: Nova, Chen, and Torres are already at their stations. Tell them who they're serving.
+    - generic [ref=f1e6]:
+      - generic [ref=f1e7]: Callsign
+      - textbox "Callsign" [ref=f1e8]:
+        - /placeholder: What should the crew call you?
+    - generic [ref=f1e9]:
+      - generic [ref=f1e10]: Your colors
+      - generic [ref=f1e11]:
+        - button "Gold" [pressed] [ref=f1e12] [cursor=pointer]
+        - button "Teal" [ref=f1e14] [cursor=pointer]
+        - button "Violet" [ref=f1e16] [cursor=pointer]
+        - button "Rose" [ref=f1e18] [cursor=pointer]
+    - generic [ref=f1e20]:
+      - generic [ref=f1e21]: When should the crew nudge you?
+      - generic [ref=f1e22]:
+        - button "Gentle" [ref=f1e23] [cursor=pointer]
+        - button "Active" [ref=f1e24] [cursor=pointer]
+        - button "Don't nudge" [ref=f1e25] [cursor=pointer]
+    - generic [ref=f1e26]:
+      - generic [ref=f1e27]: Morning briefing from the crew?
+      - generic [ref=f1e28]:
+        - button "Yes" [ref=f1e29] [cursor=pointer]
+        - button "No" [ref=f1e30] [cursor=pointer]
+    - button "Report for duty" [disabled] [ref=f1e31]
